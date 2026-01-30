@@ -1,0 +1,152 @@
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { createPageUrl } from "./utils";
+import { base44 } from "@/api/base44Client";
+import {
+  LayoutDashboard,
+  User,
+  ShoppingBag,
+  Users,
+  FileText,
+  Receipt,
+  LogOut,
+  Menu,
+  X,
+  Award,
+  Globe,
+  CreditCard
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+export default function Layout({ children, currentPageName }) {
+  const [user, setUser] = useState(null);
+  const [partner, setPartner] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const userData = await base44.auth.me();
+      setUser(userData);
+      
+      const partners = await base44.entities.Partner.filter({ created_by: userData.email });
+      if (partners.length > 0) {
+        setPartner(partners[0]);
+      }
+    } catch (error) {
+      // User not logged in
+    }
+  };
+
+  const handleLogout = () => {
+    base44.auth.logout();
+  };
+
+  // Public pages without layout
+  const publicPages = ["LandingPage", "Register", "PartnerSite"];
+  if (publicPages.includes(currentPageName)) {
+    return <>{children}</>;
+  }
+
+  const menuItems = [
+    { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
+    { name: "Meu Perfil", icon: User, page: "Profile" },
+    { name: "Loja 3X3 SC", icon: ShoppingBag, page: "Store" },
+    { name: "Minha Rede", icon: Users, page: "Network" },
+    { name: "Meus Bônus", icon: Award, page: "Bonus" },
+    { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },
+    { name: "Relatórios", icon: FileText, page: "Reports" },
+    { name: "Meu Site", icon: Globe, page: "MySite" },
+    { name: "Saques", icon: CreditCard, page: "Withdrawals" },
+  ];
+
+  const NavContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="p-6 border-b border-orange-500/20">
+        <h1 className="text-xl font-bold text-orange-500">Sociedade de</h1>
+        <h1 className="text-xl font-bold text-white">Consumidores</h1>
+      </div>
+      
+      <nav className="flex-1 p-4 space-y-1">
+        {menuItems.map((item) => (
+          <Link
+            key={item.page}
+            to={createPageUrl(item.page)}
+            onClick={() => setIsOpen(false)}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+              currentPageName === item.page
+                ? "bg-orange-500 text-white"
+                : "text-gray-300 hover:bg-orange-500/10 hover:text-orange-500"
+            }`}
+          >
+            <item.icon className="w-5 h-5" />
+            <span className="font-medium">{item.name}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t border-orange-500/20">
+        {partner && (
+          <div className="mb-4 p-3 bg-orange-500/10 rounded-lg">
+            <p className="text-sm text-gray-400">Status</p>
+            <p className={`font-semibold ${
+              partner.status === 'ativo' ? 'text-green-500' :
+              partner.status === 'pendente' ? 'text-yellow-500' : 'text-red-500'
+            }`}>
+              {partner.status?.toUpperCase()}
+            </p>
+          </div>
+        )}
+        <Button
+          onClick={handleLogout}
+          variant="ghost"
+          className="w-full justify-start text-gray-400 hover:text-orange-500 hover:bg-orange-500/10"
+        >
+          <LogOut className="w-5 h-5 mr-3" />
+          Sair
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-black">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-zinc-950 border-r border-orange-500/20">
+        <NavContent />
+      </aside>
+
+      {/* Mobile Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-zinc-950 border-b border-orange-500/20">
+        <div className="flex items-center justify-between p-4">
+          <div>
+            <h1 className="text-lg font-bold text-orange-500">Sociedade de</h1>
+            <h1 className="text-sm font-bold text-white">Consumidores</h1>
+          </div>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-orange-500">
+                <Menu className="w-6 h-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0 bg-zinc-950 border-orange-500/20">
+              <NavContent />
+            </SheetContent>
+          </Sheet>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="lg:pl-64 pt-20 lg:pt-0 min-h-screen">
+        <div className="p-4 lg:p-8">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
