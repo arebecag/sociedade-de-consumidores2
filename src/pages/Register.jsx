@@ -16,6 +16,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [referrerCode, setReferrerCode] = useState("");
   const [referrerName, setReferrerName] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingReferrer, setLoadingReferrer] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +40,13 @@ export default function Register() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("ref");
-    if (code) {
+    const adminMode = urlParams.get("admin");
+    
+    if (adminMode === "true") {
+      setIsAdmin(true);
+      setReferrerName("Cadastro Administrador");
+      setLoadingReferrer(false);
+    } else if (code) {
       setReferrerCode(code);
       loadReferrer(code);
     } else {
@@ -146,7 +153,7 @@ export default function Register() {
     if (!formData.accepted_rules) {
       newErrors.accepted_rules = "Você precisa aceitar o regimento";
     }
-    if (!referrerCode) {
+    if (!referrerCode && !isAdmin) {
       newErrors.referrer = "Link de indicação inválido";
     }
 
@@ -157,15 +164,18 @@ export default function Register() {
 
     setLoading(true);
     try {
-      // Get referrer partner
-      const referrers = await base44.entities.Partner.filter({ unique_code: referrerCode });
-      if (referrers.length === 0) {
-        toast.error("Indicador não encontrado");
-        setLoading(false);
-        return;
+      let referrer = null;
+      
+      // Get referrer partner (only if not admin)
+      if (!isAdmin) {
+        const referrers = await base44.entities.Partner.filter({ unique_code: referrerCode });
+        if (referrers.length === 0) {
+          toast.error("Indicador não encontrado");
+          setLoading(false);
+          return;
+        }
+        referrer = referrers[0];
       }
-
-      const referrer = referrers[0];
 
       // Create partner record
       const partnerData = {
@@ -173,25 +183,25 @@ export default function Register() {
         birth_date: formData.birth_date,
         gender: formData.gender,
         phone: formData.phone,
-        referrer_id: referrer.id,
-        referrer_name: referrer.display_name || referrer.full_name,
-        status: "pendente",
-        pending_reasons: ["Falta da primeira compra", "Falta de informações no cadastro"],
-        graduation: "cliente_iniciante",
+        referrer_id: referrer ? referrer.id : null,
+        referrer_name: referrer ? (referrer.display_name || referrer.full_name) : null,
+        status: isAdmin ? "ativo" : "pendente",
+        pending_reasons: isAdmin ? [] : ["Falta da primeira compra", "Falta de informações no cadastro"],
+        graduation: isAdmin ? "ouro" : "cliente_iniciante",
         graduation_start_date: new Date().toISOString().split("T")[0],
-        first_purchase_done: false,
+        first_purchase_done: isAdmin ? true : false,
         total_bonus_generated: 0,
         bonus_for_withdrawal: 0,
         bonus_for_purchases: 0,
         total_withdrawn: 0,
         total_spent_purchases: 0,
-        groups_formed: 0,
+        groups_formed: isAdmin ? 200 : 0,
         notification_email: true,
         notification_sms: false,
         notification_whatsapp: false,
         notification_frequency: "semanalmente",
-        email_verified: false,
-        phone_verified: false,
+        email_verified: isAdmin ? true : false,
+        phone_verified: isAdmin ? true : false,
         accepted_terms: true,
         accepted_rules: true,
         unique_code: generateUniqueCode(),
@@ -220,7 +230,7 @@ export default function Register() {
     );
   }
 
-  if (!referrerCode) {
+  if (!referrerCode && !isAdmin) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-zinc-950 border-orange-500/20">
@@ -253,10 +263,17 @@ export default function Register() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Referrer Info */}
-              <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
-                <Label className="text-gray-400 text-sm">Indicador</Label>
-                <p className="text-white font-semibold text-lg">{referrerName}</p>
-              </div>
+              {isAdmin ? (
+                <div className="p-4 bg-orange-500/20 rounded-lg border border-orange-500/40">
+                  <Label className="text-orange-400 text-sm">Modo Administrador</Label>
+                  <p className="text-white font-semibold text-lg">Cadastro sem indicador</p>
+                </div>
+              ) : (
+                <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                  <Label className="text-gray-400 text-sm">Indicador</Label>
+                  <p className="text-white font-semibold text-lg">{referrerName}</p>
+                </div>
+              )}
 
               {/* Full Name */}
               <div className="space-y-2">
