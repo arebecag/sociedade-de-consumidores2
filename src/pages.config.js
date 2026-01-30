@@ -54,6 +54,10 @@ import Profile from './pages/Profile';
 import Store from './pages/Store';
 import Network from './pages/Network';
 import Bonus from './pages/Bonus';
+import PayBoletos from './pages/PayBoletos';
+import Reports from './pages/Reports';
+import MySite from './pages/MySite';
+import Withdrawals from './pages/Withdrawals';
 import __Layout from './Layout.jsx';
 
 
@@ -65,6 +69,10 @@ export const PAGES = {
     "Store": Store,
     "Network": Network,
     "Bonus": Bonus,
+    "PayBoletos": PayBoletos,
+    "Reports": Reports,
+    "MySite": MySite,
+    "Withdrawals": Withdrawals,
 }
 
 export const pagesConfig = {

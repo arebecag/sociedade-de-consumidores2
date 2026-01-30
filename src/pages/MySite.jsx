@@ -1,0 +1,225 @@
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Globe, Copy, ExternalLink, Save, Share2 } from "lucide-react";
+import { toast } from "sonner";
+
+export default function MySite() {
+  const [partner, setPartner] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const user = await base44.auth.me();
+      const partners = await base44.entities.Partner.filter({ created_by: user.email });
+      
+      if (partners.length > 0) {
+        setPartner(partners[0]);
+        setDisplayName(partners[0].display_name || partners[0].full_name?.split(" ")[0] || "");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!partner || !displayName.trim()) return;
+    
+    setSaving(true);
+    try {
+      await base44.entities.Partner.update(partner.id, { display_name: displayName.trim() });
+      toast.success("Nome atualizado com sucesso!");
+      loadData();
+    } catch (error) {
+      toast.error("Erro ao salvar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const copyLink = (type) => {
+    if (!partner) return;
+    
+    const baseUrl = window.location.origin;
+    const link = type === 'site' 
+      ? `${baseUrl}/PartnerSite?p=${partner.unique_code}`
+      : `${baseUrl}/Register?ref=${partner.unique_code}`;
+    
+    navigator.clipboard.writeText(link);
+    toast.success("Link copiado!");
+  };
+
+  const openSite = () => {
+    if (!partner) return;
+    window.open(`/PartnerSite?p=${partner.unique_code}`, '_blank');
+  };
+
+  const shareOnWhatsApp = () => {
+    if (!partner) return;
+    const link = `${window.location.origin}/PartnerSite?p=${partner.unique_code}`;
+    const text = `Olá! Conheça a Sociedade de Consumidores e comece a gerar bônus: ${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-white">Meu Site de Divulgação</h1>
+        <p className="text-gray-400">Personalize e compartilhe seu site</p>
+      </div>
+
+      {/* Personalization Card */}
+      <Card className="bg-zinc-950 border-orange-500/20">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Globe className="w-5 h-5 text-orange-500" />
+            Personalizar Site
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label className="text-white">Nome que aparece no site</Label>
+            <div className="flex gap-4">
+              <Input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="bg-zinc-900 border-zinc-700 text-white max-w-md"
+                placeholder="Seu nome ou apelido"
+              />
+              <Button onClick={handleSave} disabled={saving} className="bg-orange-500 hover:bg-orange-600">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                Salvar
+              </Button>
+            </div>
+            <p className="text-gray-500 text-sm">Este é o nome que seus visitantes verão no topo do seu site de divulgação.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Links Card */}
+      <Card className="bg-zinc-950 border-orange-500/20">
+        <CardHeader>
+          <CardTitle className="text-white">Seus Links</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Site Link */}
+          <div className="p-4 bg-zinc-900 rounded-lg">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <p className="text-white font-medium">Link do Site de Divulgação</p>
+                <p className="text-gray-500 text-sm mt-1">
+                  {window.location.origin}/PartnerSite?p={partner?.unique_code}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => copyLink('site')} variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500/10">
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copiar
+                </Button>
+                <Button onClick={openSite} className="bg-orange-500 hover:bg-orange-600">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Abrir
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Register Link */}
+          <div className="p-4 bg-zinc-900 rounded-lg">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <p className="text-white font-medium">Link de Cadastro Direto</p>
+                <p className="text-gray-500 text-sm mt-1">
+                  {window.location.origin}/Register?ref={partner?.unique_code}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => copyLink('register')} variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500/10">
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copiar
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Unique Code */}
+          <div className="p-4 bg-zinc-900 rounded-lg">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <p className="text-white font-medium">Seu Código Único</p>
+                <p className="text-2xl font-bold text-orange-500 mt-1">{partner?.unique_code}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Share Card */}
+      <Card className="bg-zinc-950 border-orange-500/20">
+        <CardHeader>
+          <CardTitle className="text-white">Compartilhar</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button
+              onClick={shareOnWhatsApp}
+              className="bg-green-600 hover:bg-green-700 h-auto py-4 flex-col"
+            >
+              <Share2 className="w-6 h-6 mb-2" />
+              <span>Compartilhar no WhatsApp</span>
+            </Button>
+            <Button
+              onClick={() => copyLink('site')}
+              className="bg-blue-600 hover:bg-blue-700 h-auto py-4 flex-col"
+            >
+              <Copy className="w-6 h-6 mb-2" />
+              <span>Copiar Link do Site</span>
+            </Button>
+            <Button
+              onClick={() => copyLink('register')}
+              className="bg-purple-600 hover:bg-purple-700 h-auto py-4 flex-col"
+            >
+              <Copy className="w-6 h-6 mb-2" />
+              <span>Copiar Link de Cadastro</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preview */}
+      <Card className="bg-zinc-950 border-orange-500/20">
+        <CardHeader>
+          <CardTitle className="text-white">Prévia do Site</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="aspect-video bg-black rounded-lg overflow-hidden border border-zinc-800">
+            <iframe
+              src={`/PartnerSite?p=${partner?.unique_code}`}
+              className="w-full h-full"
+              title="Preview"
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
