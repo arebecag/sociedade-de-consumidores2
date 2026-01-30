@@ -50,6 +50,10 @@
 import Register from './pages/Register';
 import PartnerSite from './pages/PartnerSite';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
+import Store from './pages/Store';
+import Network from './pages/Network';
+import Bonus from './pages/Bonus';
 import __Layout from './Layout.jsx';
 
 
@@ -57,6 +61,10 @@ export const PAGES = {
     "Register": Register,
     "PartnerSite": PartnerSite,
     "Dashboard": Dashboard,
+    "Profile": Profile,
+    "Store": Store,
+    "Network": Network,
+    "Bonus": Bonus,
 }
 
 export const pagesConfig = {
