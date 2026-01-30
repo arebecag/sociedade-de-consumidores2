@@ -16,7 +16,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [referrerCode, setReferrerCode] = useState("");
   const [referrerName, setReferrerName] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isFirstUser, setIsFirstUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingReferrer, setLoadingReferrer] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -38,21 +38,33 @@ export default function Register() {
   const [passwordStrength, setPasswordStrength] = useState({ valid: false, message: "" });
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get("ref");
-    const adminMode = urlParams.get("admin");
-    
-    if (adminMode === "true") {
-      setIsAdmin(true);
-      setReferrerName("Cadastro Administrador");
-      setLoadingReferrer(false);
-    } else if (code) {
-      setReferrerCode(code);
-      loadReferrer(code);
-    } else {
+    checkFirstUser();
+  }, []);
+
+  const checkFirstUser = async () => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("ref");
+      
+      // Verificar se já existe algum parceiro cadastrado
+      const existingPartners = await base44.entities.Partner.list();
+      
+      if (existingPartners.length === 0) {
+        // Primeiro cadastro - não precisa de indicador
+        setIsFirstUser(true);
+        setReferrerName("Primeiro Cadastro (Administrador)");
+        setLoadingReferrer(false);
+      } else if (code) {
+        setReferrerCode(code);
+        loadReferrer(code);
+      } else {
+        setLoadingReferrer(false);
+      }
+    } catch (error) {
+      console.error("Error checking first user:", error);
       setLoadingReferrer(false);
     }
-  }, []);
+  };
 
   const loadReferrer = async (code) => {
     try {
@@ -153,7 +165,7 @@ export default function Register() {
     if (!formData.accepted_rules) {
       newErrors.accepted_rules = "Você precisa aceitar o regimento";
     }
-    if (!referrerCode && !isAdmin) {
+    if (!referrerCode && !isFirstUser) {
       newErrors.referrer = "Link de indicação inválido";
     }
 
@@ -166,8 +178,8 @@ export default function Register() {
     try {
       let referrer = null;
       
-      // Get referrer partner (only if not admin)
-      if (!isAdmin) {
+      // Get referrer partner (only if not first user)
+      if (!isFirstUser) {
         const referrers = await base44.entities.Partner.filter({ unique_code: referrerCode });
         if (referrers.length === 0) {
           toast.error("Indicador não encontrado");
@@ -185,23 +197,23 @@ export default function Register() {
         phone: formData.phone,
         referrer_id: referrer ? referrer.id : null,
         referrer_name: referrer ? (referrer.display_name || referrer.full_name) : null,
-        status: isAdmin ? "ativo" : "pendente",
-        pending_reasons: isAdmin ? [] : ["Falta da primeira compra", "Falta de informações no cadastro"],
-        graduation: isAdmin ? "ouro" : "cliente_iniciante",
+        status: isFirstUser ? "ativo" : "pendente",
+        pending_reasons: isFirstUser ? [] : ["Falta da primeira compra", "Falta de informações no cadastro"],
+        graduation: isFirstUser ? "ouro" : "cliente_iniciante",
         graduation_start_date: new Date().toISOString().split("T")[0],
-        first_purchase_done: isAdmin ? true : false,
+        first_purchase_done: isFirstUser ? true : false,
         total_bonus_generated: 0,
         bonus_for_withdrawal: 0,
         bonus_for_purchases: 0,
         total_withdrawn: 0,
         total_spent_purchases: 0,
-        groups_formed: isAdmin ? 200 : 0,
+        groups_formed: isFirstUser ? 200 : 0,
         notification_email: true,
         notification_sms: false,
         notification_whatsapp: false,
         notification_frequency: "semanalmente",
-        email_verified: isAdmin ? true : false,
-        phone_verified: isAdmin ? true : false,
+        email_verified: false,
+        phone_verified: false,
         accepted_terms: true,
         accepted_rules: true,
         unique_code: generateUniqueCode(),
@@ -230,7 +242,7 @@ export default function Register() {
     );
   }
 
-  if (!referrerCode && !isAdmin) {
+  if (!referrerCode && !isFirstUser) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-zinc-950 border-orange-500/20">
@@ -263,10 +275,10 @@ export default function Register() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Referrer Info */}
-              {isAdmin ? (
+              {isFirstUser ? (
                 <div className="p-4 bg-orange-500/20 rounded-lg border border-orange-500/40">
-                  <Label className="text-orange-400 text-sm">Modo Administrador</Label>
-                  <p className="text-white font-semibold text-lg">Cadastro sem indicador</p>
+                  <Label className="text-orange-400 text-sm">Primeiro Cadastro</Label>
+                  <p className="text-white font-semibold text-lg">Cadastro Administrador (sem indicador)</p>
                 </div>
               ) : (
                 <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
