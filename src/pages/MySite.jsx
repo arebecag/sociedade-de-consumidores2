@@ -48,28 +48,59 @@ export default function MySite() {
     }
   };
 
-  const copyLink = (type) => {
-    if (!partner) return;
+  const copyLink = async (type) => {
+    if (!partner || !partner.unique_code) {
+      toast.error("Código único não disponível");
+      return;
+    }
     
     const baseUrl = window.location.origin;
     const link = type === 'site' 
       ? `${baseUrl}/PartnerSite?p=${partner.unique_code}`
       : `${baseUrl}/Register?ref=${partner.unique_code}`;
     
-    navigator.clipboard.writeText(link);
-    toast.success("Link copiado!");
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success("Link copiado!");
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = link;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      toast.success("Link copiado!");
+    }
   };
 
   const openSite = () => {
-    if (!partner) return;
-    window.open(`/PartnerSite?p=${partner.unique_code}`, '_blank');
+    if (!partner || !partner.unique_code) {
+      toast.error("Código único não disponível");
+      return;
+    }
+    const baseUrl = window.location.origin;
+    window.open(`${baseUrl}/PartnerSite?p=${partner.unique_code}`, '_blank');
   };
 
   const shareOnWhatsApp = () => {
-    if (!partner) return;
+    if (!partner || !partner.unique_code) {
+      toast.error("Código único não disponível");
+      return;
+    }
     const link = `${window.location.origin}/PartnerSite?p=${partner.unique_code}`;
     const text = `Olá! Conheça a Sociedade de Consumidores e comece a gerar bônus: ${link}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const getSiteUrl = () => {
+    if (!partner?.unique_code) return "";
+    return `${window.location.origin}/PartnerSite?p=${partner.unique_code}`;
+  };
+
+  const getRegisterUrl = () => {
+    if (!partner?.unique_code) return "";
+    return `${window.location.origin}/Register?ref=${partner.unique_code}`;
   };
 
   if (loading) {
@@ -124,13 +155,13 @@ export default function MySite() {
           {/* Site Link */}
           <div className="p-4 bg-zinc-900 rounded-lg">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-white font-medium">Link do Site de Divulgação</p>
-                <p className="text-gray-500 text-sm mt-1">
-                  {window.location.origin}/PartnerSite?p={partner?.unique_code}
+                <p className="text-gray-500 text-sm mt-1 break-all">
+                  {getSiteUrl() || "Carregando..."}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <Button onClick={() => copyLink('site')} variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500/10">
                   <Copy className="w-4 h-4 mr-2" />
                   Copiar
@@ -146,13 +177,13 @@ export default function MySite() {
           {/* Register Link */}
           <div className="p-4 bg-zinc-900 rounded-lg">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-white font-medium">Link de Cadastro Direto</p>
-                <p className="text-gray-500 text-sm mt-1">
-                  {window.location.origin}/Register?ref={partner?.unique_code}
+                <p className="text-gray-500 text-sm mt-1 break-all">
+                  {getRegisterUrl() || "Carregando..."}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <Button onClick={() => copyLink('register')} variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500/10">
                   <Copy className="w-4 h-4 mr-2" />
                   Copiar
@@ -166,7 +197,9 @@ export default function MySite() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <p className="text-white font-medium">Seu Código Único</p>
-                <p className="text-2xl font-bold text-orange-500 mt-1">{partner?.unique_code}</p>
+                <p className="text-2xl font-bold text-orange-500 mt-1">
+                  {partner?.unique_code || <span className="text-gray-500 text-base">Não disponível</span>}
+                </p>
               </div>
             </div>
           </div>
@@ -212,11 +245,17 @@ export default function MySite() {
         </CardHeader>
         <CardContent>
           <div className="aspect-video bg-black rounded-lg overflow-hidden border border-zinc-800">
-            <iframe
-              src={`/PartnerSite?p=${partner?.unique_code}`}
-              className="w-full h-full"
-              title="Preview"
-            />
+            {partner?.unique_code ? (
+              <iframe
+                src={`${window.location.origin}/PartnerSite?p=${partner.unique_code}`}
+                className="w-full h-full"
+                title="Preview"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-500">
+                Código único não disponível
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

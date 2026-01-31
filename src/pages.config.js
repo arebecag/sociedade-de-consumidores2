@@ -47,31 +47,31 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Register from './pages/Register';
-import PartnerSite from './pages/PartnerSite';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import Store from './pages/Store';
-import Network from './pages/Network';
 import Bonus from './pages/Bonus';
-import PayBoletos from './pages/PayBoletos';
-import Reports from './pages/Reports';
+import Dashboard from './pages/Dashboard';
 import MySite from './pages/MySite';
+import Network from './pages/Network';
+import PartnerSite from './pages/PartnerSite';
+import PayBoletos from './pages/PayBoletos';
+import Profile from './pages/Profile';
+import Register from './pages/Register';
+import Reports from './pages/Reports';
+import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Register": Register,
-    "PartnerSite": PartnerSite,
-    "Dashboard": Dashboard,
-    "Profile": Profile,
-    "Store": Store,
-    "Network": Network,
     "Bonus": Bonus,
-    "PayBoletos": PayBoletos,
-    "Reports": Reports,
+    "Dashboard": Dashboard,
     "MySite": MySite,
+    "Network": Network,
+    "PartnerSite": PartnerSite,
+    "PayBoletos": PayBoletos,
+    "Profile": Profile,
+    "Register": Register,
+    "Reports": Reports,
+    "Store": Store,
     "Withdrawals": Withdrawals,
 }
 
