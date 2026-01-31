@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, TrendingUp, Users, Award, ShoppingBag, CreditCard, AlertCircle, CheckCircle, XCircle } from "lucide-react";
@@ -220,30 +222,38 @@ export default function Dashboard() {
       <div>
         <h2 className="text-xl font-semibold text-white mb-4">Ações Rápidas</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <ShoppingBag className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-              <p className="text-white font-medium">Ir para Loja</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <Users className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-              <p className="text-white font-medium">Ver Rede</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <CreditCard className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-              <p className="text-white font-medium">Sacar Bônus</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <Award className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-              <p className="text-white font-medium">Pagar Boletos</p>
-            </CardContent>
-          </Card>
+          <Link to={createPageUrl("Store")}>
+            <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <ShoppingBag className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                <p className="text-white font-medium">Ir para Loja</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl("Network")}>
+            <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <Users className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                <p className="text-white font-medium">Ver Rede</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl("Withdrawals")}>
+            <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <CreditCard className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                <p className="text-white font-medium">Sacar Bônus</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={createPageUrl("PayBoletos")}>
+            <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <Award className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                <p className="text-white font-medium">Pagar Boletos</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </div>
     </div>
