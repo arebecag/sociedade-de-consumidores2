@@ -14,7 +14,8 @@ import {
   X,
   Award,
   Globe,
-  CreditCard
+  CreditCard,
+  HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -64,7 +65,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Meu Site", icon: Globe, page: "MySite" },
     { name: "Saques", icon: CreditCard, page: "Withdrawals" },
     { name: "Receita Federal", icon: FileText, page: "IncomeReport" },
-    { name: "Dúvidas", icon: Award, page: "FAQ" },
+    { name: "Dúvidas", icon: HelpCircle, page: "FAQ" },
   ];
 
   const NavContent = () => (
