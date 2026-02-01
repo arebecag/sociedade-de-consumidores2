@@ -108,15 +108,15 @@ export default function Bonus() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-zinc-900 rounded-lg">
-              <p className="text-gray-400 text-sm">Bônus Direto</p>
+              <p className="text-gray-400 text-sm">Bônus Desempenho 1</p>
               <p className="text-white font-bold text-xl">{current.directBonus}%</p>
             </div>
             <div className="p-4 bg-zinc-900 rounded-lg">
-              <p className="text-gray-400 text-sm">Bônus Indireto</p>
+              <p className="text-gray-400 text-sm">Bônus Desempenho 2</p>
               <p className="text-white font-bold text-xl">{current.indirectBonus}%</p>
             </div>
             <div className="p-4 bg-zinc-900 rounded-lg">
-              <p className="text-gray-400 text-sm">Grupos Necessários</p>
+              <p className="text-gray-400 text-sm">Desempenho Necessário</p>
               <p className="text-white font-bold text-xl">{current.groupsRequired}</p>
             </div>
             <div className="p-4 bg-zinc-900 rounded-lg">
@@ -128,7 +128,7 @@ export default function Bonus() {
             <p className="text-gray-400 text-sm">Seu progresso</p>
             <div className="flex items-center gap-2 mt-2">
               <Users className="w-4 h-4 text-orange-500" />
-              <span className="text-white">{partner.groups_formed || 0} / {current.groupsRequired} grupos</span>
+              <span className="text-white">{partner.groups_formed || 0} / {current.groupsRequired} desempenho</span>
             </div>
             <div className="w-full bg-zinc-800 rounded-full h-2 mt-2">
               <div 
@@ -136,6 +136,15 @@ export default function Bonus() {
                 style={{ width: `${Math.min(100, ((partner.groups_formed || 0) / current.groupsRequired) * 100)}%` }}
               />
             </div>
+          </div>
+
+          {/* Informações de Saque */}
+          <div className="mt-4 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+            <p className="text-orange-500 font-semibold mb-2">Informações de Saque</p>
+            <ul className="text-gray-400 text-sm space-y-1">
+              <li>• Saque mínimo: <span className="text-white">R$ 50,00</span></li>
+              <li>• O pagamento será feito toda segunda-feira das 00:00 às 6:00</li>
+            </ul>
           </div>
         </CardContent>
       </Card>
@@ -266,7 +275,7 @@ function TransactionList({ transactions, formatCurrency }) {
               <div>
                 <div className="flex items-center gap-2">
                   <Badge className={tx.type === 'direct' ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'}>
-                    {tx.type === 'direct' ? 'Direto' : 'Indireto'}
+                    {tx.type === 'direct' ? 'Bônus Desempenho 1' : 'Bônus Desempenho 2'}
                   </Badge>
                   <Badge className={
                     tx.status === 'credited' ? 'bg-green-500/20 text-green-500' :

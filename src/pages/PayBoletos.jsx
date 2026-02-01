@@ -210,11 +210,20 @@ export default function PayBoletos() {
         </div>
       </div>
 
+      {/* Security Warning */}
+      <Alert className="bg-red-500/10 border-red-500/30">
+        <AlertTriangle className="w-4 h-4 text-red-500" />
+        <AlertDescription className="text-red-200">
+          <strong>ATENÇÃO: NUNCA CAIA EM GOLPES!</strong><br />
+          A SOCIEDADE DE CONSUMIDORES NUNCA envia cobrança por PIX. A única forma de pagamento é por boleto gerado em nosso sistema por COMPRA DE PRODUTOS E SERVIÇOS.
+        </AlertDescription>
+      </Alert>
+
       {/* Block Alert */}
       {isBlocked && (
-        <Alert className="bg-red-500/10 border-red-500/30">
-          <AlertTriangle className="w-4 h-4 text-red-500" />
-          <AlertDescription className="text-red-200">
+        <Alert className="bg-yellow-500/10 border-yellow-500/30">
+          <AlertTriangle className="w-4 h-4 text-yellow-500" />
+          <AlertDescription className="text-yellow-200">
             <strong>Envio de boletos bloqueado.</strong> Resolva as pendências do seu cadastro para desbloquear.
           </AlertDescription>
         </Alert>
@@ -361,7 +370,7 @@ export default function PayBoletos() {
 
             {/* Amount */}
             <div className="space-y-2">
-              <Label className="text-white">Valor a ser pago</Label>
+              <Label className="text-white">Valor do boleto (R$)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -373,6 +382,25 @@ export default function PayBoletos() {
               />
               <p className="text-gray-500 text-xs">
                 Saldo disponível: {formatCurrency(partner?.bonus_for_purchases)}
+              </p>
+              
+              {/* Conversão de Bônus */}
+              {formData.amount && parseFloat(formData.amount) > 0 && (
+                <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg mt-2">
+                  <p className="text-orange-400 text-xs font-semibold">Conversão para Bônus (+422%)</p>
+                  <p className="text-orange-500 font-bold text-lg">
+                    {formatCurrency(parseFloat(formData.amount) * 5.22)} em bônus necessários
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Simulador de Bônus */}
+            <div className="p-4 bg-zinc-800 rounded-lg border border-zinc-700">
+              <p className="text-gray-400 text-sm mb-2">💡 Simulador: Quanto de bônus preciso?</p>
+              <p className="text-gray-500 text-xs">
+                Para pagar um boleto, você precisa de 422% a mais do valor em bônus.<br/>
+                Exemplo: Boleto de R$ 100,00 = R$ 522,00 em bônus.
               </p>
             </div>
           </div>
