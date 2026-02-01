@@ -58,8 +58,33 @@ export default function Dashboard() {
       const pendingData = localStorage.getItem("pendingPartnerData");
       if (pendingData) {
         const partnerData = JSON.parse(pendingData);
-        await base44.entities.Partner.create(partnerData);
+        const newPartner = await base44.entities.Partner.create(partnerData);
         localStorage.removeItem("pendingPartnerData");
+        
+        // Create network relation if has referrer
+        if (partnerData.referrer_id) {
+          await base44.entities.NetworkRelation.create({
+            referrer_id: partnerData.referrer_id,
+            referrer_name: partnerData.referrer_name,
+            referred_id: newPartner.id,
+            referred_name: partnerData.full_name,
+            relation_type: "direct",
+            level: 1
+          });
+          
+          // Also create indirect relation to referrer's referrer if exists
+          const referrers = await base44.entities.Partner.filter({ id: partnerData.referrer_id });
+          if (referrers.length > 0 && referrers[0].referrer_id) {
+            await base44.entities.NetworkRelation.create({
+              referrer_id: referrers[0].referrer_id,
+              referrer_name: referrers[0].referrer_name,
+              referred_id: newPartner.id,
+              referred_name: partnerData.full_name,
+              relation_type: "indirect",
+              level: 2
+            });
+          }
+        }
       }
       
       const partners = await base44.entities.Partner.filter({ created_by: user.email });
