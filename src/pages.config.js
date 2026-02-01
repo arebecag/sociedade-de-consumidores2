@@ -58,6 +58,8 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
+import FAQ from './pages/FAQ';
+import IncomeReport from './pages/IncomeReport';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +75,8 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
+    "FAQ": FAQ,
+    "IncomeReport": IncomeReport,
 }
 
 export const pagesConfig = {
