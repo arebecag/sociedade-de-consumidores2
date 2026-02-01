@@ -387,9 +387,9 @@ export default function PayBoletos() {
               {/* Conversão de Bônus */}
               {formData.amount && parseFloat(formData.amount) > 0 && (
                 <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg mt-2">
-                  <p className="text-orange-400 text-xs font-semibold">Conversão para Bônus (+422%)</p>
+                  <p className="text-orange-400 text-xs font-semibold">Conversão para Bônus (+346%)</p>
                   <p className="text-orange-500 font-bold text-lg">
-                    {formatCurrency(parseFloat(formData.amount) * 5.22)} em bônus necessários
+                    {formatCurrency(parseFloat(formData.amount) * 4.46)} em bônus necessários
                   </p>
                 </div>
               )}
@@ -399,8 +399,8 @@ export default function PayBoletos() {
             <div className="p-4 bg-zinc-800 rounded-lg border border-zinc-700">
               <p className="text-gray-400 text-sm mb-2">💡 Simulador: Quanto de bônus preciso?</p>
               <p className="text-gray-500 text-xs">
-                Para pagar um boleto, você precisa de 422% a mais do valor em bônus.<br/>
-                Exemplo: Boleto de R$ 100,00 = R$ 522,00 em bônus.
+                Para pagar um boleto, você precisa de 346% a mais do valor em bônus.<br/>
+                Exemplo: Boleto de R$ 100,00 = R$ 446,00 em bônus.
               </p>
             </div>
           </div>
