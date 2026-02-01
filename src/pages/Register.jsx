@@ -197,17 +197,17 @@ export default function Register() {
         phone: formData.phone,
         referrer_id: referrer ? referrer.id : null,
         referrer_name: referrer ? (referrer.display_name || referrer.full_name) : null,
-        status: isFirstUser ? "ativo" : "pendente",
-        pending_reasons: isFirstUser ? [] : ["Falta da primeira compra", "Falta de informações no cadastro"],
-        graduation: isFirstUser ? "ouro" : "cliente_iniciante",
+        status: "pendente",
+        pending_reasons: ["Falta da primeira compra", "Falta de informações no cadastro"],
+        graduation: "cliente_iniciante",
         graduation_start_date: new Date().toISOString().split("T")[0],
-        first_purchase_done: isFirstUser ? true : false,
+        first_purchase_done: false,
         total_bonus_generated: 0,
         bonus_for_withdrawal: 0,
         bonus_for_purchases: 0,
         total_withdrawn: 0,
         total_spent_purchases: 0,
-        groups_formed: isFirstUser ? 200 : 0,
+        groups_formed: 0,
         notification_email: true,
         notification_sms: false,
         notification_whatsapp: false,
@@ -405,12 +405,29 @@ export default function Register() {
                             <DialogTitle className="text-white">Contrato de Prestação de Serviços</DialogTitle>
                           </DialogHeader>
                           <div className="text-gray-300 text-sm space-y-4">
-                            <p>Este contrato estabelece os termos e condições para participação na Sociedade de Consumidores.</p>
-                            <p>1. O PARCEIRO concorda em divulgar os produtos e serviços da plataforma de forma ética e transparente.</p>
-                            <p>2. Os bônus serão gerados conforme as compras realizadas pelos clientes indicados.</p>
-                            <p>3. O PARCEIRO se compromete a manter seus dados cadastrais atualizados.</p>
-                            <p>4. A empresa reserva-se o direito de suspender ou cancelar contas que violem os termos.</p>
-                            <p>5. Os bônus são divididos em 50% para saque e 50% para compras na plataforma.</p>
+                            <p className="text-red-400 font-bold">NUNCA CAIA EM GOLPES</p>
+                            <p className="text-red-300"><strong>ATENÇÃO:</strong> A SOCIEDADE DE CONSUMIDORES NUNCA envia cobrança por PIX. A única forma de pagamento é por boleto gerado em nosso sistema por COMPRA DE PRODUTOS E SERVIÇOS. Os boletos podem ser pagos com PIX.</p>
+                            <p>Fique atento com e-mails falsos pedindo pagamento ou enviando boletos.</p>
+                            <p className="text-yellow-300"><strong>ATENÇÃO:</strong> NUNCA GASTE SEU DINHEIRO fazendo compras exageradas em nossa plataforma. Use nosso sistema de GERAÇÃO de BÔNUS para fazer suas compras.</p>
+                            <p className="text-green-400 font-bold">GARANTIA ABSOLUTA!</p>
+                            <p>Se não estiver satisfeito, devolvemos o seu dinheiro sem perguntas.</p>
+                            <p className="mt-4"><strong>Definições de nomenclaturas:</strong></p>
+                            <p>CLIENTE PARCEIRO, é aquele que participa de nossa SOCIEDADE DE CONSUMIDORES ficando ATIVO na plataforma.</p>
+                            <p className="mt-4"><strong>CLÁUSULA 1 – DO OBJETO:</strong></p>
+                            <p>Uma PLATAFORMA ONLINE que administra um sistema inteligente de SOCIEDADE DE CONSUMIDORES e distribuição de BÔNUS entre seus associados. Os BÔNUS são gerados, pelas compras dos produtos expostos dentro do em nossa loja.</p>
+                            <p>Todo PARCEIRO ao se cadastrar estará ciente que não possui nenhum vínculo empregatício com a GESTORA.</p>
+                            <p className="mt-4"><strong>CLÁUSULA 2 – DEVERES DA GESTORA:</strong></p>
+                            <p>• Prestar atendimento aos clientes por telefone, chat, e-mail, whatsapp ou atendimento presencial.</p>
+                            <p>• Disponibilizar um ESCRITÓRIO VIRTUAL onde cada PARCEIRO poderá administrar seu PRÓPRIO NEGÓCIO.</p>
+                            <p>• Manter o sistema em funcionamento e realizar depósitos semanalmente.</p>
+                            <p>• Emitir notas fiscais a cada produto comprado.</p>
+                            <p className="mt-4"><strong>CLÁUSULA 3 – DEVERES DO CLIENTE ASSOCIADO:</strong></p>
+                            <p>• Usar o site pessoal GRATUITO para divulgação e cadastramento de novos CLIENTES.</p>
+                            <p>• Efetuar as compras mensais e seguir os regulamentos do REGIMENTO INTERNO.</p>
+                            <p>• Ser maior de 15 anos completos e ter endereço físico.</p>
+                            <p>• Não OSTENTAR em redes sociais.</p>
+                            <p className="mt-4"><strong>CLÁUSULA 4 – DO FORUM:</strong></p>
+                            <p>Escolhem a CÂMARA DE INTERMEDIAÇÃO da comarca de São Paulo, para dirimir quaisquer questões oriundas deste contrato.</p>
                           </div>
                         </DialogContent>
                       </Dialog>
@@ -438,13 +455,40 @@ export default function Register() {
                             <DialogTitle className="text-white">Regimento Interno</DialogTitle>
                           </DialogHeader>
                           <div className="text-gray-300 text-sm space-y-4">
-                            <p><strong>Regras de Participação:</strong></p>
-                            <p>1. É necessário realizar a primeira compra de R$ 125,00 para ativar sua conta.</p>
-                            <p>2. O parceiro deve utilizar pelo menos 90% do saldo de bônus para compras até o dia 10 de cada mês.</p>
-                            <p>3. Cada parceiro pode indicar até 3 clientes diretos.</p>
-                            <p>4. Os bônus são distribuídos: 15% das indicações diretas e 30% das indiretas.</p>
-                            <p>5. O sistema funciona em grupos de 12 pessoas (3 diretos + 9 indiretos).</p>
-                            <p>6. A graduação evolui conforme a formação de grupos ativos.</p>
+                            <p className="text-red-400 font-bold">NUNCA CAIA EM GOLPES</p>
+                            <p className="text-red-300"><strong>ATENÇÃO:</strong> A SOCIEDADE DE CONSUMIDORES NUNCA envia cobrança por PIX. A única forma de pagamento é por boleto gerado em nosso sistema por COMPRA DE PRODUTOS E SERVIÇOS.</p>
+                            <p className="text-yellow-300"><strong>ATENÇÃO:</strong> NUNCA GASTE SEU DINHEIRO fazendo compras exageradas em nossa plataforma. FAÇA SOMENTE AS COMPRAS MÍNIMAS MENSAIS. Use nosso sistema de GERAÇÃO de BÔNUS para fazer suas compras.</p>
+                            <p className="text-green-400 font-bold">GARANTIA ABSOLUTA!</p>
+                            <p>Se não estiver satisfeito, devolvemos o seu dinheiro sem perguntas.</p>
+                            
+                            <p className="mt-4"><strong>REGIMENTO 1 – NOMENCLATURAS</strong></p>
+                            <p>• BÔNUS: Saldo gerado pelas compras de seus clientes cadastrados.</p>
+                            <p>• CLIENTE ATIVO: Faz compras mensais e está em dia.</p>
+                            <p>• CLIENTE PENDENTE: Tem pendências na plataforma.</p>
+                            
+                            <p className="mt-4"><strong>REGIMENTO 2 – PAGAMENTO DOS BOLETOS</strong></p>
+                            <p>Nosso sistema permite pagar seus boletos com seus BÔNUS através de PIX ou código de barras.</p>
+                            
+                            <p className="mt-4"><strong>REGIMENTO 5 – STATUS</strong></p>
+                            <p>• ATIVO: Em dia com todos os compromissos.</p>
+                            <p>• PENDENTE: Falta de compra, informações ou autorização.</p>
+                            <p>• EXCLUÍDO: Fraudes ou descumprimento do regimento.</p>
+                            
+                            <p className="mt-4"><strong>REGIMENTO 10 – CONTA BANCÁRIA</strong></p>
+                            <p>Deverá ter uma conta bancária cadastrada no seu próprio CPF. Depósitos não podem ser feitos em conta de terceiros.</p>
+                            
+                            <p className="mt-4"><strong>REGIMENTO 11 – DEPÓSITOS EM CONTA</strong></p>
+                            <p>Valor mínimo para DEPÓSITO: R$ 30,00. Depositado AUTOMATICAMENTE toda segunda-feira.</p>
+                            
+                            <p className="mt-4"><strong>REGIMENTO 12 – GERAÇÃO DE BÔNUS</strong></p>
+                            <p>A geração de BÔNUS pode chegar a até 40% do valor da compra dos seus clientes. 50% para saque e 50% para compras.</p>
+                            
+                            <p className="mt-4"><strong>REGIMENTO 14 – GRADUAÇÃO</strong></p>
+                            <p>• LÍDER: 60 clientes ativos, até 32% de bônus.</p>
+                            <p>• ESTRELA: 120 clientes ativos, até 34% de bônus.</p>
+                            <p>• BRONZE: 240 clientes ativos, até 36% de bônus.</p>
+                            <p>• PRATA: 480 clientes ativos, até 38% de bônus.</p>
+                            <p>• OURO: 960 clientes ativos, até 40% de bônus.</p>
                           </div>
                         </DialogContent>
                       </Dialog>
