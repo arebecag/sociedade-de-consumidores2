@@ -119,7 +119,17 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
           <p className="text-gray-400 mt-1">Bem-vindo(a), {partner.display_name || partner.full_name}!</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          <div className="text-right">
+            <p className="text-gray-400 text-sm">Status</p>
+            <span className={`px-3 py-1 rounded-full font-semibold text-sm ${
+              partner.status === 'ativo' ? 'bg-green-500/20 text-green-500' :
+              partner.status === 'pendente' ? 'bg-yellow-500/20 text-yellow-500' :
+              'bg-red-500/20 text-red-500'
+            }`}>
+              {partner.status?.toUpperCase()}
+            </span>
+          </div>
           <div className="text-right">
             <p className="text-gray-400 text-sm">Sua Graduação</p>
             <GraduationBadge graduation={partner.graduation} />

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ShoppingCart, AlertTriangle, Download, CreditCard, FileText, Package } from "lucide-react";
+import { Loader2, ShoppingCart, AlertTriangle, Download, CreditCard, FileText, Package, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const categories = {
@@ -244,6 +244,14 @@ export default function Store() {
         <AlertTriangle className="w-4 h-4 text-yellow-500" />
         <AlertDescription className="text-yellow-200">
           <strong>ATENÇÃO:</strong> Nunca faça compras exageradas em nossa plataforma, use nosso sistema de geração de bônus.
+        </AlertDescription>
+      </Alert>
+
+      {/* Guarantee Alert */}
+      <Alert className="bg-green-500/10 border-green-500/30">
+        <CheckCircle className="w-4 h-4 text-green-500" />
+        <AlertDescription className="text-green-200">
+          <strong>GARANTIA ABSOLUTA!</strong> Se não estiver satisfeito, devolvemos o seu dinheiro sem perguntas.
         </AlertDescription>
       </Alert>
 
