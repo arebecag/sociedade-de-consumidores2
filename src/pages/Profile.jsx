@@ -36,6 +36,11 @@ export default function Profile() {
     },
     pix_key: "",
     pix_key_type: "",
+    bank_name: "",
+    bank_agency: "",
+    bank_account: "",
+    bank_holder_name: "",
+    bank_holder_cpf: "",
     notification_email: true,
     notification_sms: false,
     notification_whatsapp: false,
@@ -78,6 +83,11 @@ export default function Profile() {
           },
           pix_key: p.pix_key || "",
           pix_key_type: p.pix_key_type || "",
+          bank_name: p.bank_name || "",
+          bank_agency: p.bank_agency || "",
+          bank_account: p.bank_account || "",
+          bank_holder_name: p.bank_holder_name || "",
+          bank_holder_cpf: p.bank_holder_cpf || "",
           notification_email: p.notification_email ?? true,
           notification_sms: p.notification_sms ?? false,
           notification_whatsapp: p.notification_whatsapp ?? false,
@@ -242,6 +252,15 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label className="text-white">E-mail de Cadastro</Label>
+                  <Input
+                    value={partner?.created_by || ""}
+                    disabled
+                    className="bg-zinc-900 border-zinc-700 text-gray-400"
+                  />
+                  <p className="text-gray-500 text-xs">Para alterar o e-mail, entre em contato com o suporte.</p>
+                </div>
+                <div className="space-y-2">
                   <Label className="text-white">Data de Nascimento</Label>
                   <Input
                     type="date"
@@ -398,33 +417,93 @@ export default function Profile() {
         <TabsContent value="bank">
           <Card className="bg-zinc-950 border-orange-500/20">
             <CardHeader>
-              <CardTitle className="text-white">Informações Bancárias (PIX)</CardTitle>
+              <CardTitle className="text-white">Informações Bancárias</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-white">Tipo de Chave PIX</Label>
-                  <Select value={formData.pix_key_type} onValueChange={(v) => handleChange("pix_key_type", v)}>
-                    <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-zinc-700">
-                      <SelectItem value="cpf">CPF</SelectItem>
-                      <SelectItem value="cnpj">CNPJ</SelectItem>
-                      <SelectItem value="email">E-mail</SelectItem>
-                      <SelectItem value="phone">Telefone</SelectItem>
-                      <SelectItem value="random">Chave Aleatória</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Dados da Conta */}
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4">Dados da Conta Bancária</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-white">Banco</Label>
+                    <Input
+                      value={formData.bank_name || ""}
+                      onChange={(e) => handleChange("bank_name", e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-white"
+                      placeholder="Nome do banco"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Agência</Label>
+                    <Input
+                      value={formData.bank_agency || ""}
+                      onChange={(e) => handleChange("bank_agency", e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-white"
+                      placeholder="0000"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Conta</Label>
+                    <Input
+                      value={formData.bank_account || ""}
+                      onChange={(e) => handleChange("bank_account", e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-white"
+                      placeholder="00000-0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Nome do Titular</Label>
+                    <Input
+                      value={formData.bank_holder_name || ""}
+                      onChange={(e) => handleChange("bank_holder_name", e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-white"
+                      placeholder="Nome completo do titular"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">CPF do Titular</Label>
+                    <Input
+                      value={formatCPF(formData.bank_holder_cpf || "")}
+                      onChange={(e) => handleChange("bank_holder_cpf", e.target.value.replace(/\D/g, ""))}
+                      className="bg-zinc-900 border-zinc-700 text-white"
+                      maxLength={14}
+                      placeholder="000.000.000-00"
+                    />
+                    {formData.cpf && formData.bank_holder_cpf && formData.cpf !== formData.bank_holder_cpf && (
+                      <p className="text-red-500 text-xs">⚠️ O CPF do titular deve ser o mesmo do cadastro</p>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-white">Chave PIX</Label>
-                  <Input
-                    value={formData.pix_key}
-                    onChange={(e) => handleChange("pix_key", e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-white"
-                    placeholder="Sua chave PIX"
-                  />
+              </div>
+
+              {/* Chave PIX */}
+              <div className="pt-6 border-t border-zinc-800">
+                <h3 className="text-lg font-semibold text-white mb-4">Chave PIX</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-white">Tipo de Chave PIX</Label>
+                    <Select value={formData.pix_key_type} onValueChange={(v) => handleChange("pix_key_type", v)}>
+                      <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-700">
+                        <SelectItem value="cpf">CPF</SelectItem>
+                        <SelectItem value="cnpj">CNPJ</SelectItem>
+                        <SelectItem value="email">E-mail</SelectItem>
+                        <SelectItem value="phone">Telefone</SelectItem>
+                        <SelectItem value="random">Chave Aleatória</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white">Chave PIX</Label>
+                    <Input
+                      value={formData.pix_key}
+                      onChange={(e) => handleChange("pix_key", e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-white"
+                      placeholder="Sua chave PIX"
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
