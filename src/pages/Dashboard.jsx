@@ -136,6 +136,10 @@ export default function Dashboard() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
   };
 
+  const formatNumber = (value) => {
+    return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -188,33 +192,33 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard
             title="Total de Bônus Gerado"
-            value={formatCurrency(partner.total_bonus_generated)}
+            value={formatNumber(partner.total_bonus_generated)}
             icon={TrendingUp}
             color="text-orange-500"
           />
           <StatCard
             title="Bônus para Saque"
-            value={formatCurrency(partner.bonus_for_withdrawal)}
+            value={formatNumber(partner.bonus_for_withdrawal)}
             icon={CreditCard}
             color="text-green-500"
             subtext="50% do total"
           />
           <StatCard
             title="Total Já Depositado"
-            value={formatCurrency(partner.total_withdrawn)}
+            value={formatNumber(partner.total_withdrawn)}
             icon={CreditCard}
             color="text-blue-500"
           />
           <StatCard
             title="Bônus para Compras"
-            value={formatCurrency(partner.bonus_for_purchases)}
+            value={formatNumber(partner.bonus_for_purchases)}
             icon={ShoppingBag}
             color="text-purple-500"
             subtext="50% do total"
           />
           <StatCard
             title="Total Gasto em Compras"
-            value={formatCurrency(partner.total_spent_purchases)}
+            value={formatNumber(partner.total_spent_purchases)}
             icon={ShoppingBag}
             color="text-pink-500"
           />

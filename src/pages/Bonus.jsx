@@ -36,6 +36,10 @@ export default function Bonus() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
   };
 
+  const formatNumber = (value) => {
+    return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
+  };
+
   const GraduationInfo = () => {
     if (!partner) return null;
     
@@ -177,7 +181,7 @@ export default function Bonus() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Gerado</p>
-                <p className="text-2xl font-bold text-orange-500">{formatCurrency(partner?.total_bonus_generated)}</p>
+                <p className="text-2xl font-bold text-orange-500">{formatNumber(partner?.total_bonus_generated)}</p>
               </div>
               <TrendingUp className="w-8 h-8 text-orange-500" />
             </div>
@@ -189,7 +193,7 @@ export default function Bonus() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Para Saque</p>
-                <p className="text-2xl font-bold text-green-500">{formatCurrency(partner?.bonus_for_withdrawal)}</p>
+                <p className="text-2xl font-bold text-green-500">{formatNumber(partner?.bonus_for_withdrawal)}</p>
               </div>
               <ArrowUpRight className="w-8 h-8 text-green-500" />
             </div>
@@ -201,7 +205,7 @@ export default function Bonus() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Para Compras</p>
-                <p className="text-2xl font-bold text-purple-500">{formatCurrency(partner?.bonus_for_purchases)}</p>
+                <p className="text-2xl font-bold text-purple-500">{formatNumber(partner?.bonus_for_purchases)}</p>
               </div>
               <ArrowDownRight className="w-8 h-8 text-purple-500" />
             </div>
@@ -213,7 +217,7 @@ export default function Bonus() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Sacado</p>
-                <p className="text-2xl font-bold text-blue-500">{formatCurrency(partner?.total_withdrawn)}</p>
+                <p className="text-2xl font-bold text-blue-500">{formatNumber(partner?.total_withdrawn)}</p>
               </div>
               <Award className="w-8 h-8 text-blue-500" />
             </div>
@@ -239,22 +243,22 @@ export default function Bonus() {
         </TabsList>
 
         <TabsContent value="all">
-          <TransactionList transactions={transactions} formatCurrency={formatCurrency} />
+          <TransactionList transactions={transactions} formatCurrency={formatCurrency} formatNumber={formatNumber} />
         </TabsContent>
 
         <TabsContent value="credited">
-          <TransactionList transactions={creditedTransactions} formatCurrency={formatCurrency} />
+          <TransactionList transactions={creditedTransactions} formatCurrency={formatCurrency} formatNumber={formatNumber} />
         </TabsContent>
 
         <TabsContent value="blocked">
-          <TransactionList transactions={blockedTransactions} formatCurrency={formatCurrency} />
+          <TransactionList transactions={blockedTransactions} formatCurrency={formatCurrency} formatNumber={formatNumber} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-function TransactionList({ transactions, formatCurrency }) {
+function TransactionList({ transactions, formatCurrency, formatNumber }) {
   if (transactions.length === 0) {
     return (
       <Card className="bg-zinc-950 border-orange-500/20">
@@ -293,9 +297,9 @@ function TransactionList({ transactions, formatCurrency }) {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-white font-bold text-lg">{formatCurrency(tx.total_amount)}</p>
+                <p className="text-white font-bold text-lg">{formatNumber(tx.total_amount)}</p>
                 <p className="text-gray-500 text-sm">
-                  Saque: {formatCurrency(tx.amount_for_withdrawal)} | Compras: {formatCurrency(tx.amount_for_purchases)}
+                  Saque: {formatNumber(tx.amount_for_withdrawal)} | Compras: {formatNumber(tx.amount_for_purchases)}
                 </p>
                 <p className="text-gray-400 text-xs">{tx.percentage}% da compra</p>
               </div>
