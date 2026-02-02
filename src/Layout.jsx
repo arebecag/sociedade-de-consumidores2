@@ -15,7 +15,8 @@ import {
   Award,
   Globe,
   CreditCard,
-  HelpCircle
+  HelpCircle,
+  Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -63,6 +64,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },
     { name: "Relatórios", icon: FileText, page: "Reports" },
     { name: "Meu Site", icon: Globe, page: "MySite" },
+    { name: "Marketing", icon: Megaphone, page: "Marketing" },
     { name: "Saques", icon: CreditCard, page: "Withdrawals" },
     { name: "Receita Federal", icon: FileText, page: "IncomeReport" },
     { name: "Dúvidas", icon: HelpCircle, page: "FAQ" },
