@@ -9,6 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Upload, FileText, Download, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +25,8 @@ export default function PayBoletos() {
   const [formData, setFormData] = useState({
     has_barcode: null,
     is_official: null,
+    product_type: "",
+    product_details: "",
     payment_type: "",
     due_date: "",
     amount: ""
@@ -52,11 +56,28 @@ export default function PayBoletos() {
 
   const validateDueDate = (date) => {
     const today = new Date();
-    const dueDate = new Date(date);
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(date + 'T00:00:00');
     const diffTime = dueDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 && diffDays <= 7;
+    return diffDays >= 7;
   };
+
+  const productTypes = [
+    { value: "aluguel", label: "Aluguel" },
+    { value: "contas_consumo", label: "Contas de água, luz, telefone ou gás" },
+    { value: "condominio", label: "Condomínio" },
+    { value: "multa_veiculo", label: "Multa, IPVA, Licenciamento" },
+    { value: "parcela_veiculo", label: "Parcela do Veículo" },
+    { value: "parcela_imovel", label: "Parcela do Imóvel" },
+    { value: "compras_internet", label: "Compras pela internet" },
+    { value: "saude", label: "Médico, Dentista, Psicólogo" },
+    { value: "loja_fisica", label: "Compras em loja física" },
+    { value: "servico", label: "Prestação de serviço" },
+    { value: "outros", label: "Outros" }
+  ];
+
+  const needsDetails = ["loja_fisica", "servico", "outros"];
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -84,6 +105,20 @@ export default function PayBoletos() {
       toast.error("Informe se o boleto é oficial");
       return;
     }
+    if (!formData.product_type) {
+      toast.error("Selecione o tipo de produto/serviço");
+      return;
+    }
+    if (needsDetails.includes(formData.product_type) && !formData.product_details.trim()) {
+      if (formData.product_type === "loja_fisica") {
+        toast.error("Especifique o nome da loja e do produto");
+      } else if (formData.product_type === "servico") {
+        toast.error("Especifique o nome do prestador e tipo de serviço");
+      } else {
+        toast.error("Especifique os detalhes");
+      }
+      return;
+    }
     if (!formData.payment_type) {
       toast.error("Selecione a forma de pagamento");
       return;
@@ -93,7 +128,7 @@ export default function PayBoletos() {
       return;
     }
     if (!validateDueDate(formData.due_date)) {
-      toast.error("O boleto deve ter vencimento em até 7 dias");
+      toast.error("O boleto deve ter vencimento com no mínimo 7 dias de antecedência");
       return;
     }
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
@@ -119,6 +154,8 @@ export default function PayBoletos() {
         file_url: file_url,
         has_barcode: formData.has_barcode,
         is_official: formData.is_official,
+        product_type: formData.product_type,
+        product_details: formData.product_details,
         payment_type: formData.payment_type,
         due_date: formData.due_date,
         amount: amount,
@@ -143,6 +180,8 @@ export default function PayBoletos() {
     setFormData({
       has_barcode: null,
       is_official: null,
+      product_type: "",
+      product_details: "",
       payment_type: "",
       due_date: "",
       amount: ""
@@ -333,6 +372,48 @@ export default function PayBoletos() {
               </RadioGroup>
             </div>
 
+            {/* Product Type */}
+            <div className="space-y-2">
+              <Label className="text-white">Qual produto está sendo comprado/pago?</Label>
+              <Select
+                value={formData.product_type}
+                onValueChange={(v) => setFormData({ ...formData, product_type: v, product_details: "" })}
+              >
+                <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
+                  <SelectValue placeholder="Selecione o tipo de produto" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-700">
+                  {productTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value} className="text-white hover:bg-zinc-800">
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Product Details (conditional) */}
+            {needsDetails.includes(formData.product_type) && (
+              <div className="space-y-2">
+                <Label className="text-white">
+                  {formData.product_type === "loja_fisica" && "Especifique o nome da loja e do produto"}
+                  {formData.product_type === "servico" && "Especifique o nome do prestador e o tipo de serviço"}
+                  {formData.product_type === "outros" && "Especifique os detalhes"}
+                </Label>
+                <Textarea
+                  value={formData.product_details}
+                  onChange={(e) => setFormData({ ...formData, product_details: e.target.value })}
+                  className="bg-zinc-900 border-zinc-700 text-white"
+                  placeholder={
+                    formData.product_type === "loja_fisica" ? "Ex: Loja X - Produto Y" :
+                    formData.product_type === "servico" ? "Ex: João da Silva - Serviço de encanamento" :
+                    "Descreva os detalhes..."
+                  }
+                  rows={2}
+                />
+              </div>
+            )}
+
             {/* Payment Type */}
             <div className="space-y-2">
               <Label className="text-white">Como deseja pagar?</Label>
@@ -365,7 +446,7 @@ export default function PayBoletos() {
                 onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
                 className="bg-zinc-900 border-zinc-700 text-white"
               />
-              <p className="text-gray-500 text-xs">Só aceitamos boletos com até 7 dias antes do vencimento</p>
+              <p className="text-gray-500 text-xs">Só aceitamos boletos com no mínimo 7 dias antes do vencimento</p>
             </div>
 
             {/* Amount */}

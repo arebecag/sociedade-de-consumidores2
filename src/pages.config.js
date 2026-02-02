@@ -51,6 +51,7 @@ import Bonus from './pages/Bonus';
 import Dashboard from './pages/Dashboard';
 import FAQ from './pages/FAQ';
 import IncomeReport from './pages/IncomeReport';
+import Marketing from './pages/Marketing';
 import MySite from './pages/MySite';
 import Network from './pages/Network';
 import PartnerSite from './pages/PartnerSite';
@@ -60,7 +61,6 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
-import Marketing from './pages/Marketing';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +69,7 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "FAQ": FAQ,
     "IncomeReport": IncomeReport,
+    "Marketing": Marketing,
     "MySite": MySite,
     "Network": Network,
     "PartnerSite": PartnerSite,
@@ -78,7 +79,6 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
-    "Marketing": Marketing,
 }
 
 export const pagesConfig = {
