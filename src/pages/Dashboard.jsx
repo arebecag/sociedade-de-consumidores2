@@ -148,7 +148,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
           <p className="text-gray-400 mt-1">Bem-vindo(a), {partner.display_name || partner.full_name}!</p>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 flex-wrap">
           <div className="text-right">
             <p className="text-gray-400 text-sm">Status</p>
             <span className={`px-3 py-1 rounded-full font-semibold text-sm ${
@@ -157,6 +157,12 @@ export default function Dashboard() {
               'bg-red-500/20 text-red-500'
             }`}>
               {partner.status?.toUpperCase()}
+            </span>
+          </div>
+          <div className="text-right">
+            <p className="text-gray-400 text-sm">Código Único</p>
+            <span className="px-3 py-1 rounded-full font-semibold text-sm bg-orange-500/20 text-orange-500">
+              {partner.unique_code || "N/A"}
             </span>
           </div>
           <div className="text-right">
