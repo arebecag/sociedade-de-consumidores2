@@ -305,184 +305,190 @@ export default function PayBoletos() {
             <DialogTitle className="text-white">Enviar Boleto para Pagamento</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
-            {/* File Upload */}
-            <div className="space-y-2">
-              <Label className="text-white">Arquivo do Boleto (PDF ou Foto)</Label>
-              <div className="border-2 border-dashed border-zinc-700 rounded-lg p-6 text-center hover:border-orange-500 transition-colors">
-                <input
-                  type="file"
-                  accept=".pdf,image/png,image/jpeg,image/jpg"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="boleto-file"
-                />
-                <label htmlFor="boleto-file" className="cursor-pointer">
-                  {selectedFile ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <FileText className="w-8 h-8 text-orange-500" />
-                      <span className="text-white">{selectedFile.name}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                      <p className="text-gray-400">Clique para selecionar ou arraste o arquivo</p>
-                      <p className="text-gray-500 text-sm">PDF, PNG, JPG</p>
-                    </>
-                  )}
-                </label>
-              </div>
-            </div>
-
-            {/* Has Barcode */}
-            <div className="space-y-2">
-              <Label className="text-white">O boleto tem código de barras?</Label>
-              <RadioGroup
-                value={formData.has_barcode?.toString()}
-                onValueChange={(v) => setFormData({ ...formData, has_barcode: v === 'true' })}
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="true" id="barcode-yes" className="border-orange-500 text-orange-500" />
-                  <Label htmlFor="barcode-yes" className="text-gray-300">Sim</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="false" id="barcode-no" className="border-orange-500 text-orange-500" />
-                  <Label htmlFor="barcode-no" className="text-gray-300">Não</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* Is Official */}
-            <div className="space-y-2">
-              <Label className="text-white">O boleto é oficial?</Label>
-              <RadioGroup
-                value={formData.is_official?.toString()}
-                onValueChange={(v) => setFormData({ ...formData, is_official: v === 'true' })}
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="true" id="official-yes" className="border-orange-500 text-orange-500" />
-                  <Label htmlFor="official-yes" className="text-gray-300">Sim</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="false" id="official-no" className="border-orange-500 text-orange-500" />
-                  <Label htmlFor="official-no" className="text-gray-300">Não</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            {/* Product Type */}
-            <div className="space-y-2">
-              <Label className="text-white">Qual produto está sendo comprado/pago?</Label>
-              <Select
-                value={formData.product_type}
-                onValueChange={(v) => setFormData({ ...formData, product_type: v, product_details: "" })}
-              >
-                <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
-                  <SelectValue placeholder="Selecione o tipo de produto" />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-700">
-                  {productTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value} className="text-white hover:bg-zinc-800">
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Product Details (conditional) */}
-            {needsDetails.includes(formData.product_type) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="space-y-4">
+              {/* File Upload */}
               <div className="space-y-2">
-                <Label className="text-white">
-                  {formData.product_type === "loja_fisica" && "Especifique o nome da loja e do produto"}
-                  {formData.product_type === "servico" && "Especifique o nome do prestador e o tipo de serviço"}
-                  {formData.product_type === "outros" && "Especifique os detalhes"}
-                </Label>
-                <Textarea
-                  value={formData.product_details}
-                  onChange={(e) => setFormData({ ...formData, product_details: e.target.value })}
-                  className="bg-zinc-900 border-zinc-700 text-white"
-                  placeholder={
-                    formData.product_type === "loja_fisica" ? "Ex: Loja X - Produto Y" :
-                    formData.product_type === "servico" ? "Ex: João da Silva - Serviço de encanamento" :
-                    "Descreva os detalhes..."
-                  }
-                  rows={2}
-                />
+                <Label className="text-white">Arquivo do Boleto (PDF ou Foto)</Label>
+                <div className="border-2 border-dashed border-zinc-700 rounded-lg p-4 text-center hover:border-orange-500 transition-colors">
+                  <input
+                    type="file"
+                    accept=".pdf,image/png,image/jpeg,image/jpg"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="boleto-file"
+                  />
+                  <label htmlFor="boleto-file" className="cursor-pointer">
+                    {selectedFile ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <FileText className="w-6 h-6 text-orange-500" />
+                        <span className="text-white text-sm">{selectedFile.name}</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-6 h-6 text-gray-500 mx-auto mb-1" />
+                        <p className="text-gray-400 text-sm">Clique para selecionar</p>
+                        <p className="text-gray-500 text-xs">PDF, PNG, JPG</p>
+                      </>
+                    )}
+                  </label>
+                </div>
               </div>
-            )}
 
-            {/* Payment Type */}
-            <div className="space-y-2">
-              <Label className="text-white">Como deseja pagar?</Label>
-              <RadioGroup
-                value={formData.payment_type}
-                onValueChange={(v) => setFormData({ ...formData, payment_type: v })}
-                className="flex flex-col gap-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="pix" id="pay-pix" className="border-orange-500 text-orange-500" />
-                  <Label htmlFor="pay-pix" className="text-gray-300">PIX</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="qrcode" id="pay-qr" className="border-orange-500 text-orange-500" />
-                  <Label htmlFor="pay-qr" className="text-gray-300">QR Code</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="any" id="pay-any" className="border-orange-500 text-orange-500" />
-                  <Label htmlFor="pay-any" className="text-gray-300">Qualquer um dos dois</Label>
-                </div>
-              </RadioGroup>
-            </div>
+              {/* Has Barcode */}
+              <div className="space-y-2">
+                <Label className="text-white">O boleto tem código de barras?</Label>
+                <RadioGroup
+                  value={formData.has_barcode?.toString()}
+                  onValueChange={(v) => setFormData({ ...formData, has_barcode: v === 'true' })}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="true" id="barcode-yes" className="border-orange-500 text-orange-500" />
+                    <Label htmlFor="barcode-yes" className="text-gray-300">Sim</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="false" id="barcode-no" className="border-orange-500 text-orange-500" />
+                    <Label htmlFor="barcode-no" className="text-gray-300">Não</Label>
+                  </div>
+                </RadioGroup>
+              </div>
 
-            {/* Due Date */}
-            <div className="space-y-2">
-              <Label className="text-white">Data de Vencimento</Label>
-              <Input
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="bg-zinc-900 border-zinc-700 text-white"
-              />
-              <p className="text-gray-500 text-xs">Só aceitamos boletos com no mínimo 7 dias antes do vencimento</p>
-            </div>
+              {/* Is Official */}
+              <div className="space-y-2">
+                <Label className="text-white">O boleto é oficial?</Label>
+                <RadioGroup
+                  value={formData.is_official?.toString()}
+                  onValueChange={(v) => setFormData({ ...formData, is_official: v === 'true' })}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="true" id="official-yes" className="border-orange-500 text-orange-500" />
+                    <Label htmlFor="official-yes" className="text-gray-300">Sim</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="false" id="official-no" className="border-orange-500 text-orange-500" />
+                    <Label htmlFor="official-no" className="text-gray-300">Não</Label>
+                  </div>
+                </RadioGroup>
+              </div>
 
-            {/* Amount */}
-            <div className="space-y-2">
-              <Label className="text-white">Valor do boleto (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                className="bg-zinc-900 border-zinc-700 text-white"
-                placeholder="0,00"
-              />
-              <p className="text-gray-500 text-xs">
-                Saldo disponível: {formatCurrency(partner?.bonus_for_purchases)}
-              </p>
-              
-              {/* Conversão de Bônus */}
-              {formData.amount && parseFloat(formData.amount) > 0 && (
-                <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg mt-2">
-                  <p className="text-orange-400 text-xs font-semibold">Conversão para Bônus (+346%)</p>
-                  <p className="text-orange-500 font-bold text-lg">
-                    {formatCurrency(parseFloat(formData.amount) * 4.46)} em bônus necessários
-                  </p>
+              {/* Product Type */}
+              <div className="space-y-2">
+                <Label className="text-white">Qual produto está sendo comprado/pago?</Label>
+                <Select
+                  value={formData.product_type}
+                  onValueChange={(v) => setFormData({ ...formData, product_type: v, product_details: "" })}
+                >
+                  <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
+                    <SelectValue placeholder="Selecione o tipo de produto" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-700">
+                    {productTypes.map((type) => (
+                      <SelectItem key={type.value} value={type.value} className="text-white hover:bg-zinc-800">
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Product Details (conditional) */}
+              {needsDetails.includes(formData.product_type) && (
+                <div className="space-y-2">
+                  <Label className="text-white">
+                    {formData.product_type === "loja_fisica" && "Especifique o nome da loja e do produto"}
+                    {formData.product_type === "servico" && "Especifique o nome do prestador e o tipo de serviço"}
+                    {formData.product_type === "outros" && "Especifique os detalhes"}
+                  </Label>
+                  <Textarea
+                    value={formData.product_details}
+                    onChange={(e) => setFormData({ ...formData, product_details: e.target.value })}
+                    className="bg-zinc-900 border-zinc-700 text-white"
+                    placeholder={
+                      formData.product_type === "loja_fisica" ? "Ex: Loja X - Produto Y" :
+                      formData.product_type === "servico" ? "Ex: João da Silva - Serviço de encanamento" :
+                      "Descreva os detalhes..."
+                    }
+                    rows={2}
+                  />
                 </div>
               )}
             </div>
 
-            {/* Simulador de Bônus */}
-            <div className="p-4 bg-zinc-800 rounded-lg border border-zinc-700">
-              <p className="text-gray-400 text-sm mb-2">💡 Simulador: Quanto de bônus preciso?</p>
-              <p className="text-gray-500 text-xs">
-                Para pagar um boleto, você precisa de 346% a mais do valor em bônus.<br/>
-                Exemplo: Boleto de R$ 100,00 = R$ 446,00 em bônus.
-              </p>
+            {/* Right Column */}
+            <div className="space-y-4">
+              {/* Payment Type */}
+              <div className="space-y-2">
+                <Label className="text-white">Como deseja pagar?</Label>
+                <RadioGroup
+                  value={formData.payment_type}
+                  onValueChange={(v) => setFormData({ ...formData, payment_type: v })}
+                  className="flex flex-col gap-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pix" id="pay-pix" className="border-orange-500 text-orange-500" />
+                    <Label htmlFor="pay-pix" className="text-gray-300">PIX</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="qrcode" id="pay-qr" className="border-orange-500 text-orange-500" />
+                    <Label htmlFor="pay-qr" className="text-gray-300">QR Code</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="any" id="pay-any" className="border-orange-500 text-orange-500" />
+                    <Label htmlFor="pay-any" className="text-gray-300">Qualquer um dos dois</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Due Date */}
+              <div className="space-y-2">
+                <Label className="text-white">Data de Vencimento</Label>
+                <Input
+                  type="date"
+                  value={formData.due_date}
+                  onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+                  className="bg-zinc-900 border-zinc-700 text-white"
+                />
+                <p className="text-gray-500 text-xs">Só aceitamos boletos com no mínimo 7 dias antes do vencimento</p>
+              </div>
+
+              {/* Amount */}
+              <div className="space-y-2">
+                <Label className="text-white">Valor do boleto (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  className="bg-zinc-900 border-zinc-700 text-white"
+                  placeholder="0,00"
+                />
+                <p className="text-gray-500 text-xs">
+                  Saldo disponível: {formatCurrency(partner?.bonus_for_purchases)}
+                </p>
+                
+                {/* Conversão de Bônus */}
+                {formData.amount && parseFloat(formData.amount) > 0 && (
+                  <div className="p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg mt-2">
+                    <p className="text-orange-400 text-xs font-semibold">Conversão para Bônus (+346%)</p>
+                    <p className="text-orange-500 font-bold text-lg">
+                      {formatCurrency(parseFloat(formData.amount) * 4.46)} em bônus necessários
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Simulador de Bônus */}
+              <div className="p-3 bg-zinc-800 rounded-lg border border-zinc-700">
+                <p className="text-gray-400 text-sm mb-1">💡 Simulador: Quanto de bônus preciso?</p>
+                <p className="text-gray-500 text-xs">
+                  Para pagar um boleto, você precisa de 346% a mais do valor em bônus.<br/>
+                  Exemplo: Boleto de R$ 100,00 = R$ 446,00 em bônus.
+                </p>
+              </div>
             </div>
           </div>
 
