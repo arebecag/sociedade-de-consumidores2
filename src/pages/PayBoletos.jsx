@@ -300,7 +300,7 @@ export default function PayBoletos() {
 
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-        <DialogContent className="bg-zinc-950 border-orange-500/20 max-w-lg">
+        <DialogContent className="bg-zinc-950 border-orange-500/20 max-w-4xl">
           <DialogHeader>
             <DialogTitle className="text-white">Enviar Boleto para Pagamento</DialogTitle>
           </DialogHeader>
