@@ -72,8 +72,8 @@ export default function Layout({ children, currentPageName }) {
 
   const NavContent = () => (
     <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-blue-700">
-        <h1 className="text-xl font-bold text-white">Sociedade de</h1>
+      <div className="p-6 border-b border-orange-500/20">
+        <h1 className="text-xl font-bold text-orange-500">Sociedade de</h1>
         <h1 className="text-xl font-bold text-white">Consumidores</h1>
       </div>
       
@@ -85,8 +85,8 @@ export default function Layout({ children, currentPageName }) {
             onClick={() => setIsOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
               currentPageName === item.page
-                ? "bg-white text-blue-600"
-                : "text-blue-100 hover:bg-blue-700 hover:text-white"
+                ? "bg-orange-500 text-white"
+                : "text-gray-300 hover:bg-orange-500/10 hover:text-orange-500"
             }`}
           >
             <item.icon className="w-5 h-5" />
@@ -95,13 +95,13 @@ export default function Layout({ children, currentPageName }) {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-blue-700">
+      <div className="p-4 border-t border-orange-500/20">
         {partner && (
-          <div className="mb-4 p-3 bg-blue-700 rounded-lg">
-            <p className="text-sm text-blue-200">Status</p>
+          <div className="mb-4 p-3 bg-orange-500/10 rounded-lg">
+            <p className="text-sm text-gray-400">Status</p>
             <p className={`font-semibold ${
-              partner.status === 'ativo' ? 'text-green-300' :
-              partner.status === 'pendente' ? 'text-yellow-300' : 'text-red-300'
+              partner.status === 'ativo' ? 'text-green-500' :
+              partner.status === 'pendente' ? 'text-yellow-500' : 'text-red-500'
             }`}>
               {partner.status?.toUpperCase()}
             </p>
@@ -110,7 +110,7 @@ export default function Layout({ children, currentPageName }) {
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start text-blue-100 hover:text-white hover:bg-blue-700"
+          className="w-full justify-start text-gray-400 hover:text-orange-500 hover:bg-orange-500/10"
         >
           <LogOut className="w-5 h-5 mr-3" />
           Sair
@@ -120,26 +120,26 @@ export default function Layout({ children, currentPageName }) {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-black">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-blue-600 border-r border-blue-700">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-zinc-950 border-r border-orange-500/20">
         <NavContent />
       </aside>
 
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-blue-600 border-b border-blue-700">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-zinc-950 border-b border-orange-500/20">
         <div className="flex items-center justify-between p-4">
           <div>
-            <h1 className="text-lg font-bold text-white">Sociedade de</h1>
+            <h1 className="text-lg font-bold text-orange-500">Sociedade de</h1>
             <h1 className="text-sm font-bold text-white">Consumidores</h1>
           </div>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-blue-700">
+              <Button variant="ghost" size="icon" className="text-orange-500">
                 <Menu className="w-6 h-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0 bg-blue-600 border-blue-700">
+            <SheetContent side="left" className="w-64 p-0 bg-zinc-950 border-orange-500/20">
               <NavContent />
             </SheetContent>
           </Sheet>
@@ -147,7 +147,7 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main className="lg:pl-64 pt-20 lg:pt-0 min-h-screen bg-gray-50">
+      <main className="lg:pl-64 pt-20 lg:pt-0 min-h-screen">
         <div className="p-4 lg:p-8">
           {children}
         </div>
