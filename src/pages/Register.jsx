@@ -172,8 +172,8 @@ export default function Register() {
     if (!formData.accepted_rules) {
       newErrors.accepted_rules = "Você precisa aceitar o regimento";
     }
-    if (!referrerCode && !isFirstUser) {
-      newErrors.referrer = "Link de indicação inválido";
+    if (!isFirstUser && !referrerPartnerId) {
+      newErrors.referrer = "Indicador inválido ou não encontrado";
     }
 
     if (Object.keys(newErrors).length > 0) {
