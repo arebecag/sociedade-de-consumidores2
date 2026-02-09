@@ -61,29 +61,38 @@ export default function Dashboard() {
         const partnerData = JSON.parse(pendingData);
         const newPartner = await base44.entities.Partner.create(partnerData);
         localStorage.removeItem("pendingPartnerData");
-        
+
         // Create network relation if has referrer
         if (partnerData.referrer_id) {
-          await base44.entities.NetworkRelation.create({
-            referrer_id: partnerData.referrer_id,
-            referrer_name: partnerData.referrer_name,
-            referred_id: newPartner.id,
-            referred_name: partnerData.full_name,
-            relation_type: "direct",
-            level: 1
-          });
-          
-          // Also create indirect relation to referrer's referrer if exists
-          const referrers = await base44.entities.Partner.filter({ id: partnerData.referrer_id });
-          if (referrers.length > 0 && referrers[0].referrer_id) {
+          // Buscar o referrer para pegar suas informações
+          const allPartners = await base44.entities.Partner.list();
+          const referrer = allPartners.find(p => p.id === partnerData.referrer_id);
+
+          if (referrer) {
+            // Criar relação direta
             await base44.entities.NetworkRelation.create({
-              referrer_id: referrers[0].referrer_id,
-              referrer_name: referrers[0].referrer_name,
+              referrer_id: referrer.id,
+              referrer_name: referrer.full_name,
               referred_id: newPartner.id,
-              referred_name: partnerData.full_name,
-              relation_type: "indirect",
-              level: 2
+              referred_name: newPartner.full_name,
+              relation_type: "direct",
+              level: 1
             });
+
+            // Criar relação indireta com o indicador do indicador
+            if (referrer.referrer_id) {
+              const indirectReferrer = allPartners.find(p => p.id === referrer.referrer_id);
+              if (indirectReferrer) {
+                await base44.entities.NetworkRelation.create({
+                  referrer_id: indirectReferrer.id,
+                  referrer_name: indirectReferrer.full_name,
+                  referred_id: newPartner.id,
+                  referred_name: newPartner.full_name,
+                  relation_type: "indirect",
+                  level: 2
+                });
+              }
+            }
           }
         }
       }
@@ -94,27 +103,35 @@ export default function Dashboard() {
         setPartner(partners[0]);
         
         // Get my referrer (quem me indicou)
-        const myReferrerRelation = await base44.entities.NetworkRelation.filter({ referred_id: partners[0].id, relation_type: "direct" });
+        const myReferrerRelation = await base44.entities.NetworkRelation.filter({ 
+          referred_id: partners[0].id, 
+          relation_type: "direct" 
+        });
         if (myReferrerRelation.length > 0) {
-          const referrerPartners = await base44.entities.Partner.filter({ id: myReferrerRelation[0].referrer_id });
-          if (referrerPartners.length > 0) {
-            setMyReferrer(referrerPartners[0]);
+          const allPartners = await base44.entities.Partner.list();
+          const referrerPartner = allPartners.find(p => p.id === myReferrerRelation[0].referrer_id);
+          if (referrerPartner) {
+            setMyReferrer(referrerPartner);
           }
         }
-        
-        // Get network stats (quem eu indiquei)
-        const network = await base44.entities.NetworkRelation.filter({ referrer_id: partners[0].id });
-        const referredIds = network.map(n => n.referred_id);
-        
-        if (referredIds.length > 0) {
-          const referredPartners = await base44.entities.Partner.list();
-          const myReferred = referredPartners.filter(p => referredIds.includes(p.id));
-          
+
+        // Get network stats (quem eu indiquei) - busca por referrer_id
+        const myNetwork = await base44.entities.NetworkRelation.filter({ 
+          referrer_id: partners[0].id 
+        });
+
+        if (myNetwork.length > 0) {
+          const referredIds = myNetwork.map(n => n.referred_id);
+          const allPartners = await base44.entities.Partner.list();
+          const myReferred = allPartners.filter(p => referredIds.includes(p.id));
+
           setNetworkStats({
             active: myReferred.filter(p => p.status === 'ativo').length,
             pending: myReferred.filter(p => p.status === 'pendente').length,
             excluded: myReferred.filter(p => p.status === 'excluido').length
           });
+        } else {
+          setNetworkStats({ active: 0, pending: 0, excluded: 0 });
         }
       }
     } catch (error) {
