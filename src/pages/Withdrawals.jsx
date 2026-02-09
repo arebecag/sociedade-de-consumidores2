@@ -41,20 +41,37 @@ export default function Withdrawals() {
   };
 
   const handleWithdraw = async () => {
+    // Validation 1: Check if partner is active
+    if (partner?.status !== 'ativo') {
+      toast.error("Sua conta precisa estar ativa para realizar saques. Complete as pendências no seu perfil.");
+      return;
+    }
+
+    // Validation 2: Check if PIX is configured
+    if (!partner?.pix_key || !partner?.pix_key_type) {
+      toast.error("Configure sua chave PIX no perfil antes de solicitar um saque.");
+      return;
+    }
+
     const withdrawAmount = parseFloat(amount);
     
+    // Validation 3: Check amount
     if (!withdrawAmount || withdrawAmount <= 0) {
       toast.error("Informe um valor válido");
       return;
     }
     
-    if (withdrawAmount > (partner?.bonus_for_withdrawal || 0)) {
-      toast.error("Valor maior que o saldo disponível");
+    const minWithdrawal = 50; // Valor mínimo configurável
+    
+    // Validation 4: Minimum withdrawal amount
+    if (withdrawAmount < minWithdrawal) {
+      toast.error(`Valor mínimo para saque é ${formatCurrency(minWithdrawal)}`);
       return;
     }
-
-    if (!partner?.pix_key) {
-      toast.error("Configure sua chave PIX no perfil");
+    
+    // Validation 5: Check balance
+    if (withdrawAmount > (partner?.bonus_for_withdrawal || 0)) {
+      toast.error("Saldo insuficiente para saque");
       return;
     }
 
@@ -74,7 +91,7 @@ export default function Withdrawals() {
         bonus_for_withdrawal: (partner.bonus_for_withdrawal || 0) - withdrawAmount
       });
 
-      toast.success("Solicitação de saque enviada!");
+      toast.success("Solicitação de saque enviada com sucesso!");
       setWithdrawDialogOpen(false);
       setAmount("");
       loadData();
@@ -131,7 +148,7 @@ export default function Withdrawals() {
         
         <Button
           onClick={() => setWithdrawDialogOpen(true)}
-          disabled={isBlocked || !partner?.bonus_for_withdrawal}
+          disabled={partner?.status !== 'ativo' || !partner?.pix_key || !partner?.bonus_for_withdrawal}
           className="bg-orange-500 hover:bg-orange-600"
         >
           <Banknote className="w-4 h-4 mr-2" />
@@ -274,12 +291,19 @@ export default function Withdrawals() {
               <p className="text-gray-500 text-xs">{partner?.pix_key_type?.toUpperCase()}</p>
             </div>
 
+            <Alert className="bg-orange-500/10 border-orange-500/30">
+              <AlertTriangle className="w-4 h-4 text-orange-500" />
+              <AlertDescription className="text-orange-200 text-sm">
+                Valor mínimo para saque: R$ 50,00
+              </AlertDescription>
+            </Alert>
+
             <div className="space-y-2">
               <Label className="text-white">Valor do Saque</Label>
               <Input
                 type="number"
                 step="0.01"
-                min="0"
+                min="50"
                 max={partner?.bonus_for_withdrawal || 0}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
