@@ -143,6 +143,17 @@ export default function Store() {
         if (referrers.length > 0) {
           const directReferrer = referrers[0];
           
+          // Check if bonus already exists (idempotency)
+          const existingBonus = await base44.entities.BonusTransaction.filter({
+            purchase_id: purchaseId,
+            partner_id: directReferrer.id
+          });
+          
+          if (existingBonus.length > 0) {
+            console.log("Bonus already generated for this purchase");
+            return;
+          }
+          
           // Direct bonus (15%)
           const directBonus = amount * 0.15;
           const directBonusWithdrawal = directBonus * 0.5;
@@ -175,23 +186,32 @@ export default function Store() {
             const indirectReferrers = await base44.entities.Partner.filter({ id: directReferrer.referrer_id });
             if (indirectReferrers.length > 0) {
               const indirectReferrer = indirectReferrers[0];
-              const indirectBonus = amount * 0.30;
-              const indirectBonusWithdrawal = indirectBonus * 0.5;
-              const indirectBonusPurchases = indirectBonus * 0.5;
-
-              await base44.entities.BonusTransaction.create({
-                partner_id: indirectReferrer.id,
-                partner_name: indirectReferrer.full_name,
-                source_partner_id: buyer.id,
-                source_partner_name: buyer.full_name,
+              
+              // Check if bonus already exists (idempotency)
+              const existingIndirectBonus = await base44.entities.BonusTransaction.filter({
                 purchase_id: purchaseId,
-                type: "indirect",
-                percentage: 30,
-                total_amount: indirectBonus,
-                amount_for_withdrawal: indirectBonusWithdrawal,
-                amount_for_purchases: indirectBonusPurchases,
-                status: indirectReferrer.status === "ativo" ? "credited" : "blocked"
+                partner_id: indirectReferrer.id
               });
+              
+              if (existingIndirectBonus.length === 0) {
+                const indirectBonus = amount * 0.30;
+                const indirectBonusWithdrawal = indirectBonus * 0.5;
+                const indirectBonusPurchases = indirectBonus * 0.5;
+
+                await base44.entities.BonusTransaction.create({
+                  partner_id: indirectReferrer.id,
+                  partner_name: indirectReferrer.full_name,
+                  source_partner_id: buyer.id,
+                  source_partner_name: buyer.full_name,
+                  purchase_id: purchaseId,
+                  type: "indirect",
+                  percentage: 30,
+                  total_amount: indirectBonus,
+                  amount_for_withdrawal: indirectBonusWithdrawal,
+                  amount_for_purchases: indirectBonusPurchases,
+                  status: indirectReferrer.status === "ativo" ? "credited" : "blocked"
+                });
+              }
 
               if (indirectReferrer.status === "ativo") {
                 await base44.entities.Partner.update(indirectReferrer.id, {
