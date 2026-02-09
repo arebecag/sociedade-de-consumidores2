@@ -142,10 +142,10 @@ async function generateBonusForPurchase(base44, purchaseId, amount, buyer) {
       return;
     }
 
-    // Bônus direto (15%)
-    const directBonus = amount * 0.15;
-    const directBonusWithdrawal = directBonus * 0.5;
-    const directBonusPurchases = directBonus * 0.5;
+    // Comissão de 40% do valor pago
+    const totalBonus = amount * 0.40;
+    const bonusWithdrawal = totalBonus * 0.5;
+    const bonusPurchases = totalBonus * 0.5;
 
     await base44.asServiceRole.entities.BonusTransaction.create({
       partner_id: directReferrer.id,
@@ -154,59 +154,26 @@ async function generateBonusForPurchase(base44, purchaseId, amount, buyer) {
       source_partner_name: buyer.full_name,
       purchase_id: purchaseId,
       type: "direct",
-      percentage: 15,
-      total_amount: directBonus,
-      amount_for_withdrawal: directBonusWithdrawal,
-      amount_for_purchases: directBonusPurchases,
-      status: directReferrer.status === "ativo" ? "credited" : "blocked"
+      percentage: 40,
+      total_amount: totalBonus,
+      amount_for_withdrawal: bonusWithdrawal,
+      amount_for_purchases: bonusPurchases,
+      status: directReferrer.status === "ativo" ? "credited" : 
+              directReferrer.status === "pendente" ? "blocked" : "blocked"
     });
 
-    if (directReferrer.status === "ativo") {
+    // Atualizar saldo apenas se parceiro estiver ativo ou pendente
+    // Pendente: acumula mas não pode sacar ainda
+    if (directReferrer.status === "ativo" || directReferrer.status === "pendente") {
       await base44.asServiceRole.entities.Partner.update(directReferrer.id, {
-        total_bonus_generated: (directReferrer.total_bonus_generated || 0) + directBonus,
-        bonus_for_withdrawal: (directReferrer.bonus_for_withdrawal || 0) + directBonusWithdrawal,
-        bonus_for_purchases: (directReferrer.bonus_for_purchases || 0) + directBonusPurchases
+        total_bonus_generated: (directReferrer.total_bonus_generated || 0) + totalBonus,
+        bonus_for_withdrawal: directReferrer.status === "ativo" ? 
+          (directReferrer.bonus_for_withdrawal || 0) + bonusWithdrawal : 
+          (directReferrer.bonus_for_withdrawal || 0),
+        bonus_for_purchases: directReferrer.status === "ativo" ? 
+          (directReferrer.bonus_for_purchases || 0) + bonusPurchases :
+          (directReferrer.bonus_for_purchases || 0)
       });
-    }
-
-    // Bônus indireto (30%)
-    if (directReferrer.referrer_id) {
-      const indirectReferrer = partners.find(p => p.id === directReferrer.referrer_id);
-      
-      if (indirectReferrer) {
-        const existingIndirectBonus = await base44.asServiceRole.entities.BonusTransaction.filter({
-          purchase_id: purchaseId,
-          partner_id: indirectReferrer.id
-        });
-
-        if (existingIndirectBonus.length === 0) {
-          const indirectBonus = amount * 0.30;
-          const indirectBonusWithdrawal = indirectBonus * 0.5;
-          const indirectBonusPurchases = indirectBonus * 0.5;
-
-          await base44.asServiceRole.entities.BonusTransaction.create({
-            partner_id: indirectReferrer.id,
-            partner_name: indirectReferrer.full_name,
-            source_partner_id: buyer.id,
-            source_partner_name: buyer.full_name,
-            purchase_id: purchaseId,
-            type: "indirect",
-            percentage: 30,
-            total_amount: indirectBonus,
-            amount_for_withdrawal: indirectBonusWithdrawal,
-            amount_for_purchases: indirectBonusPurchases,
-            status: indirectReferrer.status === "ativo" ? "credited" : "blocked"
-          });
-
-          if (indirectReferrer.status === "ativo") {
-            await base44.asServiceRole.entities.Partner.update(indirectReferrer.id, {
-              total_bonus_generated: (indirectReferrer.total_bonus_generated || 0) + indirectBonus,
-              bonus_for_withdrawal: (indirectReferrer.bonus_for_withdrawal || 0) + indirectBonusWithdrawal,
-              bonus_for_purchases: (indirectReferrer.bonus_for_purchases || 0) + indirectBonusPurchases
-            });
-          }
-        }
-      }
     }
   } catch (error) {
     console.error("Error generating bonus:", error.message);
