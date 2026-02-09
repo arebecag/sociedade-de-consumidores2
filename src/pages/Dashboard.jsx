@@ -43,6 +43,7 @@ const GraduationBadge = ({ graduation }) => {
 
 export default function Dashboard() {
   const [partner, setPartner] = useState(null);
+  const [myReferrer, setMyReferrer] = useState(null);
   const [networkStats, setNetworkStats] = useState({ active: 0, pending: 0, excluded: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -92,7 +93,16 @@ export default function Dashboard() {
       if (partners.length > 0) {
         setPartner(partners[0]);
         
-        // Get network stats
+        // Get my referrer (quem me indicou)
+        const myReferrerRelation = await base44.entities.NetworkRelation.filter({ referred_id: partners[0].id, relation_type: "direct" });
+        if (myReferrerRelation.length > 0) {
+          const referrerPartners = await base44.entities.Partner.filter({ id: myReferrerRelation[0].referrer_id });
+          if (referrerPartners.length > 0) {
+            setMyReferrer(referrerPartners[0]);
+          }
+        }
+        
+        // Get network stats (quem eu indiquei)
         const network = await base44.entities.NetworkRelation.filter({ referrer_id: partners[0].id });
         const referredIds = network.map(n => n.referred_id);
         
@@ -192,6 +202,33 @@ export default function Dashboard() {
         </Card>
       )}
 
+      {/* My Referrer */}
+      {myReferrer && (
+        <div>
+          <h2 className="text-xl font-semibold text-white mb-4">Meu Indicador</h2>
+          <Card className="bg-zinc-950 border-orange-500/20">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-orange-500/10">
+                  <Users className="w-8 h-8 text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-lg">{myReferrer.display_name || myReferrer.full_name}</p>
+                  <p className="text-gray-400 text-sm">Código: {myReferrer.unique_code}</p>
+                  <span className={`inline-block mt-2 px-3 py-1 rounded-full font-semibold text-xs ${
+                    myReferrer.status === 'ativo' ? 'bg-green-500/20 text-green-500' :
+                    myReferrer.status === 'pendente' ? 'bg-yellow-500/20 text-yellow-500' :
+                    'bg-red-500/20 text-red-500'
+                  }`}>
+                    {myReferrer.status?.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Bonus Stats */}
       <div>
         <h2 className="text-xl font-semibold text-white mb-4">Seus Bônus</h2>
@@ -240,27 +277,37 @@ export default function Dashboard() {
 
       {/* Network Stats */}
       <div>
-        <h2 className="text-xl font-semibold text-white mb-4">Sua Rede</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard
-            title="Clientes Ativos"
-            value={networkStats.active}
-            icon={CheckCircle}
-            color="text-green-500"
-          />
-          <StatCard
-            title="Clientes Pendentes"
-            value={networkStats.pending}
-            icon={AlertCircle}
-            color="text-yellow-500"
-          />
-          <StatCard
-            title="Clientes Excluídos"
-            value={networkStats.excluded}
-            icon={XCircle}
-            color="text-red-500"
-          />
-        </div>
+        <h2 className="text-xl font-semibold text-white mb-4">Minha Rede</h2>
+        {networkStats.active === 0 && networkStats.pending === 0 && networkStats.excluded === 0 ? (
+          <Card className="bg-zinc-950 border-orange-500/20">
+            <CardContent className="p-8 text-center">
+              <Users className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-400">Você ainda não indicou ninguém.</p>
+              <p className="text-gray-500 text-sm mt-1">Compartilhe seu código único para começar a construir sua rede!</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatCard
+              title="Clientes Ativos"
+              value={networkStats.active}
+              icon={CheckCircle}
+              color="text-green-500"
+            />
+            <StatCard
+              title="Clientes Pendentes"
+              value={networkStats.pending}
+              icon={AlertCircle}
+              color="text-yellow-500"
+            />
+            <StatCard
+              title="Clientes Excluídos"
+              value={networkStats.excluded}
+              icon={XCircle}
+              color="text-red-500"
+            />
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}
