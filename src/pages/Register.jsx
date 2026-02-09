@@ -48,18 +48,18 @@ export default function Register() {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get("ref");
       
-      // Verificar se já existe algum parceiro cadastrado
-      const existingPartners = await base44.entities.Partner.list();
-      
-      if (existingPartners.length === 0) {
-        // Primeiro cadastro - não precisa de indicador
-        setIsFirstUser(true);
-        setReferrerName("Primeiro Cadastro (Administrador)");
-        setLoadingReferrer(false);
-      } else if (code) {
+      if (code) {
         setReferrerCode(code);
         loadReferrer(code);
       } else {
+        // Verificar se já existe algum parceiro cadastrado
+        const existingPartners = await base44.entities.Partner.list();
+        
+        if (existingPartners.length === 0) {
+          // Primeiro cadastro - não precisa de indicador
+          setIsFirstUser(true);
+          setReferrerName("Primeiro Cadastro (Administrador)");
+        }
         setLoadingReferrer(false);
       }
     } catch (error) {
@@ -243,19 +243,15 @@ export default function Register() {
     );
   }
 
-  if ((!referrerCode && !isFirstUser) || (invalidReferrer && !isFirstUser)) {
+  if (invalidReferrer) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-zinc-950 border-orange-500/20">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">
-              {invalidReferrer ? "Indicador Inválido" : "Link Inválido"}
-            </h2>
+            <h2 className="text-xl font-bold text-white mb-2">Indicador Inválido</h2>
             <p className="text-gray-400">
-              {invalidReferrer 
-                ? "O código de indicação fornecido não foi encontrado. Verifique o link e tente novamente."
-                : "Para se cadastrar, você precisa de um link de indicação válido. Entre em contato com um parceiro da Sociedade de Consumidores."}
+              O código de indicação fornecido não foi encontrado. Verifique o link e tente novamente.
             </p>
           </CardContent>
         </Card>
@@ -514,6 +510,16 @@ export default function Register() {
                 )}
                 {loading ? "Cadastrando..." : "Cadastrar"}
               </Button>
+
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={() => base44.auth.redirectToLogin()}
+                  className="text-orange-500 hover:text-orange-400 text-sm"
+                >
+                  Já tem uma conta? Faça login
+                </button>
+              </div>
             </form>
           </CardContent>
         </Card>
