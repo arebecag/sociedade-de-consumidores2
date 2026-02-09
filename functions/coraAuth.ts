@@ -16,11 +16,13 @@ Deno.serve(async (req) => {
     // Obter credenciais das variáveis de ambiente (Base44 Secrets)
     const clientId = Deno.env.get("CORA_CLIENT_ID");
     const clientSecret = Deno.env.get("CORA_CLIENT_SECRET");
-    const apiUrl = Deno.env.get("CORA_API_URL") || "https://matls-clients.api.stage.cora.com.br";
+    
+    // FORÇAR AMBIENTE SANDBOX
+    const apiUrl = "https://matls-clients.api.stage.cora.com.br";
 
     console.log("=== CORA AUTH DEBUG ===");
+    console.log("🔧 FORCED ENVIRONMENT: SANDBOX");
     console.log("API URL:", apiUrl);
-    console.log("Environment:", apiUrl.includes("stage") || apiUrl.includes("sandbox") ? "SANDBOX" : "PRODUCTION");
     console.log("Client ID configured:", clientId ? "YES" : "NO");
     console.log("Client Secret configured:", clientSecret ? "YES" : "NO");
 
@@ -73,7 +75,8 @@ Deno.serve(async (req) => {
       access_token: authData.access_token,
       expires_in: authData.expires_in,
       token_type: authData.token_type,
-      environment: apiUrl.includes("stage") || apiUrl.includes("sandbox") ? "SANDBOX" : "PRODUCTION"
+      environment: "SANDBOX",
+      api_url: apiUrl
     });
   } catch (error) {
     console.error("❌ Error in coraAuth:", error.message);
