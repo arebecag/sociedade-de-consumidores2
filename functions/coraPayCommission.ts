@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 /**
  * Executa pagamento de comissão via PIX usando API Cora
  * Payload: { withdrawal_id: string }
+ * Admin apenas
  */
 Deno.serve(async (req) => {
   try {
@@ -67,17 +68,6 @@ Deno.serve(async (req) => {
       });
       return Response.json({ 
         error: 'Partner PIX not configured',
-        withdrawal_status: 'cancelled'
-      }, { status: 400 });
-    }
-
-    // Validação 3: saldo disponível
-    if (withdrawal.amount > (partner.bonus_for_withdrawal || 0)) {
-      await base44.asServiceRole.entities.Withdrawal.update(withdrawal_id, {
-        status: 'cancelled'
-      });
-      return Response.json({ 
-        error: 'Insufficient balance',
         withdrawal_status: 'cancelled'
       }, { status: 400 });
     }
@@ -174,9 +164,8 @@ Deno.serve(async (req) => {
     
     // Tentar reverter status para pending em caso de erro
     try {
-      const { withdrawal_id } = await req.json();
-      const base44 = createClientFromRequest(req);
-      await base44.asServiceRole.entities.Withdrawal.update(withdrawal_id, {
+      const body = await req.json();
+      await base44.asServiceRole.entities.Withdrawal.update(body.withdrawal_id, {
         status: 'pending',
         error_message: error.message
       });

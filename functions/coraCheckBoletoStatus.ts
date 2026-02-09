@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * Consulta status de um boleto na API Cora
+ * Consulta status de um boleto na API Cora e processa pagamento
  * Payload: { boleto_id: string, purchase_id: string }
  */
 Deno.serve(async (req) => {
