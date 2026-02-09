@@ -160,11 +160,55 @@ export default function Profile() {
     return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
   };
 
+  const validateRequiredFields = () => {
+    const errors = [];
+    
+    if (!formData.cpf || formData.cpf.length !== 11) {
+      errors.push("CPF");
+    }
+    if (!formData.pix_key || !formData.pix_key_type) {
+      errors.push("Chave PIX");
+    }
+    if (!formData.address.cep || !formData.address.street || !formData.address.number || 
+        !formData.address.neighborhood || !formData.address.city || !formData.address.state) {
+      errors.push("Endereço completo");
+    }
+    
+    return errors;
+  };
+
   const handleSave = async () => {
     if (!partner) return;
+    
+    const missingFields = validateRequiredFields();
+    
+    if (missingFields.length > 0) {
+      toast.error(`Campos obrigatórios faltando: ${missingFields.join(", ")}`);
+      return;
+    }
+    
     setSaving(true);
     try {
-      await base44.entities.Partner.update(partner.id, formData);
+      // Check if all required fields are now complete
+      const allComplete = formData.cpf && formData.pix_key && formData.pix_key_type &&
+                         formData.address.cep && formData.address.street && formData.address.number &&
+                         formData.address.neighborhood && formData.address.city && formData.address.state;
+      
+      const updateData = { ...formData };
+      
+      // Remove pending reasons if all fields are complete
+      if (allComplete && partner.pending_reasons?.length > 0) {
+        const newReasons = partner.pending_reasons.filter(r => r !== "Falta de informações no cadastro");
+        updateData.pending_reasons = newReasons;
+        
+        // If only "first purchase" remains and no other reasons, keep status pending
+        // If all reasons removed and first purchase done, set to active
+        if (newReasons.length === 0 && partner.first_purchase_done) {
+          updateData.status = "ativo";
+        }
+      }
+      
+      await base44.entities.Partner.update(partner.id, updateData);
       toast.success("Perfil atualizado com sucesso!");
       loadData();
     } catch (error) {
@@ -195,12 +239,23 @@ export default function Profile() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Meu Perfil</h1>
-        <Button onClick={handleSave} disabled={saving} className="bg-orange-500 hover:bg-orange-600">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-          Salvar Alterações
-        </Button>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-white">Meu Perfil</h1>
+          <Button onClick={handleSave} disabled={saving} className="bg-orange-500 hover:bg-orange-600">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+            Salvar Alterações
+          </Button>
+        </div>
+        
+        {partner?.status === 'pendente' && partner?.pending_reasons?.includes("Falta de informações no cadastro") && (
+          <Alert className="bg-yellow-500/10 border-yellow-500/30">
+            <AlertTriangle className="w-4 h-4 text-yellow-500" />
+            <AlertDescription className="text-yellow-200">
+              <strong>Atenção:</strong> Complete os campos obrigatórios (CPF, PIX, Endereço) para remover as pendências do seu cadastro.
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
       <Tabs defaultValue="personal" className="space-y-6">
@@ -270,7 +325,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white">CPF</Label>
+                  <Label className="text-white">CPF *</Label>
                   <Input
                     value={formatCPF(formData.cpf)}
                     onChange={(e) => handleChange("cpf", e.target.value.replace(/\D/g, ""))}
@@ -278,6 +333,9 @@ export default function Profile() {
                     maxLength={14}
                     placeholder="000.000.000-00"
                   />
+                  {(!formData.cpf || formData.cpf.length !== 11) && (
+                    <p className="text-red-500 text-xs">Campo obrigatório</p>
+                  )}
                 </div>
               </div>
 
@@ -347,35 +405,35 @@ export default function Profile() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-white">CEP</Label>
-                  <Input
-                    value={formData.address.cep}
-                    onChange={(e) => {
-                      handleAddressChange("cep", e.target.value);
-                      searchCep(e.target.value);
-                    }}
-                    className="bg-zinc-900 border-zinc-700 text-white"
-                    placeholder="00000-000"
-                    maxLength={9}
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-white">Rua</Label>
-                  <Input
-                    value={formData.address.street}
-                    onChange={(e) => handleAddressChange("street", e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-white">Número</Label>
-                  <Input
-                    value={formData.address.number}
-                    onChange={(e) => handleAddressChange("number", e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-white"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label className="text-white">CEP *</Label>
+                <Input
+                  value={formData.address.cep}
+                  onChange={(e) => {
+                    handleAddressChange("cep", e.target.value);
+                    searchCep(e.target.value);
+                  }}
+                  className="bg-zinc-900 border-zinc-700 text-white"
+                  placeholder="00000-000"
+                  maxLength={9}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-white">Rua *</Label>
+                <Input
+                  value={formData.address.street}
+                  onChange={(e) => handleAddressChange("street", e.target.value)}
+                  className="bg-zinc-900 border-zinc-700 text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Número *</Label>
+                <Input
+                  value={formData.address.number}
+                  onChange={(e) => handleAddressChange("number", e.target.value)}
+                  className="bg-zinc-900 border-zinc-700 text-white"
+                />
+              </div>
                 <div className="space-y-2">
                   <Label className="text-white">Complemento</Label>
                   <Input
@@ -385,7 +443,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white">Bairro</Label>
+                  <Label className="text-white">Bairro *</Label>
                   <Input
                     value={formData.address.neighborhood}
                     onChange={(e) => handleAddressChange("neighborhood", e.target.value)}
@@ -393,7 +451,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white">Cidade</Label>
+                  <Label className="text-white">Cidade *</Label>
                   <Input
                     value={formData.address.city}
                     onChange={(e) => handleAddressChange("city", e.target.value)}
@@ -401,7 +459,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white">Estado</Label>
+                  <Label className="text-white">Estado *</Label>
                   <Input
                     value={formData.address.state}
                     onChange={(e) => handleAddressChange("state", e.target.value)}
@@ -481,7 +539,7 @@ export default function Profile() {
                 <h3 className="text-lg font-semibold text-white mb-4">Chave PIX</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">Tipo de Chave PIX</Label>
+                    <Label className="text-white">Tipo de Chave PIX *</Label>
                     <Select value={formData.pix_key_type} onValueChange={(v) => handleChange("pix_key_type", v)}>
                       <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
                         <SelectValue placeholder="Selecione o tipo" />
@@ -496,13 +554,16 @@ export default function Profile() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">Chave PIX</Label>
+                    <Label className="text-white">Chave PIX *</Label>
                     <Input
                       value={formData.pix_key}
                       onChange={(e) => handleChange("pix_key", e.target.value)}
                       className="bg-zinc-900 border-zinc-700 text-white"
                       placeholder="Sua chave PIX"
                     />
+                    {(!formData.pix_key || !formData.pix_key_type) && (
+                      <p className="text-red-500 text-xs">Campo obrigatório</p>
+                    )}
                   </div>
                 </div>
               </div>

@@ -136,8 +136,19 @@ export default function Register() {
     setErrors({ ...errors, [field]: "" });
   };
 
-  const generateUniqueCode = () => {
-    return Math.random().toString(36).substring(2, 10).toUpperCase();
+  const generateUniqueCode = async () => {
+    let code;
+    let isUnique = false;
+    
+    while (!isUnique) {
+      code = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const existing = await base44.entities.Partner.filter({ unique_code: code });
+      if (existing.length === 0) {
+        isUnique = true;
+      }
+    }
+    
+    return code;
   };
 
   const handleSubmit = async (e) => {
@@ -191,6 +202,8 @@ export default function Register() {
       }
 
       // Create partner record
+      const uniqueCode = await generateUniqueCode();
+      
       const partnerData = {
         full_name: formData.full_name,
         birth_date: formData.birth_date,
@@ -217,7 +230,7 @@ export default function Register() {
         phone_verified: false,
         accepted_terms: true,
         accepted_rules: true,
-        unique_code: generateUniqueCode(),
+        unique_code: uniqueCode,
         display_name: formData.full_name.split(" ")[0]
       };
 

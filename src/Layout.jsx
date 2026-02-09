@@ -70,6 +70,11 @@ export default function Layout({ children, currentPageName }) {
     { name: "Dúvidas", icon: HelpCircle, page: "FAQ" },
   ];
 
+  // Admin-only menu items
+  if (user?.role === 'admin') {
+    menuItems.push({ name: "Admin: Auditoria", icon: Users, page: "AdminNetwork" });
+  }
+
   const NavContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-orange-500/20">
