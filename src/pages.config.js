@@ -62,6 +62,7 @@ import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
 import AdminNetwork from './pages/AdminNetwork';
+import Extrato from './pages/Extrato';
 import __Layout from './Layout.jsx';
 
 
@@ -81,6 +82,7 @@ export const PAGES = {
     "Store": Store,
     "Withdrawals": Withdrawals,
     "AdminNetwork": AdminNetwork,
+    "Extrato": Extrato,
 }
 
 export const pagesConfig = {

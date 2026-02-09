@@ -220,9 +220,9 @@ export default function Dashboard() {
       )}
 
       {/* My Referrer */}
-      {myReferrer && (
-        <div>
-          <h2 className="text-xl font-semibold text-white mb-4">Meu Indicador</h2>
+      <div>
+        <h2 className="text-xl font-semibold text-white mb-4">Meu Indicador</h2>
+        {myReferrer ? (
           <Card className="bg-zinc-950 border-orange-500/20">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
@@ -243,8 +243,16 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
+        ) : (
+          <Card className="bg-zinc-950 border-orange-500/20">
+            <CardContent className="p-8 text-center">
+              <Users className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-400">Você ainda não possui indicador.</p>
+              <p className="text-gray-500 text-sm mt-1">Você foi o primeiro a se cadastrar!</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Bonus Stats */}
       <div>

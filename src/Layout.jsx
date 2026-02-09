@@ -61,6 +61,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Loja 3X3 SC", icon: ShoppingBag, page: "Store" },
     { name: "Meus Clientes", icon: Users, page: "Network" },
     { name: "Meus Bônus", icon: Award, page: "Bonus" },
+    { name: "Extrato", icon: FileText, page: "Extrato" },
     { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },
     { name: "Relatórios", icon: FileText, page: "Reports" },
     { name: "Meu Site", icon: Globe, page: "MySite" },

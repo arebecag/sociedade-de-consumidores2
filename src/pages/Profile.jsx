@@ -248,13 +248,61 @@ export default function Profile() {
           </Button>
         </div>
         
-        {partner?.status === 'pendente' && partner?.pending_reasons?.includes("Falta de informações no cadastro") && (
-          <Alert className="bg-yellow-500/10 border-yellow-500/30">
-            <AlertTriangle className="w-4 h-4 text-yellow-500" />
-            <AlertDescription className="text-yellow-200">
-              <strong>Atenção:</strong> Complete os campos obrigatórios (CPF, PIX, Endereço) para remover as pendências do seu cadastro.
-            </AlertDescription>
-          </Alert>
+        {partner?.status === 'pendente' && (
+          <Card className="bg-yellow-500/10 border-yellow-500/30">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-3 mb-4">
+                <AlertTriangle className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-yellow-500 mb-2">Checklist de Ativação da Conta</h3>
+                  <p className="text-yellow-200 text-sm mb-4">Complete os itens abaixo para ativar sua conta:</p>
+                  
+                  <div className="space-y-2">
+                    {/* CPF */}
+                    <div className="flex items-center gap-2">
+                      {formData.cpf && formData.cpf.length === 11 ? (
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className="text-yellow-100 text-sm">CPF completo</span>
+                    </div>
+                    
+                    {/* PIX */}
+                    <div className="flex items-center gap-2">
+                      {formData.pix_key && formData.pix_key_type ? (
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className="text-yellow-100 text-sm">Chave PIX cadastrada</span>
+                    </div>
+                    
+                    {/* Endereço */}
+                    <div className="flex items-center gap-2">
+                      {formData.address.cep && formData.address.street && formData.address.number &&
+                       formData.address.neighborhood && formData.address.city && formData.address.state ? (
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className="text-yellow-100 text-sm">Endereço completo</span>
+                    </div>
+                    
+                    {/* Primeira compra */}
+                    <div className="flex items-center gap-2">
+                      {partner.first_purchase_done ? (
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-500" />
+                      )}
+                      <span className="text-yellow-100 text-sm">Primeira compra realizada</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
