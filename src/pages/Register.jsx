@@ -16,9 +16,11 @@ export default function Register() {
   const navigate = useNavigate();
   const [referrerCode, setReferrerCode] = useState("");
   const [referrerName, setReferrerName] = useState("");
+  const [referrerPartnerId, setReferrerPartnerId] = useState(null);
   const [isFirstUser, setIsFirstUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingReferrer, setLoadingReferrer] = useState(true);
+  const [invalidReferrer, setInvalidReferrer] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -71,9 +73,14 @@ export default function Register() {
       const partners = await base44.entities.Partner.filter({ unique_code: code });
       if (partners.length > 0) {
         setReferrerName(partners[0].display_name || partners[0].full_name);
+        setReferrerPartnerId(partners[0].id);
+        setInvalidReferrer(false);
+      } else {
+        setInvalidReferrer(true);
       }
     } catch (error) {
       console.error("Error loading referrer:", error);
+      setInvalidReferrer(true);
     } finally {
       setLoadingReferrer(false);
     }
@@ -176,17 +183,11 @@ export default function Register() {
 
     setLoading(true);
     try {
-      let referrer = null;
-      
-      // Get referrer partner (only if not first user)
-      if (!isFirstUser) {
-        const referrers = await base44.entities.Partner.filter({ unique_code: referrerCode });
-        if (referrers.length === 0) {
-          toast.error("Indicador não encontrado");
-          setLoading(false);
-          return;
-        }
-        referrer = referrers[0];
+      // Validate referrer one more time before submitting
+      if (!isFirstUser && !referrerPartnerId) {
+        toast.error("Indicador inválido");
+        setLoading(false);
+        return;
       }
 
       // Create partner record
@@ -195,8 +196,8 @@ export default function Register() {
         birth_date: formData.birth_date,
         gender: formData.gender,
         phone: formData.phone,
-        referrer_id: referrer ? referrer.id : null,
-        referrer_name: referrer ? (referrer.display_name || referrer.full_name) : null,
+        referrer_id: referrerPartnerId,
+        referrer_name: referrerName,
         status: "pendente",
         pending_reasons: ["Falta da primeira compra", "Falta de informações no cadastro"],
         graduation: "cliente_iniciante",
@@ -242,16 +243,19 @@ export default function Register() {
     );
   }
 
-  if (!referrerCode && !isFirstUser) {
+  if ((!referrerCode && !isFirstUser) || (invalidReferrer && !isFirstUser)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-zinc-950 border-orange-500/20">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">Link Inválido</h2>
+            <h2 className="text-xl font-bold text-white mb-2">
+              {invalidReferrer ? "Indicador Inválido" : "Link Inválido"}
+            </h2>
             <p className="text-gray-400">
-              Para se cadastrar, você precisa de um link de indicação válido.
-              Entre em contato com um parceiro da Sociedade de Consumidores.
+              {invalidReferrer 
+                ? "O código de indicação fornecido não foi encontrado. Verifique o link e tente novamente."
+                : "Para se cadastrar, você precisa de um link de indicação válido. Entre em contato com um parceiro da Sociedade de Consumidores."}
             </p>
           </CardContent>
         </Card>
