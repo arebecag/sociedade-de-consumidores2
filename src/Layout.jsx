@@ -59,14 +59,13 @@ export default function Layout({ children, currentPageName }) {
     { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
     { name: "Meu Perfil", icon: User, page: "Profile" },
     { name: "Loja 3X3 SC", icon: ShoppingBag, page: "Store" },
-    { name: "Meus Clientes", icon: Users, page: "Network" },
+    { name: "Minha Rede", icon: Users, page: "Network" },
     { name: "Meus Bônus", icon: Award, page: "Bonus" },
     { name: "Extrato", icon: FileText, page: "Extrato" },
     { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },
-    { name: "Relatórios", icon: FileText, page: "Reports" },
     { name: "Meu Site", icon: Globe, page: "MySite" },
     { name: "Marketing", icon: Megaphone, page: "Marketing" },
-    { name: "Saques", icon: CreditCard, page: "Withdrawals" },
+    { name: "Relatórios", icon: FileText, page: "Reports" },
     { name: "Receita Federal", icon: FileText, page: "IncomeReport" },
     { name: "Dúvidas", icon: HelpCircle, page: "FAQ" },
   ];
@@ -83,7 +82,7 @@ export default function Layout({ children, currentPageName }) {
         <h1 className="text-xl font-bold text-white">Consumidores</h1>
       </div>
       
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => (
           <Link
             key={item.page}
@@ -95,7 +94,7 @@ export default function Layout({ children, currentPageName }) {
                 : "text-gray-300 hover:bg-orange-500/10 hover:text-orange-500"
             }`}
           >
-            <item.icon className="w-5 h-5" />
+            <item.icon className="w-5 h-5 flex-shrink-0" />
             <span className="font-medium">{item.name}</span>
           </Link>
         ))}
