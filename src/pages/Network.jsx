@@ -99,14 +99,15 @@ export default function Network() {
         return;
       }
 
-      // Update the network relation
+      // Update the network relation - mark as spillover
       await base44.entities.NetworkRelation.create({
         referrer_id: selectedDirectClient,
         referrer_name: allPartners.find(p => p.id === selectedDirectClient)?.full_name,
         referred_id: clientToSpill.id,
         referred_name: clientToSpill.full_name,
-        relation_type: "direct",
-        level: 1
+        relation_type: "indirect",
+        is_spillover: true,
+        level: 2
       });
 
       toast.success("Derramamento realizado com sucesso!");

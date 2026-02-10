@@ -47,8 +47,10 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminNetwork from './pages/AdminNetwork';
 import Bonus from './pages/Bonus';
 import Dashboard from './pages/Dashboard';
+import Extrato from './pages/Extrato';
 import FAQ from './pages/FAQ';
 import IncomeReport from './pages/IncomeReport';
 import Marketing from './pages/Marketing';
@@ -61,14 +63,14 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
-import AdminNetwork from './pages/AdminNetwork';
-import Extrato from './pages/Extrato';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminNetwork": AdminNetwork,
     "Bonus": Bonus,
     "Dashboard": Dashboard,
+    "Extrato": Extrato,
     "FAQ": FAQ,
     "IncomeReport": IncomeReport,
     "Marketing": Marketing,
@@ -81,8 +83,6 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
-    "AdminNetwork": AdminNetwork,
-    "Extrato": Extrato,
 }
 
 export const pagesConfig = {

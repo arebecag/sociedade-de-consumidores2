@@ -121,20 +121,31 @@ Deno.serve(async (req) => {
 
 /**
  * Gera bônus para indicadores (com idempotência)
+ * Regras oficiais:
+ * - Diretos (não derramados): 15% (7,5% compras + 7,5% saque)
+ * - Derramados (spillover): 30-40% conforme graduação (split 50/50)
  */
 async function generateBonusForPurchase(base44, purchaseId, amount, buyer) {
   try {
     if (!buyer.referrer_id) return;
 
     const partners = await base44.asServiceRole.entities.Partner.list();
-    const directReferrer = partners.find(p => p.id === buyer.referrer_id);
+    const referrer = partners.find(p => p.id === buyer.referrer_id);
 
-    if (!directReferrer) return;
+    if (!referrer) return;
+
+    // Buscar relação para verificar se é spillover
+    const relations = await base44.asServiceRole.entities.NetworkRelation.filter({
+      referrer_id: buyer.referrer_id,
+      referred_id: buyer.id
+    });
+
+    const isSpillover = relations.length > 0 && relations[0].is_spillover === true;
 
     // Verificar se bônus já existe (idempotência)
     const existingBonus = await base44.asServiceRole.entities.BonusTransaction.filter({
       purchase_id: purchaseId,
-      partner_id: directReferrer.id
+      partner_id: referrer.id
     });
 
     if (existingBonus.length > 0) {
@@ -142,37 +153,57 @@ async function generateBonusForPurchase(base44, purchaseId, amount, buyer) {
       return;
     }
 
-    // Comissão de 40% do valor pago
-    const totalBonus = amount * 0.40;
+    // Calcular percentual baseado no tipo de relação e graduação
+    let bonusPercentage;
+    let bonusType;
+
+    if (isSpillover) {
+      // Derramado: 30-40% conforme graduação do indicador
+      bonusType = "indirect";
+      const graduation = referrer.graduation || "cliente_iniciante";
+      
+      const graduationBonus = {
+        "cliente_iniciante": 30,
+        "lider": 32,
+        "estrela": 34,
+        "bronze": 36,
+        "prata": 38,
+        "ouro": 40
+      };
+      
+      bonusPercentage = graduationBonus[graduation] || 30;
+    } else {
+      // Direto (via link): sempre 15%
+      bonusType = "direct";
+      bonusPercentage = 15;
+    }
+
+    const totalBonus = amount * (bonusPercentage / 100);
     const bonusWithdrawal = totalBonus * 0.5;
     const bonusPurchases = totalBonus * 0.5;
 
+    console.log(`Generating bonus: ${bonusPercentage}% (${bonusType}) for purchase ${purchaseId}`);
+
     await base44.asServiceRole.entities.BonusTransaction.create({
-      partner_id: directReferrer.id,
-      partner_name: directReferrer.full_name,
+      partner_id: referrer.id,
+      partner_name: referrer.full_name,
       source_partner_id: buyer.id,
       source_partner_name: buyer.full_name,
       purchase_id: purchaseId,
-      type: "direct",
-      percentage: 40,
+      type: bonusType,
+      percentage: bonusPercentage,
       total_amount: totalBonus,
       amount_for_withdrawal: bonusWithdrawal,
       amount_for_purchases: bonusPurchases,
-      status: directReferrer.status === "ativo" ? "credited" : 
-              directReferrer.status === "pendente" ? "blocked" : "blocked"
+      status: referrer.status === "ativo" ? "credited" : "blocked"
     });
 
-    // Atualizar saldo apenas se parceiro estiver ativo ou pendente
-    // Pendente: acumula mas não pode sacar ainda
-    if (directReferrer.status === "ativo" || directReferrer.status === "pendente") {
-      await base44.asServiceRole.entities.Partner.update(directReferrer.id, {
-        total_bonus_generated: (directReferrer.total_bonus_generated || 0) + totalBonus,
-        bonus_for_withdrawal: directReferrer.status === "ativo" ? 
-          (directReferrer.bonus_for_withdrawal || 0) + bonusWithdrawal : 
-          (directReferrer.bonus_for_withdrawal || 0),
-        bonus_for_purchases: directReferrer.status === "ativo" ? 
-          (directReferrer.bonus_for_purchases || 0) + bonusPurchases :
-          (directReferrer.bonus_for_purchases || 0)
+    // Atualizar saldo apenas se parceiro estiver ativo
+    if (referrer.status === "ativo") {
+      await base44.asServiceRole.entities.Partner.update(referrer.id, {
+        total_bonus_generated: (referrer.total_bonus_generated || 0) + totalBonus,
+        bonus_for_withdrawal: (referrer.bonus_for_withdrawal || 0) + bonusWithdrawal,
+        bonus_for_purchases: (referrer.bonus_for_purchases || 0) + bonusPurchases
       });
     }
   } catch (error) {
