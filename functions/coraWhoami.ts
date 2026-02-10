@@ -1,8 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-/**
- * Teste 1: Valida identidade na API Cora (endpoint /v2/me)
- */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -12,42 +9,49 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Obter token via proxy mTLS
+    // Obter token
     const tokenResp = await base44.functions.invoke('coraAuth', {});
     
-    if (!tokenResp?.data?.access_token) {
+    if (!tokenResp?.data?.ok || !tokenResp?.data?.data?.access_token) {
       return Response.json({
         ok: false,
-        error: "token_failed",
-        details: tokenResp
+        step: 'auth',
+        error: tokenResp?.data
       });
     }
 
-    const apiUrl = Deno.env.get("CORA_API_URL");
-    const res = await fetch(`${apiUrl}/v2/me`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${tokenResp.data.access_token}`,
-        "Content-Type": "application/json"
-      }
+    const token = tokenResp.data.data.access_token;
+    const proxyUrl = Deno.env.get("CORA_API_PROXY_URL");
+
+    if (!proxyUrl) {
+      return Response.json({
+        ok: false,
+        error: "CORA_API_PROXY_URL not configured"
+      });
+    }
+
+    // Chamar via proxy
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        method: 'GET',
+        path: '/v2/me'
+      })
     });
 
-    const text = await res.text();
+    const data = await response.json();
 
     return Response.json({
-      ok: res.ok,
-      status: res.status,
-      endpoint: "/v2/me",
-      data: (() => {
-        try { 
-          return JSON.parse(text); 
-        } catch { 
-          return text; 
-        }
-      })()
+      ok: response.ok,
+      step: 'whoami',
+      status: response.status,
+      data
     });
   } catch (error) {
-    console.error("Error in coraWhoami:", error.message);
     return Response.json({ 
       ok: false,
       error: error.message 

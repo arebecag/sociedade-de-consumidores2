@@ -1,10 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { getCoraToken, coraBaseUrl } from './_cora.js';
 
-/**
- * Teste 3: Descobrir endpoints PIX disponíveis
- * Testa múltiplos caminhos e retorna quais respondem
- */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -14,67 +9,49 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log("Getting Cora token...");
-    const token = await getCoraToken();
-    const baseUrl = coraBaseUrl();
-
-    const paths = [
-      '/v2/pix/transfer',
-      '/v2/transfers',
-      '/v2/pix/payments',
-      '/v2/pix'
-    ];
-
-    console.log("Testing PIX endpoints...");
-    const results = [];
-
-    for (const path of paths) {
-      const url = `${baseUrl}${path}`;
-      console.log(`Testing ${url}...`);
-
-      try {
-        // Tentar OPTIONS primeiro
-        let response = await fetch(url, {
-          method: 'OPTIONS',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        // Se OPTIONS não funcionar, tentar GET
-        if (!response.ok) {
-          response = await fetch(url, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
-        }
-
-        results.push({
-          path,
-          status: response.status,
-          ok: response.ok,
-          method: response.status === 200 ? 'available' : 
-                  response.status === 404 ? 'not_found' :
-                  response.status === 405 ? 'method_not_allowed' : 'error'
-        });
-      } catch (error) {
-        results.push({
-          path,
-          status: 'error',
-          error: error.message
-        });
-      }
+    // Obter token
+    const tokenResp = await base44.functions.invoke('coraAuth', {});
+    
+    if (!tokenResp?.data?.ok || !tokenResp?.data?.data?.access_token) {
+      return Response.json({
+        ok: false,
+        step: 'auth',
+        error: tokenResp?.data
+      });
     }
 
+    const token = tokenResp.data.data.access_token;
+    const proxyUrl = Deno.env.get("CORA_API_PROXY_URL");
+
+    if (!proxyUrl) {
+      return Response.json({
+        ok: false,
+        error: "CORA_API_PROXY_URL not configured"
+      });
+    }
+
+    // Chamar via proxy
+    const response = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        method: 'GET',
+        path: '/v2/pix'
+      })
+    });
+
+    const data = await response.json();
+
     return Response.json({
-      ok: true,
-      results
+      ok: response.ok,
+      step: 'pix_discovery',
+      status: response.status,
+      data
     });
   } catch (error) {
-    console.error("Error in coraPixDiscovery:", error.message);
     return Response.json({ 
       ok: false,
       error: error.message 

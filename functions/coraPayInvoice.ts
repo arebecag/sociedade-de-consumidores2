@@ -1,10 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { getCoraToken, coraBaseUrl } from './_cora.js';
 
-/**
- * Teste 2: Pagar boleto via API Cora (ATENÇÃO: PRODUÇÃO!)
- * Input: { barcode: string, amount: number }
- */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -16,49 +11,60 @@ Deno.serve(async (req) => {
 
     const { barcode, amount } = await req.json();
 
-    // Validação de campos obrigatórios
     if (!barcode || !amount) {
       return Response.json({
         ok: false,
         error: "barcode and amount are required"
-      }, { status: 400 });
+      });
     }
 
-    console.log("Getting Cora token...");
-    const token = await getCoraToken();
-    const baseUrl = coraBaseUrl();
+    // Obter token
+    const tokenResp = await base44.functions.invoke('coraAuth', {});
+    
+    if (!tokenResp?.data?.ok || !tokenResp?.data?.data?.access_token) {
+      return Response.json({
+        ok: false,
+        step: 'auth',
+        error: tokenResp?.data
+      });
+    }
 
-    const url = `${baseUrl}/v2/invoices/pay`;
-    console.log(`Calling ${url}...`);
+    const token = tokenResp.data.data.access_token;
+    const proxyUrl = Deno.env.get("CORA_API_PROXY_URL");
 
-    const response = await fetch(url, {
+    if (!proxyUrl) {
+      return Response.json({
+        ok: false,
+        error: "CORA_API_PROXY_URL not configured"
+      });
+    }
+
+    // Chamar via proxy
+    const response = await fetch(proxyUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        barcode,
-        amount
+        method: 'POST',
+        path: '/v2/invoices/pay',
+        body: {
+          barcode,
+          amount
+        }
       })
     });
 
-    const contentType = response.headers.get('content-type');
-    let data;
-
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
-    } else {
-      data = await response.text();
-    }
+    const data = await response.json();
 
     return Response.json({
       ok: response.ok,
+      step: 'pay_invoice',
       status: response.status,
       data
     });
   } catch (error) {
-    console.error("Error in coraPayInvoice:", error.message);
     return Response.json({ 
       ok: false,
       error: error.message 

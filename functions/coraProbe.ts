@@ -1,8 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-/**
- * Testa múltiplos endpoints da Cora API até achar um que retorne 200
- */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -12,74 +9,55 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Obter token via proxy mTLS
+    // Obter token
     const tokenResp = await base44.functions.invoke('coraAuth', {});
     
-    if (!tokenResp?.data?.access_token) {
+    if (!tokenResp?.data?.ok || !tokenResp?.data?.data?.access_token) {
       return Response.json({
         ok: false,
-        error: "token_failed",
-        details: tokenResp
+        step: 'auth',
+        error: tokenResp?.data
       });
     }
 
-    const token = tokenResp.data.access_token;
-    const apiUrl = Deno.env.get("CORA_API_URL");
+    const token = tokenResp.data.data.access_token;
+    const proxyUrl = Deno.env.get("CORA_API_PROXY_URL");
 
-    // Endpoints para testar
-    const endpoints = [
-      '/v2/me',
-      '/v2/customers',
-      '/v2/accounts',
-      '/v2/invoices',
-      '/v2/transactions',
-      '/v2/balance',
-      '/v2/pix',
-      '/v2/pix/qrcodes',
-      '/v1/me',
-      '/v1/accounts',
-      '/customers',
-      '/accounts',
-      '/invoices'
-    ];
+    if (!proxyUrl) {
+      return Response.json({
+        ok: false,
+        error: "CORA_API_PROXY_URL not configured"
+      });
+    }
 
+    const endpoints = ['/v2/me', '/v2/pix'];
     const results = [];
-    let firstOk = null;
 
-    for (const endpoint of endpoints) {
+    for (const path of endpoints) {
       try {
-        const res = await fetch(`${apiUrl}${endpoint}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+        const response = await fetch(proxyUrl, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            method: 'GET',
+            path
+          })
         });
 
-        const status = res.status;
-        const ok = res.ok;
-        
-        let data = null;
-        try {
-          const text = await res.text();
-          data = text ? JSON.parse(text) : null;
-        } catch {
-          data = "non-json response";
-        }
+        const data = await response.json();
 
         results.push({
-          endpoint,
-          status,
-          ok,
-          data: ok ? data : (status === 404 ? "not found" : data)
+          path,
+          status: response.status,
+          ok: response.ok,
+          data: response.ok ? data : (response.status === 403 ? 'forbidden' : data)
         });
-
-        if (ok && !firstOk) {
-          firstOk = endpoint;
-        }
       } catch (error) {
         results.push({
-          endpoint,
+          path,
           status: 'error',
           ok: false,
           error: error.message
@@ -89,12 +67,9 @@ Deno.serve(async (req) => {
 
     return Response.json({
       ok: true,
-      first_ok_endpoint: firstOk,
-      total_tested: endpoints.length,
       results
     });
   } catch (error) {
-    console.error("Error in coraProbe:", error.message);
     return Response.json({ 
       ok: false,
       error: error.message 
