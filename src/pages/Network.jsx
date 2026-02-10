@@ -261,74 +261,7 @@ export default function Network() {
         </Card>
       </div>
 
-      {/* Spillover */}
-      {directClients.length > 0 && (
-        <Card className="bg-zinc-950 border-orange-500/20">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-orange-500" />
-              Derramamento
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-400 mb-4">
-              Envie até 3 clientes para cada um dos seus 3 clientes diretos, ajudando-os a formar grupos mais rápido.
-            </p>
-            <Dialog open={spilloverDialogOpen} onOpenChange={setSpilloverDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-orange-500 hover:bg-orange-600">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Fazer Derramamento
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-zinc-950 border-orange-500/20">
-                <DialogHeader>
-                  <DialogTitle className="text-white">Derramamento de Cliente</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-white">Selecione o cliente direto</Label>
-                    <Select value={selectedDirectClient} onValueChange={setSelectedDirectClient}>
-                      <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-700">
-                        {directClients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.full_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white">E-mail do novo cliente</Label>
-                    <Input
-                      value={spilloverEmail}
-                      onChange={(e) => setSpilloverEmail(e.target.value)}
-                      className="bg-zinc-900 border-zinc-700 text-white"
-                      placeholder="email@exemplo.com"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="outline" onClick={() => setSpilloverDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleSpillover}
-                    disabled={processing}
-                    className="bg-orange-500 hover:bg-orange-600"
-                  >
-                    {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    Confirmar
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </CardContent>
-        </Card>
-      )}
+
 
       {/* Network Tabs */}
       <Tabs defaultValue="direct" className="space-y-4">

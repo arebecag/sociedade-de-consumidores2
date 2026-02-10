@@ -9,8 +9,139 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Save, User, MapPin, CreditCard, Bell, UserX, Shield, AlertTriangle, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Save, User, MapPin, CreditCard, Bell, UserX, Shield, AlertTriangle, Eye, EyeOff, CheckCircle, XCircle, Mail } from "lucide-react";
 import { toast } from "sonner";
+
+function EmailChangeFlow({ partnerId, currentEmail }) {
+  const [step, setStep] = useState('input');
+  const [newEmail, setNewEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleRequest = async () => {
+    if (!newEmail || !newEmail.includes('@')) {
+      toast.error('Digite um email válido');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data } = await base44.functions.invoke('changeEmail', {
+        newEmail,
+        step: 'request'
+      });
+
+      if (data.ok) {
+        toast.success('Código enviado para o novo email');
+        setStep('confirm');
+      } else {
+        toast.error(data.error || 'Erro ao enviar código');
+      }
+    } catch (error) {
+      toast.error('Erro ao processar solicitação');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!code || code.length !== 6) {
+      toast.error('Digite o código de 6 dígitos');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data } = await base44.functions.invoke('changeEmail', {
+        code,
+        step: 'confirm'
+      });
+
+      if (data.ok) {
+        toast.success('Email alterado! Faça login novamente.');
+        setTimeout(() => {
+          base44.auth.logout();
+        }, 2000);
+      } else {
+        toast.error(data.error || 'Código inválido ou expirado');
+      }
+    } catch (error) {
+      toast.error('Erro ao confirmar código');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (step === 'input') {
+    return (
+      <div className="space-y-4">
+        <Alert className="bg-orange-500/10 border-orange-500/30">
+          <Mail className="w-4 h-4 text-orange-500" />
+          <AlertDescription className="text-orange-200 text-sm">
+            Você receberá um código de confirmação no novo email. Após confirmar, será necessário fazer login novamente.
+          </AlertDescription>
+        </Alert>
+
+        <div className="space-y-2">
+          <Label className="text-white">Email Atual</Label>
+          <Input value={currentEmail} disabled className="bg-zinc-900 border-zinc-700 text-gray-400" />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-white">Novo Email</Label>
+          <Input
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            className="bg-zinc-900 border-zinc-700 text-white"
+            placeholder="novo@email.com"
+          />
+        </div>
+
+        <DialogFooter>
+          <Button onClick={handleRequest} disabled={loading} className="bg-orange-500 hover:bg-orange-600">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Enviar Código
+          </Button>
+        </DialogFooter>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Alert className="bg-green-500/10 border-green-500/30">
+        <CheckCircle className="w-4 h-4 text-green-500" />
+        <AlertDescription className="text-green-200 text-sm">
+          Código enviado para: <strong>{newEmail}</strong>
+        </AlertDescription>
+      </Alert>
+
+      <div className="space-y-2">
+        <Label className="text-white">Código de Confirmação</Label>
+        <Input
+          type="text"
+          maxLength={6}
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+          className="bg-zinc-900 border-zinc-700 text-white text-center text-2xl tracking-widest"
+          placeholder="000000"
+        />
+        <p className="text-gray-400 text-xs">Código válido por 15 minutos</p>
+      </div>
+
+      <DialogFooter>
+        <Button variant="outline" onClick={() => setStep('input')}>
+          Voltar
+        </Button>
+        <Button onClick={handleConfirm} disabled={loading} className="bg-orange-500 hover:bg-orange-600">
+          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+          Confirmar
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
 
 export default function Profile() {
   const [partner, setPartner] = useState(null);
@@ -356,12 +487,26 @@ export default function Profile() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-white">E-mail de Cadastro</Label>
-                  <Input
-                    value={partner?.created_by || ""}
-                    disabled
-                    className="bg-zinc-900 border-zinc-700 text-gray-400"
-                  />
-                  <p className="text-gray-500 text-xs">Para alterar o e-mail, entre em contato com o suporte.</p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={partner?.created_by || ""}
+                      disabled
+                      className="bg-zinc-900 border-zinc-700 text-gray-400 flex-1"
+                    />
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="border-orange-500 text-orange-500">
+                          Alterar
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-zinc-950 border-orange-500/20">
+                        <DialogHeader>
+                          <DialogTitle className="text-white">Alterar E-mail</DialogTitle>
+                        </DialogHeader>
+                        <EmailChangeFlow partnerId={partner?.id} currentEmail={partner?.created_by} />
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-white">Data de Nascimento</Label>

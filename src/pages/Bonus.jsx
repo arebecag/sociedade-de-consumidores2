@@ -144,10 +144,10 @@ export default function Bonus() {
 
           {/* Informações de Saque */}
           <div className="mt-4 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
-            <p className="text-orange-500 font-semibold mb-2">Informações de Saque</p>
+            <p className="text-orange-500 font-semibold mb-2">Informações de Pagamento</p>
             <ul className="text-gray-400 text-sm space-y-1">
-              <li>• Saque mínimo: <span className="text-white">R$ 50,00</span></li>
-              <li>• O pagamento será feito toda segunda-feira das 00:00 às 6:00</li>
+              <li>• Os depósitos serão feitos automaticamente toda segunda-feira das 00:00 às 06:00</li>
+              <li>• Qualquer valor disponível será depositado automaticamente</li>
             </ul>
           </div>
         </CardContent>
@@ -238,7 +238,7 @@ export default function Bonus() {
             Creditados ({creditedTransactions.length})
           </TabsTrigger>
           <TabsTrigger value="blocked" className="data-[state=active]:bg-orange-500">
-            Bloqueados ({blockedTransactions.length})
+            Retidos por Status Pendente ({blockedTransactions.length})
           </TabsTrigger>
         </TabsList>
 
@@ -286,7 +286,7 @@ function TransactionList({ transactions, formatCurrency, formatNumber }) {
                     tx.status === 'blocked' ? 'bg-red-500/20 text-red-500' :
                     'bg-yellow-500/20 text-yellow-500'
                   }>
-                    {tx.status === 'credited' ? 'Creditado' : tx.status === 'blocked' ? 'Bloqueado' : 'Pendente'}
+                    {tx.status === 'credited' ? 'Creditado' : tx.status === 'blocked' ? 'Retido' : 'Pendente'}
                   </Badge>
                 </div>
                 <p className="text-white mt-2">Compra de: {tx.source_partner_name}</p>

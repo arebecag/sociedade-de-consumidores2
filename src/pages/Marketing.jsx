@@ -110,7 +110,7 @@ export default function Marketing() {
 ✅ Pagar seus boletos com bônus
 ✅ Ganhar indicando amigos
 
-${partner ? `👉 Cadastre-se pelo meu link: ${window.location.origin}/PartnerSite?code=${partner.unique_code}` : ''}
+${partner ? `👉 Conheça mais: ${window.location.origin}/PartnerSite?p=${partner.unique_code}` : ''}
 
 Venha fazer parte! 💰`
     },
@@ -138,7 +138,7 @@ Os benefícios são:
 🔸 Use seu bônus para pagar boletos
 🔸 Ganhe até 30% de bônus nas indicações
 
-${partner ? `Cadastre-se pelo link: ${window.location.origin}/PartnerSite?code=${partner.unique_code}` : ''}
+${partner ? `Saiba mais: ${window.location.origin}/PartnerSite?p=${partner.unique_code}` : ''}
 
 Quem quiser saber mais, é só comentar aqui! 👇`
     }
@@ -169,7 +169,7 @@ Quem quiser saber mais, é só comentar aqui! 👇`
         <CardHeader>
           <CardTitle className="text-orange-500 flex items-center gap-2">
             <Share2 className="w-5 h-5" />
-            Seu Link de Indicação
+            Seu Link do Site
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -178,11 +178,11 @@ Quem quiser saber mais, é só comentar aqui! 👇`
               <input
                 type="text"
                 readOnly
-                value={`${window.location.origin}/PartnerSite?code=${partner.unique_code}`}
+                value={`${window.location.origin}/PartnerSite?p=${partner.unique_code}`}
                 className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white text-sm"
               />
               <Button
-                onClick={() => copyText(`${window.location.origin}/PartnerSite?code=${partner.unique_code}`, 'link')}
+                onClick={() => copyText(`${window.location.origin}/PartnerSite?p=${partner.unique_code}`, 'link')}
                 className="bg-orange-500 hover:bg-orange-600"
               >
                 {copiedIndex === 'link' ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
@@ -190,7 +190,7 @@ Quem quiser saber mais, é só comentar aqui! 👇`
               </Button>
             </div>
           ) : (
-            <p className="text-gray-400">Complete seu cadastro para obter seu link de indicação.</p>
+            <p className="text-gray-400">Complete seu cadastro para obter seu link do site.</p>
           )}
         </CardContent>
       </Card>

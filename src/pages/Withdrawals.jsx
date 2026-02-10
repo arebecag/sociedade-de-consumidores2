@@ -140,31 +140,18 @@ export default function Withdrawals() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Saques</h1>
-          <p className="text-gray-400">Solicite o saque dos seus bônus</p>
-        </div>
-        
-        <Button
-          onClick={() => setWithdrawDialogOpen(true)}
-          disabled={partner?.status !== 'ativo' || !partner?.pix_key || !partner?.bonus_for_withdrawal}
-          className="bg-orange-500 hover:bg-orange-600"
-        >
-          <Banknote className="w-4 h-4 mr-2" />
-          Solicitar Saque
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold text-white">Pagamentos Automáticos</h1>
+        <p className="text-gray-400">Histórico de depósitos semanais</p>
       </div>
 
-      {/* Block Alert */}
-      {isBlocked && (
-        <Alert className="bg-red-500/10 border-red-500/30">
-          <AlertTriangle className="w-4 h-4 text-red-500" />
-          <AlertDescription className="text-red-200">
-            <strong>Saques bloqueados.</strong> Resolva as pendências do seu cadastro para desbloquear.
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Info Alert */}
+      <Alert className="bg-orange-500/10 border-orange-500/30">
+        <AlertTriangle className="w-4 h-4 text-orange-500" />
+        <AlertDescription className="text-orange-200">
+          <strong>Pagamentos Automáticos:</strong> Os depósitos serão feitos automaticamente toda segunda-feira das 00:00 às 06:00. Configure sua forma de recebimento (PIX ou TED) no seu perfil.
+        </AlertDescription>
+      </Alert>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -207,24 +194,31 @@ export default function Withdrawals() {
         <Card className="bg-zinc-950 border-zinc-700">
           <CardContent className="p-6">
             <div>
-              <p className="text-gray-400 text-sm">Chave PIX</p>
-              <p className="text-white font-medium mt-1 truncate">
-                {partner?.pix_key || "Não configurada"}
+              <p className="text-gray-400 text-sm">Forma de Recebimento</p>
+              <p className="text-white font-medium mt-1">
+                {partner?.pix_key_type === 'pix' ? 'PIX' : partner?.pix_key_type === 'ted' ? 'Conta Bancária (TED)' : 'Não configurada'}
               </p>
-              <p className="text-gray-500 text-xs mt-1">
-                {partner?.pix_key_type?.toUpperCase() || "Configure no perfil"}
-              </p>
+              {partner?.pix_key_type === 'pix' && (
+                <p className="text-gray-500 text-xs mt-1 truncate">
+                  Chave: {partner?.pix_key}
+                </p>
+              )}
+              {partner?.pix_key_type === 'ted' && (
+                <p className="text-gray-500 text-xs mt-1">
+                  Banco: {partner?.bank_name || 'Configure no perfil'}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* PIX Warning */}
-      {!partner?.pix_key && (
+      {/* Payment Method Warning */}
+      {!partner?.pix_key_type && (
         <Alert className="bg-yellow-500/10 border-yellow-500/30">
           <AlertTriangle className="w-4 h-4 text-yellow-500" />
           <AlertDescription className="text-yellow-200">
-            Configure sua chave PIX no <strong>Perfil</strong> para poder solicitar saques.
+            Configure sua forma de recebimento (PIX ou TED) no <strong>Perfil</strong> para receber seus pagamentos.
           </AlertDescription>
         </Alert>
       )}
@@ -232,13 +226,14 @@ export default function Withdrawals() {
       {/* Withdrawals List */}
       <Card className="bg-zinc-950 border-orange-500/20">
         <CardHeader>
-          <CardTitle className="text-white">Histórico de Saques</CardTitle>
+          <CardTitle className="text-white">Histórico de Pagamentos</CardTitle>
         </CardHeader>
         <CardContent>
           {withdrawals.length === 0 ? (
             <div className="text-center py-12">
               <CreditCard className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">Você ainda não fez nenhum saque.</p>
+              <p className="text-gray-400">Nenhum pagamento realizado ainda.</p>
+              <p className="text-gray-500 text-sm mt-2">Os pagamentos começarão automaticamente na próxima segunda-feira.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -248,7 +243,7 @@ export default function Withdrawals() {
                     <div>
                       <StatusBadge status={withdrawal.status} />
                       <p className="text-gray-500 text-sm mt-2">
-                        Solicitado em: {new Date(withdrawal.created_date).toLocaleDateString('pt-BR', {
+                        Processado em: {new Date(withdrawal.created_date).toLocaleDateString('pt-BR', {
                           day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                         })}
                       </p>
@@ -257,9 +252,11 @@ export default function Withdrawals() {
                           Depositado em: {new Date(withdrawal.completed_date).toLocaleDateString('pt-BR')}
                         </p>
                       )}
-                      <p className="text-gray-400 text-xs mt-1">
-                        PIX: {withdrawal.pix_key}
-                      </p>
+                      {withdrawal.pix_key && (
+                        <p className="text-gray-400 text-xs mt-1">
+                          Destino: {withdrawal.pix_key}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-white">{formatCurrency(withdrawal.amount)}</p>
@@ -271,71 +268,6 @@ export default function Withdrawals() {
           )}
         </CardContent>
       </Card>
-
-      {/* Withdraw Dialog */}
-      <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-        <DialogContent className="bg-zinc-950 border-orange-500/20">
-          <DialogHeader>
-            <DialogTitle className="text-white">Solicitar Saque</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            <div className="p-4 bg-zinc-900 rounded-lg">
-              <p className="text-gray-400 text-sm">Saldo Disponível</p>
-              <p className="text-2xl font-bold text-orange-500">{formatCurrency(partner?.bonus_for_withdrawal)}</p>
-            </div>
-
-            <div className="p-4 bg-zinc-900 rounded-lg">
-              <p className="text-gray-400 text-sm">Chave PIX</p>
-              <p className="text-white font-medium">{partner?.pix_key}</p>
-              <p className="text-gray-500 text-xs">{partner?.pix_key_type?.toUpperCase()}</p>
-            </div>
-
-            <Alert className="bg-orange-500/10 border-orange-500/30">
-              <AlertTriangle className="w-4 h-4 text-orange-500" />
-              <AlertDescription className="text-orange-200 text-sm">
-                Valor mínimo para saque: R$ 50,00
-              </AlertDescription>
-            </Alert>
-
-            <div className="space-y-2">
-              <Label className="text-white">Valor do Saque</Label>
-              <Input
-                type="number"
-                step="0.01"
-                min="50"
-                max={partner?.bonus_for_withdrawal || 0}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="bg-zinc-900 border-zinc-700 text-white"
-                placeholder="0,00"
-              />
-              <Button
-                type="button"
-                variant="link"
-                className="text-orange-500 p-0 h-auto"
-                onClick={() => setAmount(partner?.bonus_for_withdrawal?.toString() || "0")}
-              >
-                Sacar tudo
-              </Button>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setWithdrawDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleWithdraw}
-              disabled={processing || !amount}
-              className="bg-orange-500 hover:bg-orange-600"
-            >
-              {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Banknote className="w-4 h-4 mr-2" />}
-              {processing ? "Processando..." : "Confirmar Saque"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
