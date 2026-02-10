@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Users, UserPlus, ChevronRight, CheckCircle, AlertCircle, XCircle, Share2, Copy } from "lucide-react";
+import { Loader2, Users, UserPlus, ChevronRight, CheckCircle, AlertCircle, XCircle, Share2, Copy, User } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Network() {
@@ -140,31 +140,46 @@ export default function Network() {
     );
   };
 
-  const ClientCard = ({ client, type }) => (
-    <Card className="bg-zinc-900 border-zinc-800">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-white font-medium">{client.display_name || client.full_name}</p>
-            <p className="text-gray-500 text-sm">
-              Cadastro: {new Date(client.created_date).toLocaleDateString('pt-BR')}
+  const ClientCard = ({ client, type }) => {
+    const graduationPercent = {
+      cliente_iniciante: 30, lider: 32, estrela: 34, bronze: 36, prata: 38, ouro: 40
+    };
+    const bonusPercent = type === "indirect" ? (graduationPercent[partner?.graduation] || 30) : 15;
+    
+    return (
+      <Card className="bg-zinc-900 border-zinc-800">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-white font-medium">{client.display_name || client.full_name}</p>
+              <p className="text-gray-500 text-sm">
+                Cadastro: {new Date(client.created_date).toLocaleDateString('pt-BR')}
+              </p>
+            </div>
+            <StatusBadge status={client.status} />
+          </div>
+          
+          {client.status === 'pendente' && client.pending_reasons?.length > 0 && (
+            <div className="mb-3 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
+              <p className="text-yellow-500 text-xs font-semibold mb-1">Motivos de pendência:</p>
+              <ul className="text-yellow-200 text-xs space-y-1">
+                {client.pending_reasons.map((reason, idx) => (
+                  <li key={idx}>• {reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          <div className="pt-3 border-t border-zinc-800">
+            <p className="text-gray-400 text-xs">
+              {type === "direct" ? "Bônus Direto: 15%" : `Bônus Indireto: ${bonusPercent}%`}
+              {' '}(metade compras / metade saque)
             </p>
           </div>
-          <StatusBadge status={client.status} />
-        </div>
-        {type === "direct" && (
-          <div className="mt-3 pt-3 border-t border-zinc-800">
-            <p className="text-gray-400 text-xs">Bônus Desempenho 1: 15% das compras</p>
-          </div>
-        )}
-        {type === "indirect" && (
-          <div className="mt-3 pt-3 border-t border-zinc-800">
-            <p className="text-gray-400 text-xs">Bônus Desempenho 2: 30% das compras</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (loading) {
     return (
@@ -178,8 +193,8 @@ export default function Network() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Meus Clientes</h1>
-          <p className="text-gray-400">Gerencie seus clientes indicados</p>
+          <h1 className="text-3xl font-bold text-white">Minha Rede</h1>
+          <p className="text-gray-400">Acompanhe sua rede e seus clientes indicados</p>
         </div>
         
         <div className="flex gap-2">
@@ -187,12 +202,28 @@ export default function Network() {
             <Share2 className="w-4 h-4 mr-2" />
             Copiar Link do Site
           </Button>
-          <Button onClick={copyReferralLink} className="bg-orange-500 hover:bg-orange-600">
-            <Copy className="w-4 h-4 mr-2" />
-            Copiar Link de Cadastro
-          </Button>
         </div>
       </div>
+
+      {/* Meu Indicador */}
+      {partner?.referrer_name && (
+        <Card className="bg-gradient-to-r from-orange-500/10 to-orange-600/10 border-orange-500/30">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-orange-500 rounded-full p-2">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Meu Indicador</p>
+                <p className="text-white font-semibold">{partner.referrer_name}</p>
+                {partner.referrer_id && allPartners.find(p => p.id === partner.referrer_id)?.unique_code && (
+                  <p className="text-orange-500 text-sm">Código: {allPartners.find(p => p.id === partner.referrer_id)?.unique_code}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -313,39 +344,137 @@ export default function Network() {
         </TabsList>
 
         <TabsContent value="direct">
-          {directClients.length === 0 ? (
-            <Card className="bg-zinc-950 border-orange-500/20">
-              <CardContent className="p-12 text-center">
-                <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Você ainda não tem clientes diretos.</p>
-                <p className="text-gray-500 text-sm mt-2">Compartilhe seu link de cadastro para começar!</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {directClients.map((client) => (
-                <ClientCard key={client.id} client={client} type="direct" />
-              ))}
-            </div>
-          )}
+          <Tabs defaultValue="ativos" className="space-y-4">
+            <TabsList className="bg-zinc-800">
+              <TabsTrigger value="ativos">
+                Ativos ({directClients.filter(c => c.status === 'ativo').length})
+              </TabsTrigger>
+              <TabsTrigger value="pendentes">
+                Pendentes ({directClients.filter(c => c.status === 'pendente').length})
+              </TabsTrigger>
+              <TabsTrigger value="excluidos">
+                Excluídos ({directClients.filter(c => c.status === 'excluido').length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="ativos">
+              {directClients.filter(c => c.status === 'ativo').length === 0 ? (
+                <Card className="bg-zinc-950 border-orange-500/20">
+                  <CardContent className="p-12 text-center">
+                    <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Nenhum cliente ativo.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {directClients.filter(c => c.status === 'ativo').map((client) => (
+                    <ClientCard key={client.id} client={client} type="direct" />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="pendentes">
+              {directClients.filter(c => c.status === 'pendente').length === 0 ? (
+                <Card className="bg-zinc-950 border-orange-500/20">
+                  <CardContent className="p-12 text-center">
+                    <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Nenhum cliente pendente.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {directClients.filter(c => c.status === 'pendente').map((client) => (
+                    <ClientCard key={client.id} client={client} type="direct" />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="excluidos">
+              {directClients.filter(c => c.status === 'excluido').length === 0 ? (
+                <Card className="bg-zinc-950 border-orange-500/20">
+                  <CardContent className="p-12 text-center">
+                    <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Nenhum cliente excluído.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {directClients.filter(c => c.status === 'excluido').map((client) => (
+                    <ClientCard key={client.id} client={client} type="direct" />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="indirect">
-          {indirectClients.length === 0 ? (
-            <Card className="bg-zinc-950 border-orange-500/20">
-              <CardContent className="p-12 text-center">
-                <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Você ainda não tem clientes indiretos.</p>
-                <p className="text-gray-500 text-sm mt-2">Clientes indiretos são os indicados dos seus clientes diretos.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {indirectClients.map((client) => (
-                <ClientCard key={client.id} client={client} type="indirect" />
-              ))}
-            </div>
-          )}
+          <Tabs defaultValue="ativos" className="space-y-4">
+            <TabsList className="bg-zinc-800">
+              <TabsTrigger value="ativos">
+                Ativos ({indirectClients.filter(c => c.status === 'ativo').length})
+              </TabsTrigger>
+              <TabsTrigger value="pendentes">
+                Pendentes ({indirectClients.filter(c => c.status === 'pendente').length})
+              </TabsTrigger>
+              <TabsTrigger value="excluidos">
+                Excluídos ({indirectClients.filter(c => c.status === 'excluido').length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="ativos">
+              {indirectClients.filter(c => c.status === 'ativo').length === 0 ? (
+                <Card className="bg-zinc-950 border-orange-500/20">
+                  <CardContent className="p-12 text-center">
+                    <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Nenhum cliente ativo.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {indirectClients.filter(c => c.status === 'ativo').map((client) => (
+                    <ClientCard key={client.id} client={client} type="indirect" />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="pendentes">
+              {indirectClients.filter(c => c.status === 'pendente').length === 0 ? (
+                <Card className="bg-zinc-950 border-orange-500/20">
+                  <CardContent className="p-12 text-center">
+                    <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Nenhum cliente pendente.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {indirectClients.filter(c => c.status === 'pendente').map((client) => (
+                    <ClientCard key={client.id} client={client} type="indirect" />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="excluidos">
+              {indirectClients.filter(c => c.status === 'excluido').length === 0 ? (
+                <Card className="bg-zinc-950 border-orange-500/20">
+                  <CardContent className="p-12 text-center">
+                    <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-400">Nenhum cliente excluído.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {indirectClients.filter(c => c.status === 'excluido').map((client) => (
+                    <ClientCard key={client.id} client={client} type="indirect" />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>

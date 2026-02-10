@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Save, User, MapPin, CreditCard, Bell, UserX, Shield, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { Loader2, Save, User, MapPin, CreditCard, Bell, UserX, Shield, AlertTriangle, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Profile() {
@@ -587,32 +587,38 @@ export default function Profile() {
                 <h3 className="text-lg font-semibold text-white mb-4">Chave PIX</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white">Tipo de Chave PIX *</Label>
+                    <Label className="text-white">Forma de Recebimento *</Label>
                     <Select value={formData.pix_key_type} onValueChange={(v) => handleChange("pix_key_type", v)}>
                       <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
-                        <SelectValue placeholder="Selecione o tipo" />
+                        <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent className="bg-zinc-900 border-zinc-700">
-                        <SelectItem value="cpf">CPF</SelectItem>
-                        <SelectItem value="cnpj">CNPJ</SelectItem>
-                        <SelectItem value="email">E-mail</SelectItem>
-                        <SelectItem value="phone">Telefone</SelectItem>
-                        <SelectItem value="random">Chave Aleatória</SelectItem>
+                        <SelectItem value="pix">PIX</SelectItem>
+                        <SelectItem value="ted">Conta Bancária (TED)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-white">Chave PIX *</Label>
-                    <Input
-                      value={formData.pix_key}
-                      onChange={(e) => handleChange("pix_key", e.target.value)}
-                      className="bg-zinc-900 border-zinc-700 text-white"
-                      placeholder="Sua chave PIX"
-                    />
-                    {(!formData.pix_key || !formData.pix_key_type) && (
-                      <p className="text-red-500 text-xs">Campo obrigatório</p>
-                    )}
-                  </div>
+                  {formData.pix_key_type === 'pix' && (
+                    <div className="space-y-2">
+                      <Label className="text-white">Chave PIX *</Label>
+                      <Input
+                        value={formData.pix_key}
+                        onChange={(e) => handleChange("pix_key", e.target.value)}
+                        className="bg-zinc-900 border-zinc-700 text-white"
+                        placeholder="CPF, Email, Telefone ou Chave Aleatória"
+                      />
+                      {!formData.pix_key && (
+                        <p className="text-red-500 text-xs">Campo obrigatório</p>
+                      )}
+                    </div>
+                  )}
+                  {formData.pix_key_type === 'ted' && (
+                    <div className="col-span-2">
+                      <p className="text-gray-400 text-sm">
+                        Pagamento via TED será feito utilizando os dados bancários informados acima.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

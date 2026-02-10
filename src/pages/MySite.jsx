@@ -174,24 +174,6 @@ export default function MySite() {
             </div>
           </div>
 
-          {/* Register Link */}
-          <div className="p-4 bg-zinc-900 rounded-lg">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-medium">Link de Cadastro Direto</p>
-                <p className="text-gray-500 text-sm mt-1 break-all">
-                  {getRegisterUrl() || "Carregando..."}
-                </p>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button onClick={() => copyLink('register')} variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500/10">
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copiar
-                </Button>
-              </div>
-            </div>
-          </div>
-
           {/* Unique Code */}
           <div className="p-4 bg-zinc-900 rounded-lg">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -226,13 +208,6 @@ export default function MySite() {
             >
               <Copy className="w-6 h-6 mb-2" />
               <span>Copiar Link do Site</span>
-            </Button>
-            <Button
-              onClick={() => copyLink('register')}
-              className="bg-purple-600 hover:bg-purple-700 h-auto py-4 flex-col"
-            >
-              <Copy className="w-6 h-6 mb-2" />
-              <span>Copiar Link de Cadastro</span>
             </Button>
           </div>
         </CardContent>
