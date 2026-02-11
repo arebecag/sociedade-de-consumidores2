@@ -527,7 +527,7 @@ export default function Register() {
               <div className="text-center mt-4">
                 <button
                   type="button"
-                  onClick={() => base44.auth.redirectToLogin()}
+                  onClick={() => navigate(createPageUrl("Login"))}
                   className="text-orange-500 hover:text-orange-400 text-sm"
                 >
                   Já tem uma conta? Faça login
