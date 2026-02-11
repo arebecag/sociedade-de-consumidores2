@@ -29,7 +29,24 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     loadUserData();
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    const publicPages = ["LandingPage", "Register", "PartnerSite"];
+    if (publicPages.includes(currentPageName)) {
+      return;
+    }
+    
+    try {
+      const isAuth = await base44.auth.isAuthenticated();
+      if (!isAuth) {
+        base44.auth.redirectToLogin(createPageUrl("Dashboard"));
+      }
+    } catch (error) {
+      console.error("Auth check error:", error);
+    }
+  };
 
   const loadUserData = async () => {
     try {
@@ -50,7 +67,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   // Public pages without layout
-  const publicPages = ["LandingPage", "Register", "Login", "PartnerSite"];
+  const publicPages = ["LandingPage", "Register", "PartnerSite"];
   if (publicPages.includes(currentPageName)) {
     return <>{children}</>;
   }

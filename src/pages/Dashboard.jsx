@@ -49,7 +49,52 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadData();
+    handlePendingRegistration();
   }, []);
+
+  const handlePendingRegistration = async () => {
+    const pendingData = localStorage.getItem("pendingPartnerData");
+    if (!pendingData) return;
+
+    try {
+      const partnerData = JSON.parse(pendingData);
+      const user = await base44.auth.me();
+      
+      // Check if partner already exists
+      const existingPartners = await base44.entities.Partner.filter({ 
+        created_by: user.email 
+      });
+      
+      if (existingPartners.length === 0) {
+        // Create the partner
+        const newPartner = await base44.entities.Partner.create(partnerData);
+        
+        // Create network relation if has referrer
+        if (partnerData.referrer_id) {
+          await base44.entities.NetworkRelation.create({
+            referrer_id: partnerData.referrer_id,
+            referrer_name: partnerData.referrer_name,
+            referred_id: newPartner.id,
+            referred_name: partnerData.full_name,
+            relation_type: "direct",
+            is_spillover: false,
+            level: 1
+          });
+        }
+        
+        toast.success("Cadastro concluído com sucesso! Bem-vindo!");
+        localStorage.removeItem("pendingPartnerData");
+        
+        // Reload data
+        loadData();
+      } else {
+        localStorage.removeItem("pendingPartnerData");
+      }
+    } catch (error) {
+      console.error("Error completing registration:", error);
+      localStorage.removeItem("pendingPartnerData");
+    }
+  };
 
   const loadData = async () => {
     try {

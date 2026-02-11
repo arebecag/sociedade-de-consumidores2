@@ -234,11 +234,11 @@ export default function Register() {
         display_name: formData.full_name.split(" ")[0]
       };
 
-      // Redirect to login for actual account creation
-      base44.auth.redirectToLogin(createPageUrl("Dashboard"));
-      
       // Store partner data to be created after login
       localStorage.setItem("pendingPartnerData", JSON.stringify(partnerData));
+      
+      // Redirect to login for actual account creation
+      base44.auth.redirectToLogin(createPageUrl("Dashboard"));
       
     } catch (error) {
       console.error("Error:", error);
@@ -527,7 +527,7 @@ export default function Register() {
               <div className="text-center mt-4">
                 <button
                   type="button"
-                  onClick={() => navigate(createPageUrl("Login"))}
+                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
                   className="text-orange-500 hover:text-orange-400 text-sm"
                 >
                   Já tem uma conta? Faça login
