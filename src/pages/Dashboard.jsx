@@ -24,8 +24,8 @@ const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
 
 const GraduationBadge = ({ graduation }) => {
   const gradConfig = {
-    cliente_iniciante: { label: "Cliente Iniciante", color: "bg-white text-black" },
-    lider: { label: "Líder", color: "bg-white text-black" },
+    cliente_iniciante: { label: "Cliente Iniciante", color: "bg-gray-800 text-white border border-gray-600" },
+    lider: { label: "Líder", color: "bg-gray-700 text-white border border-gray-500" },
     estrela: { label: "Estrela", color: "bg-blue-500 text-white" },
     bronze: { label: "Bronze", color: "bg-amber-700 text-white" },
     prata: { label: "Prata", color: "bg-gray-400 text-black" },
@@ -35,7 +35,7 @@ const GraduationBadge = ({ graduation }) => {
   const config = gradConfig[graduation] || gradConfig.cliente_iniciante;
 
   return (
-    <span className={`px-4 py-2 rounded-full font-semibold ${config.color}`}>
+    <span className={`px-3 py-1 rounded-full font-semibold text-sm ${config.color} whitespace-nowrap`}>
       {config.label}
     </span>
   );
@@ -175,10 +175,10 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
           <p className="text-gray-400 mt-1">Bem-vindo(a), {partner.display_name || partner.full_name}!</p>
         </div>
-        <div className="flex items-center gap-6 flex-wrap">
-          <div className="text-right">
-            <p className="text-gray-400 text-sm">Status</p>
-            <span className={`px-3 py-1 rounded-full font-semibold text-sm ${
+        <div className="flex items-center gap-4 flex-wrap">
+          <div>
+            <p className="text-gray-400 text-sm mb-1">Status</p>
+            <span className={`inline-block px-3 py-1 rounded-full font-semibold text-sm whitespace-nowrap ${
               partner.status === 'ativo' ? 'bg-green-500/20 text-green-500' :
               partner.status === 'pendente' ? 'bg-yellow-500/20 text-yellow-500' :
               'bg-red-500/20 text-red-500'
@@ -186,14 +186,14 @@ export default function Dashboard() {
               {partner.status?.toUpperCase()}
             </span>
           </div>
-          <div className="text-right">
-            <p className="text-gray-400 text-sm">Código Único</p>
-            <span className="px-3 py-1 rounded-full font-semibold text-sm bg-orange-500/20 text-orange-500">
+          <div>
+            <p className="text-gray-400 text-sm mb-1">Código Único</p>
+            <span className="inline-block px-3 py-1 rounded-full font-semibold text-sm bg-orange-500/20 text-orange-500 whitespace-nowrap">
               {partner.unique_code || "N/A"}
             </span>
           </div>
-          <div className="text-right">
-            <p className="text-gray-400 text-sm">Sua Graduação</p>
+          <div>
+            <p className="text-gray-400 text-sm mb-1">Sua Graduação</p>
             <GraduationBadge graduation={partner.graduation} />
           </div>
         </div>
