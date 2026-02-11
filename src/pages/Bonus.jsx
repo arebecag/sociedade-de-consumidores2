@@ -46,7 +46,7 @@ export default function Bonus() {
     const graduations = {
       cliente_iniciante: {
         label: "Cliente Iniciante",
-        color: "bg-white text-black",
+        color: "bg-gray-800 text-white border border-gray-600",
         directBonus: 15,
         indirectBonus: 30,
         groupsRequired: 5,
@@ -54,7 +54,7 @@ export default function Bonus() {
       },
       lider: {
         label: "Líder",
-        color: "bg-white text-black",
+        color: "bg-gray-700 text-white border border-gray-500",
         directBonus: 15,
         indirectBonus: 32,
         groupsRequired: 10,
