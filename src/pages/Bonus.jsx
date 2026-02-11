@@ -106,8 +106,15 @@ export default function Bonus() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-6">
-            <Badge className={`${current.color} text-lg px-4 py-2`}>
-              {current.label}
+            <Badge className={`${current.color} text-lg px-4 py-2 flex items-center gap-2`}>
+              <span className="text-2xl">{
+                partner.graduation === 'ouro' ? '🥇' :
+                partner.graduation === 'prata' ? '🥈' :
+                partner.graduation === 'bronze' ? '🥉' :
+                partner.graduation === 'estrela' ? '⭐' :
+                partner.graduation === 'lider' ? '👤' : '🌱'
+              }</span>
+              <span>{current.label}</span>
             </Badge>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
