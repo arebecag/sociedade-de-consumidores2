@@ -24,20 +24,19 @@ const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
 
 const GraduationBadge = ({ graduation }) => {
   const gradConfig = {
-    cliente_iniciante: { label: "Cliente Iniciante", color: "bg-white text-black", emoji: "🌱" },
-    lider: { label: "Líder", color: "bg-white text-black", emoji: "👤" },
-    estrela: { label: "Estrela", color: "bg-blue-500 text-white", emoji: "⭐" },
-    bronze: { label: "Bronze", color: "bg-amber-700 text-white", emoji: "🥉" },
-    prata: { label: "Prata", color: "bg-gray-400 text-black", emoji: "🥈" },
-    ouro: { label: "Ouro", color: "bg-yellow-500 text-black", emoji: "🥇" }
+    cliente_iniciante: { label: "Cliente Iniciante", color: "bg-white text-black" },
+    lider: { label: "Líder", color: "bg-white text-black" },
+    estrela: { label: "Estrela", color: "bg-blue-500 text-white" },
+    bronze: { label: "Bronze", color: "bg-amber-700 text-white" },
+    prata: { label: "Prata", color: "bg-gray-400 text-black" },
+    ouro: { label: "Ouro", color: "bg-yellow-500 text-black" }
   };
 
   const config = gradConfig[graduation] || gradConfig.cliente_iniciante;
 
   return (
-    <span className={`px-3 py-1 rounded-full font-semibold text-sm ${config.color} whitespace-nowrap flex items-center gap-1`}>
-      <span>{config.emoji}</span>
-      <span>{config.label}</span>
+    <span className={`px-3 py-1 rounded-full font-semibold text-sm ${config.color} whitespace-nowrap`}>
+      {config.label}
     </span>
   );
 };
