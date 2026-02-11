@@ -24,8 +24,8 @@ const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
 
 const GraduationBadge = ({ graduation }) => {
   const gradConfig = {
-    cliente_iniciante: { label: "Cliente Iniciante", color: "bg-gray-800 text-white border border-gray-600" },
-    lider: { label: "Líder", color: "bg-gray-700 text-white border border-gray-500" },
+    cliente_iniciante: { label: "Cliente Iniciante", color: "bg-white text-black" },
+    lider: { label: "Líder", color: "bg-white text-black" },
     estrela: { label: "Estrela", color: "bg-blue-500 text-white" },
     bronze: { label: "Bronze", color: "bg-amber-700 text-white" },
     prata: { label: "Prata", color: "bg-gray-400 text-black" },
