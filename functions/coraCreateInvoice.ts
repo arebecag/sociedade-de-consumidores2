@@ -11,8 +11,8 @@ Deno.serve(async (req) => {
 
     const { amount, due_date, payer, product_id, product_name, product_type } = await req.json();
 
-    if (!amount || !due_date || !payer || !product_id) {
-      return Response.json({ error: 'Campos obrigatórios faltando' }, { status: 400 });
+    if (!amount || !due_date || !payer) {
+      return Response.json({ error: 'Campos obrigatórios: amount, due_date, payer' }, { status: 400 });
     }
 
     // Get token
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     }
 
     // Save to database
-    const invoice = await base44.entities.Invoice.create({
+    const invoiceRecord = {
       invoice_id: invoiceData.id,
       partner_id: partner.id,
       partner_name: partner.full_name,
@@ -76,11 +76,16 @@ Deno.serve(async (req) => {
       due_date,
       status: 'pending',
       payment_link: invoiceData.payment_link || invoiceData.digitable_line,
-      product_id,
-      product_name,
-      product_type: product_type || 'outro',
       access_granted: false
-    });
+    };
+
+    if (product_id) {
+      invoiceRecord.product_id = product_id;
+      invoiceRecord.product_name = product_name || '';
+      invoiceRecord.product_type = product_type || 'outro';
+    }
+
+    const invoice = await base44.entities.Invoice.create(invoiceRecord);
 
     return Response.json({
       invoice_id: invoice.invoice_id,
