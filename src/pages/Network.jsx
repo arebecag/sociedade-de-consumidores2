@@ -193,7 +193,7 @@ export default function Network() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Minha Rede</h1>
+          <h1 className="text-3xl font-bold text-white">Meus Clientes</h1>
           <p className="text-gray-400">Acompanhe sua rede e seus clientes indicados</p>
         </div>
         

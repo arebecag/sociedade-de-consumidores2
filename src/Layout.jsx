@@ -76,7 +76,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
     { name: "Meu Perfil", icon: User, page: "Profile" },
     { name: "Loja 3X3 SC", icon: ShoppingBag, page: "Store" },
-    { name: "Minha Rede", icon: Users, page: "Network" },
+    { name: "Meus Clientes", icon: Users, page: "Network" },
     { name: "Meus Bônus", icon: Award, page: "Bonus" },
     { name: "Extrato", icon: FileText, page: "Extrato" },
     { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },

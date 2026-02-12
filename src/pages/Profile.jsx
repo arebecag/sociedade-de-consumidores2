@@ -176,6 +176,10 @@ export default function Profile() {
     notification_sms: false,
     notification_whatsapp: false,
     notification_frequency: "semanalmente",
+    notification_status_pendente: true,
+    notification_new_signup: true,
+    notification_own_purchases: true,
+    notification_third_party_purchases: true,
     successor: {
       full_name: "",
       cpf: "",
@@ -223,6 +227,10 @@ export default function Profile() {
           notification_sms: p.notification_sms ?? false,
           notification_whatsapp: p.notification_whatsapp ?? false,
           notification_frequency: p.notification_frequency || "semanalmente",
+          notification_status_pendente: p.notification_status_pendente ?? true,
+          notification_new_signup: p.notification_new_signup ?? true,
+          notification_own_purchases: p.notification_own_purchases ?? true,
+          notification_third_party_purchases: p.notification_third_party_purchases ?? true,
           successor: p.successor || {
             full_name: "",
             cpf: "",
@@ -821,6 +829,52 @@ export default function Profile() {
                     <SelectItem value="mensalmente">Mensalmente</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="pt-6 border-t border-zinc-800">
+                <Label className="text-white mb-3 block">Tipos de Notificação</Label>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg border border-orange-500/30">
+                    <div>
+                      <p className="text-white font-medium">Status Pendente</p>
+                      <p className="text-gray-400 text-sm">Notificações sobre status pendente (obrigatório)</p>
+                    </div>
+                    <Switch checked={true} disabled className="data-[state=checked]:bg-orange-500 opacity-60" />
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
+                    <div>
+                      <p className="text-white font-medium">Novos Cadastros</p>
+                      <p className="text-gray-400 text-sm">Notificações de novos clientes cadastrados na sua rede</p>
+                    </div>
+                    <Switch
+                      checked={formData.notification_new_signup}
+                      onCheckedChange={(checked) => handleChange("notification_new_signup", checked)}
+                      className="data-[state=checked]:bg-orange-500"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
+                    <div>
+                      <p className="text-white font-medium">Minhas Compras</p>
+                      <p className="text-gray-400 text-sm">Notificações sobre suas próprias compras</p>
+                    </div>
+                    <Switch
+                      checked={formData.notification_own_purchases}
+                      onCheckedChange={(checked) => handleChange("notification_own_purchases", checked)}
+                      className="data-[state=checked]:bg-orange-500"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
+                    <div>
+                      <p className="text-white font-medium">Compras de Terceiros</p>
+                      <p className="text-gray-400 text-sm">Notificações sobre compras de clientes na sua rede</p>
+                    </div>
+                    <Switch
+                      checked={formData.notification_third_party_purchases}
+                      onCheckedChange={(checked) => handleChange("notification_third_party_purchases", checked)}
+                      className="data-[state=checked]:bg-orange-500"
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
