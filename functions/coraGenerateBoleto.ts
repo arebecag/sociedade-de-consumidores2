@@ -42,47 +42,38 @@ Deno.serve(async (req) => {
     }
 
     const token = authRes.data.access_token;
-    const apiUrl = Deno.env.get("CORA_API_URL") || "https://api.cora.com.br";
+    const proxyUrl = Deno.env.get("CORA_TOKEN_PROXY_URL");
 
-    // Gerar código único para o boleto (idempotência)
-    const boletoId = `PURCHASE_${purchase_id}_${Date.now()}`;
+    if (!proxyUrl) {
+      return Response.json({ error: "CORA_TOKEN_PROXY_URL not configured" }, { status: 500 });
+    }
 
-    // Criar boleto na API Cora
+    // Criar boleto via PROXY VERCEL (mTLS)
     const boletoData = {
-      code: boletoId,
-      debtor: {
+      total_amount: purchase.paid_with_boleto * 100,
+      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      payment_form: "BANK_SLIP",
+      customer: {
         name: partner.full_name,
         document: partner.cpf,
-        address: {
-          street: partner.address?.street || "",
-          number: partner.address?.number || "",
-          neighborhood: partner.address?.neighborhood || "",
-          city: partner.address?.city || "",
-          state: partner.address?.state || "",
-          zip_code: partner.address?.cep || ""
-        }
-      },
-      amount: purchase.paid_with_boleto * 100, // em centavos
-      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 dias
-      description: `Compra ${purchase.product_name}`,
-      fine: {
-        amount: Math.round(purchase.paid_with_boleto * 0.02 * 100), // 2% de multa
-        date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      },
-      interest: {
-        amount: Math.round(purchase.paid_with_boleto * 0.001 * 100), // 0.1% ao dia
-        type: "DAILY"
+        email: user.email
       }
     };
 
-    const boletoResponse = await fetch(`${apiUrl}/boletos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(boletoData)
-    });
+    const boletoResponse = await fetch(
+      `${proxyUrl}/api/cora?path=/v2/invoices`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Idempotency-Key": crypto.randomUUID()
+        },
+        body: JSON.stringify(boletoData)
+      }
+    );
 
     if (!boletoResponse.ok) {
       const errorText = await boletoResponse.text();
