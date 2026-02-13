@@ -834,16 +834,16 @@ export default function Profile() {
               <div className="pt-6 border-t border-zinc-800">
                 <Label className="text-white mb-3 block">Tipos de Notificação</Label>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg border border-orange-500/30">
+                  <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg border-2 border-orange-500/50">
                     <div>
                       <p className="text-white font-medium">Status Pendente</p>
-                      <p className="text-gray-400 text-sm">Notificações sobre status pendente (obrigatório)</p>
+                      <p className="text-orange-400 text-sm font-semibold">Notificação obrigatória</p>
                     </div>
                     <Switch checked={true} disabled className="data-[state=checked]:bg-orange-500 opacity-60" />
                   </div>
                   <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
                     <div>
-                      <p className="text-white font-medium">Novos Cadastros</p>
+                      <p className="text-white font-medium">Novo Cadastro</p>
                       <p className="text-gray-400 text-sm">Notificações de novos clientes cadastrados na sua rede</p>
                     </div>
                     <Switch
@@ -854,7 +854,7 @@ export default function Profile() {
                   </div>
                   <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
                     <div>
-                      <p className="text-white font-medium">Minhas Compras</p>
+                      <p className="text-white font-medium">Compras realizadas pelo próprio cliente</p>
                       <p className="text-gray-400 text-sm">Notificações sobre suas próprias compras</p>
                     </div>
                     <Switch
@@ -865,7 +865,7 @@ export default function Profile() {
                   </div>
                   <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
                     <div>
-                      <p className="text-white font-medium">Compras de Terceiros</p>
+                      <p className="text-white font-medium">Compras realizadas por terceiros</p>
                       <p className="text-gray-400 text-sm">Notificações sobre compras de clientes na sua rede</p>
                     </div>
                     <Switch
