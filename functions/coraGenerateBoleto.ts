@@ -1,176 +1,139 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+/**
+ * Gera boleto na API Cora para uma Purchase
+ * Payload: { purchase_id: string }
+ */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // 1. Validar autenticação
     const user = await base44.auth.me();
+
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Extrair purchase_id do body
-    const body = await req.json();
-    const { purchase_id } = body;
+    const { purchase_id } = await req.json();
 
     if (!purchase_id) {
-      return Response.json({ error: 'purchase_id é obrigatório' }, { status: 400 });
+      return Response.json({ error: 'purchase_id is required' }, { status: 400 });
     }
 
-    console.log('[INFO] Gerando boleto para purchase:', purchase_id);
-
-    // 3. Buscar a Purchase
-    const purchases = await base44.asServiceRole.entities.Purchase.filter({ id: purchase_id });
-    if (!purchases || purchases.length === 0) {
-      return Response.json({ error: 'Purchase não encontrada' }, { status: 404 });
+    // Buscar Purchase
+    const purchases = await base44.entities.Purchase.filter({ id: purchase_id });
+    if (purchases.length === 0) {
+      return Response.json({ error: 'Purchase not found' }, { status: 404 });
     }
+
     const purchase = purchases[0];
 
-    console.log('[INFO] Purchase encontrada:', {
-      id: purchase.id,
-      partner_id: purchase.partner_id,
-      amount: purchase.amount,
-      paid_with_boleto: purchase.paid_with_boleto
-    });
-
-    // 4. Buscar o Partner
+    // Buscar Partner
     const partners = await base44.asServiceRole.entities.Partner.filter({ id: purchase.partner_id });
-    if (!partners || partners.length === 0) {
-      return Response.json({ error: 'Partner não encontrado' }, { status: 404 });
+    if (partners.length === 0) {
+      return Response.json({ error: 'Partner not found' }, { status: 404 });
     }
+
     const partner = partners[0];
 
-    console.log('[INFO] Partner encontrado:', {
-      id: partner.id,
-      name: partner.full_name,
-      cpf: partner.cpf
-    });
-
-    // 5. Obter token da Cora
-    console.log('[INFO] Obtendo token da Cora...');
-    const authResponse = await base44.asServiceRole.functions.invoke('coraAuth', {});
-    if (!authResponse.data || !authResponse.data.token) {
-      console.error('[ERROR] Falha ao obter token da Cora:', authResponse);
-      return Response.json({ 
-        error: 'Erro ao autenticar com a Cora', 
-        details: authResponse.data 
-      }, { status: 500 });
+    // Obter token Cora
+    const authRes = await base44.functions.invoke('coraAuth', {});
+    if (!authRes.data?.access_token) {
+      return Response.json({ error: 'Failed to authenticate with Cora' }, { status: 500 });
     }
-    const token = authResponse.data.token;
-    console.log('[INFO] Token obtido com sucesso');
 
-    // 6. Montar payload do boleto
-    const now = new Date();
-    const dueDate = new Date(now);
-    dueDate.setDate(dueDate.getDate() + 7);
-    const fineDateObj = new Date(dueDate);
-    fineDateObj.setDate(fineDateObj.getDate() + 1);
-
-    const formatDate = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-
-    const dueDateStr = formatDate(dueDate);
-    const fineDateStr = formatDate(fineDateObj);
+    const token = authRes.data.access_token;
     
-    const amountInCents = Math.round(purchase.paid_with_boleto * 100);
-    const fineAmount = Math.round(amountInCents * 0.02); // 2% multa
-    const interestAmount = Math.round(amountInCents * 0.0001); // 0.01% ao dia
+    // CORRIGIDO: Usar o proxy da Vercel
+    const proxyUrl = Deno.env.get("CORA_BOLETO_PROXY_URL") || "https://proxycora.vercel.app/api/boleto";
+    const environment = Deno.env.get("CORA_ENVIRONMENT") || "test";
 
-    // Limpar CPF (remover formatação)
-    const cleanCPF = (partner.cpf || '').replace(/[^\d]/g, '');
+    // Calcular datas
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 7);
+    
+    const fineDate = new Date(dueDate);
+    fineDate.setDate(fineDate.getDate() + 1);
+    
+    const amount = Math.round(purchase.paid_with_boleto * 100); // em centavos
 
-    const boletoPayload = {
+    // Preparar payload (igual ao que você já tem, só ajustei os nomes dos campos)
+    const boletoData = {
       code: `PURCHASE_${purchase_id}_${Date.now()}`,
       debtor: {
-        name: partner.full_name,
-        document: {
-          type: 'CPF',
-          number: cleanCPF
-        },
+        name: partner.full_name || partner.name,
+        taxpayer_id: partner.cpf?.replace(/\D/g, ''), // Cora espera "taxpayer_id" não "document"
         address: {
-          street: partner.address?.street || '',
-          number: partner.address?.number || '',
-          complement: partner.address?.complement || '',
-          neighborhood: partner.address?.neighborhood || '',
-          city: partner.address?.city || '',
-          state: partner.address?.state || '',
-          postal_code: (partner.address?.cep || '').replace(/[^\d]/g, '')
+          street: partner.address?.street || "",
+          number: partner.address?.number || "",
+          neighborhood: partner.address?.neighborhood || "",
+          city: partner.address?.city || "",
+          state: partner.address?.state || "",
+          zip_code: partner.address?.cep?.replace(/\D/g, '') || "",
+          complement: partner.address?.complement || ""
         }
       },
-      amount: amountInCents,
-      due_date: dueDateStr,
+      amount: amount,
+      due_date: dueDate.toISOString().split('T')[0],
+      description: `Compra ${purchase.product_name || 'Produto'}`,
       fine: {
-        amount: fineAmount,
-        date: fineDateStr
+        value: Math.round(amount * 0.02), // 2% em centavos (Cora espera "value" não "amount")
+        date: fineDate.toISOString().split('T')[0]
       },
       interest: {
-        amount: interestAmount
-      },
-      description: `Compra ${purchase.product_name || 'Produto'}`
+        value: Math.round(amount * 0.0001), // 0.01% ao dia (Cora espera "value" não "amount")
+        type: "daily" // Cora espera "daily" não "DAILY"
+      }
     };
 
-    console.log('[INFO] Payload do boleto:', JSON.stringify(boletoPayload, null, 2));
+    console.log("Enviando para proxy:", {
+      url: `${proxyUrl}?env=${environment}`,
+      payload: boletoData
+    });
 
-    // 7. Enviar para o proxy
-    console.log('[INFO] Enviando requisição para o proxy Vercel...');
-    const proxyResponse = await fetch('https://proxycora.vercel.app/api/boleto', {
+    // CORRIGIDO: Enviar para o proxy, não direto para Cora
+    const boletoResponse = await fetch(`${proxyUrl}?env=${environment}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(boletoPayload)
+      body: JSON.stringify(boletoData)
     });
 
-    console.log('[INFO] Status da resposta do proxy:', proxyResponse.status);
+    const boletoResult = await boletoResponse.json();
 
-    if (!proxyResponse.ok) {
-      const errorText = await proxyResponse.text();
-      console.error('[ERROR] Erro do proxy:', errorText);
-      return Response.json({
-        error: 'Erro ao gerar boleto na Cora',
-        status: proxyResponse.status,
-        details: errorText
-      }, { status: proxyResponse.status });
+    if (!boletoResponse.ok) {
+      console.error("Proxy/Cora error:", boletoResult);
+      return Response.json({ 
+        error: 'Failed to generate boleto',
+        details: boletoResult
+      }, { status: boletoResponse.status });
     }
 
-    const boletoData = await proxyResponse.json();
-    console.log('[INFO] Boleto gerado com sucesso:', boletoData);
-
-    // 8. Atualizar a Purchase
-    await base44.asServiceRole.entities.Purchase.update(purchase.id, {
-      boleto_id: boletoData.id,
-      boleto_barcode: boletoData.barcode,
-      boleto_url: boletoData.pdf_url || boletoData.url,
-      boleto_due_date: dueDateStr
+    // Atualizar Purchase com dados do boleto
+    await base44.asServiceRole.entities.Purchase.update(purchase_id, {
+      boleto_id: boletoResult.id,
+      boleto_barcode: boletoResult.barcode,
+      boleto_url: boletoResult.pdf_url,
+      boleto_due_date: dueDate.toISOString().split('T')[0]
     });
 
-    console.log('[INFO] Purchase atualizada com dados do boleto');
-
-    // 9. Retornar dados do boleto
     return Response.json({
       success: true,
       boleto: {
-        id: boletoData.id,
-        barcode: boletoData.barcode,
-        url: boletoData.pdf_url || boletoData.url,
-        due_date: dueDateStr,
-        amount: amountInCents,
-        code: boletoPayload.code
+        id: boletoResult.id,
+        barcode: boletoResult.barcode,
+        pdf_url: boletoResult.pdf_url,
+        due_date: dueDate.toISOString().split('T')[0],
+        amount: purchase.paid_with_boleto
       }
     });
 
   } catch (error) {
-    console.error('[ERROR] Erro em coraGenerateBoleto:', error.message);
-    console.error('[ERROR] Stack trace:', error.stack);
-    return Response.json({
+    console.error("Error in coraGenerateBoleto:", error.message);
+    return Response.json({ 
       error: 'Internal server error',
-      message: error.message
+      message: error.message 
     }, { status: 500 });
   }
 });
