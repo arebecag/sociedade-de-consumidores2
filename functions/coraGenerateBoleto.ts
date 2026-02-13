@@ -87,7 +87,8 @@ Deno.serve(async (req) => {
 
     console.log("Enviando para proxy:", {
       url: `${proxyUrl}?env=${environment}`,
-      payload: boletoData
+      payload: boletoData,
+      token: token.substring(0, 20) + '...'
     });
 
     // CORRIGIDO: Enviar para o proxy, não direto para Cora
@@ -100,13 +101,28 @@ Deno.serve(async (req) => {
       body: JSON.stringify(boletoData)
     });
 
-    const boletoResult = await boletoResponse.json();
+    console.log("Resposta do proxy - Status:", boletoResponse.status);
+    
+    const responseText = await boletoResponse.text();
+    console.log("Resposta do proxy - Body:", responseText);
+    
+    let boletoResult;
+    try {
+      boletoResult = JSON.parse(responseText);
+    } catch (e) {
+      console.error("Erro ao parsear resposta:", e.message);
+      return Response.json({ 
+        error: 'Invalid response from proxy',
+        details: responseText
+      }, { status: 500 });
+    }
 
     if (!boletoResponse.ok) {
       console.error("Proxy/Cora error:", boletoResult);
       return Response.json({ 
         error: 'Failed to generate boleto',
-        details: boletoResult
+        details: boletoResult,
+        status: boletoResponse.status
       }, { status: boletoResponse.status });
     }
 
