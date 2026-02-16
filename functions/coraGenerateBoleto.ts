@@ -3,6 +3,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 /**
  * Gera boleto na API Cora para uma Purchase
  * Payload: { purchase_id: string }
+ * 
+ * NOTA: Esta função requer configuração do proxy mTLS da Vercel.
+ * Será implementada após configuração dos certificados no proxy.
  */
 Deno.serve(async (req) => {
   try {
