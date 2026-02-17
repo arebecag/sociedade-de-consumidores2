@@ -84,7 +84,7 @@ export default function PartnerSite() {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/mw5dMvVXp10"
+              src="https://www.youtube.com/embed/1Y4Xo12zI4I"
               title="Sociedade de Consumidores"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
