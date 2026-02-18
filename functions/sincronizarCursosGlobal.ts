@@ -24,8 +24,8 @@ Deno.serve(async (req) => {
 
     const data = await res.json();
 
-    // O retorno vem como XML dentro de data.raw
-    const xmlRaw = data.raw || data;
+    // O retorno vem como XML dentro de data.raw (que pode ser um objeto com .raw ou string direta)
+    const xmlRaw = data?.raw?.raw || data?.raw || data;
     const xmlStr = typeof xmlRaw === 'string' ? xmlRaw : JSON.stringify(xmlRaw);
 
     // Extrair todos os blocos <Produto_...>...</Produto_...>
