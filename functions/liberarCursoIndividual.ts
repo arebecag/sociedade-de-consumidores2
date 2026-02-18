@@ -17,14 +17,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'compraId e cursoId são obrigatórios' }, { status: 400 });
     }
 
-    // Buscar configurações EAD
-    const configs = await base44.asServiceRole.entities.ConfiguracoesEAD.list();
-    if (configs.length === 0) {
-      return Response.json({ error: 'Configurações EAD não encontradas' }, { status: 500 });
-    }
-    const config = configs[0];
-    const idTutorGlobal = config.idTutorGlobal || 259;
-    const urlRedirecionamento = config.urlRedirecionamentoEAD || '';
+    // Configurações fixas (temporário)
+    const idTutorGlobal = 259;
+    const urlRedirecionamento = "https://globaleadflix.com.br/login";
 
     // Buscar parceiro/usuário
     const partners = await base44.asServiceRole.entities.Partner.filter({ created_by: user.email });
