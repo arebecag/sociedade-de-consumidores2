@@ -21,6 +21,15 @@ export default function AdminCursosEAD() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCurso, setEditingCurso] = useState(null);
 
+  // Configurações EAD
+  const [config, setConfig] = useState(null);
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [configForm, setConfigForm] = useState({
+    idTutorGlobal: 259,
+    urlRedirecionamentoEAD: "",
+    ativo: true
+  });
+
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
@@ -43,15 +52,26 @@ export default function AdminCursosEAD() {
         return;
       }
 
-      const [allCursos, allCompras, allLogs] = await Promise.all([
+      const [allCursos, allCompras, allLogs, allConfigs] = await Promise.all([
         base44.entities.CursosEAD.list(),
         base44.entities.ComprasCursosEAD.list(),
-        base44.entities.LogsIntegracaoEAD.list()
+        base44.entities.LogsIntegracaoEAD.list(),
+        base44.entities.ConfiguracoesEAD.list()
       ]);
 
       setCursos(allCursos);
       setCompras(allCompras);
       setLogs(allLogs);
+
+      if (allConfigs.length > 0) {
+        const c = allConfigs[0];
+        setConfig(c);
+        setConfigForm({
+          idTutorGlobal: c.idTutorGlobal || 259,
+          urlRedirecionamentoEAD: c.urlRedirecionamentoEAD || "",
+          ativo: c.ativo !== false
+        });
+      }
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -103,6 +123,31 @@ export default function AdminCursosEAD() {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Erro ao salvar curso");
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    if (!configForm.idTutorGlobal || !configForm.urlRedirecionamentoEAD) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+    setSavingConfig(true);
+    try {
+      if (config) {
+        await base44.entities.ConfiguracoesEAD.update(config.id, configForm);
+      } else {
+        const created = await base44.entities.ConfiguracoesEAD.create(configForm);
+        setConfig(created);
+      }
+      toast.success("Configuração salva com sucesso");
+      // Recarregar config
+      const allConfigs = await base44.entities.ConfiguracoesEAD.list();
+      if (allConfigs.length > 0) setConfig(allConfigs[0]);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Erro ao salvar configuração");
+    } finally {
+      setSavingConfig(false);
     }
   };
 
@@ -158,6 +203,9 @@ export default function AdminCursosEAD() {
           </TabsTrigger>
           <TabsTrigger value="logs" className="data-[state=active]:bg-orange-500">
             Logs ({logs.length})
+          </TabsTrigger>
+          <TabsTrigger value="configuracoes" className="data-[state=active]:bg-orange-500">
+            Configurações
           </TabsTrigger>
         </TabsList>
 
@@ -290,6 +338,58 @@ export default function AdminCursosEAD() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+        <TabsContent value="configuracoes">
+          <Card className="bg-zinc-950 border-orange-500/20 max-w-xl">
+            <CardHeader>
+              <CardTitle className="text-white">
+                {config ? "Editar Configuração GlobalEAD" : "Criar Configuração GlobalEAD"}
+              </CardTitle>
+              {config && (
+                <p className="text-gray-500 text-xs">Existe um único registro de configuração. Edite os campos abaixo.</p>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-white">ID do Tutor Global *</Label>
+                <Input
+                  type="number"
+                  value={configForm.idTutorGlobal}
+                  onChange={(e) => setConfigForm({ ...configForm, idTutorGlobal: parseInt(e.target.value) || 0 })}
+                  className="bg-zinc-900 border-zinc-700 text-white mt-1"
+                  placeholder="Ex: 259"
+                />
+              </div>
+              <div>
+                <Label className="text-white">URL de Redirecionamento EAD *</Label>
+                <Input
+                  value={configForm.urlRedirecionamentoEAD}
+                  onChange={(e) => setConfigForm({ ...configForm, urlRedirecionamentoEAD: e.target.value })}
+                  className="bg-zinc-900 border-zinc-700 text-white mt-1"
+                  placeholder="https://seudominioead.com.br"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={configForm.ativo}
+                  onCheckedChange={(checked) => setConfigForm({ ...configForm, ativo: checked })}
+                />
+                <Label className="text-white">Configuração Ativa</Label>
+              </div>
+              <Button
+                onClick={handleSaveConfig}
+                disabled={savingConfig}
+                className="w-full bg-orange-500 hover:bg-orange-600"
+              >
+                {savingConfig ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                {savingConfig ? "Salvando..." : "Salvar Configuração"}
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
