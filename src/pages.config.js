@@ -47,13 +47,16 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminCursosEAD from './pages/AdminCursosEAD';
 import AdminNetwork from './pages/AdminNetwork';
 import Bonus from './pages/Bonus';
 import Dashboard from './pages/Dashboard';
 import Extrato from './pages/Extrato';
 import FAQ from './pages/FAQ';
 import IncomeReport from './pages/IncomeReport';
+import LojaCursos from './pages/LojaCursos';
 import Marketing from './pages/Marketing';
+import MeusCursos from './pages/MeusCursos';
 import MySite from './pages/MySite';
 import Network from './pages/Network';
 import PartnerSite from './pages/PartnerSite';
@@ -63,20 +66,20 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
-import LojaCursos from './pages/LojaCursos';
-import MeusCursos from './pages/MeusCursos';
-import AdminCursosEAD from './pages/AdminCursosEAD';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminCursosEAD": AdminCursosEAD,
     "AdminNetwork": AdminNetwork,
     "Bonus": Bonus,
     "Dashboard": Dashboard,
     "Extrato": Extrato,
     "FAQ": FAQ,
     "IncomeReport": IncomeReport,
+    "LojaCursos": LojaCursos,
     "Marketing": Marketing,
+    "MeusCursos": MeusCursos,
     "MySite": MySite,
     "Network": Network,
     "PartnerSite": PartnerSite,
@@ -86,9 +89,6 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
-    "LojaCursos": LojaCursos,
-    "MeusCursos": MeusCursos,
-    "AdminCursosEAD": AdminCursosEAD,
 }
 
 export const pagesConfig = {
