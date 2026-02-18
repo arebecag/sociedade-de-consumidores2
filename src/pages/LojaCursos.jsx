@@ -81,13 +81,22 @@ export default function LojaCursos() {
     }
 
     // Checar se já liberado
-    if (comprasLiberadas[selectedCurso.id]) {
+    if (statusCursos[selectedCurso.id] === 'liberado') {
       toast.error("Você já possui este curso.");
       setDialogOpen(false);
       return;
     }
 
+    // Lock duplo clique
+    if (processingCursoId === selectedCurso.id) return;
+
     setProcessing(true);
+    setProcessingCursoId(selectedCurso.id);
+    setDialogOpen(false);
+
+    // Status visual: processando
+    setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'processando' }));
+
     try {
       // Verificar novamente no banco (segurança)
       const comprasExistentes = await base44.entities.ComprasCursosEAD.filter({
@@ -97,7 +106,7 @@ export default function LojaCursos() {
       });
       if (comprasExistentes.length > 0) {
         toast.error("Você já possui este curso.");
-        setDialogOpen(false);
+        setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'liberado' }));
         return;
       }
 
@@ -125,24 +134,26 @@ export default function LojaCursos() {
       });
 
       if (response.data?.success) {
-        toast.success("Curso liberado! Redirecionando...");
-        setDialogOpen(false);
-        setComprasLiberadas(prev => ({ ...prev, [selectedCurso.id]: true }));
+        setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'liberado' }));
         setPartner(prev => ({
           ...prev,
           bonus_for_purchases: (prev.bonus_for_purchases || 0) - selectedCurso.valorBonus
         }));
+        toast.success("🎉 Curso liberado com sucesso! Redirecionando...");
         setTimeout(() => {
           window.open(URL_ACESSO, '_blank');
-        }, 1000);
+        }, 1500);
       } else {
+        setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'erro' }));
         toast.error(response.data?.error || "Erro ao liberar acesso.");
       }
     } catch (error) {
       console.error("Error:", error);
+      setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'erro' }));
       toast.error("Erro ao processar compra. Tente novamente.");
     } finally {
       setProcessing(false);
+      setProcessingCursoId(null);
     }
   };
 
