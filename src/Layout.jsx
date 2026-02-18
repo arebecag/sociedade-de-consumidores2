@@ -16,7 +16,8 @@ import {
   Globe,
   CreditCard,
   HelpCircle,
-  Megaphone
+  Megaphone,
+  GraduationCap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -33,7 +34,7 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   const checkAuth = async () => {
-    const publicPages = ["LandingPage", "Register", "PartnerSite"];
+    const publicPages = ["LandingPage", "Register", "PartnerSite", "LojaCursos"];
     if (publicPages.includes(currentPageName)) {
       return;
     }
@@ -85,11 +86,14 @@ export default function Layout({ children, currentPageName }) {
     { name: "Relatórios", icon: FileText, page: "Reports" },
     { name: "Receita Federal", icon: FileText, page: "IncomeReport" },
     { name: "Dúvidas", icon: HelpCircle, page: "FAQ" },
-  ];
+    { name: "Cursos EAD", icon: GraduationCap, page: "LojaCursos" },
+    { name: "Meus Cursos", icon: GraduationCap, page: "MeusCursos" },
+    ];
 
   // Admin-only menu items
   if (user?.role === 'admin') {
     menuItems.push({ name: "Admin: Auditoria", icon: Users, page: "AdminNetwork" });
+    menuItems.push({ name: "Admin: EAD", icon: GraduationCap, page: "AdminCursosEAD" });
   }
 
   const NavContent = () => (
