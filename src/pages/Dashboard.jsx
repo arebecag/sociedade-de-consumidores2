@@ -396,7 +396,7 @@ export default function Dashboard() {
             <Card className="bg-zinc-950 border-orange-500/20 hover:border-orange-500/50 transition-colors cursor-pointer">
               <CardContent className="p-6 text-center">
                 <Users className="w-8 h-8 text-orange-500 mx-auto mb-2" />
-                <p className="text-white font-medium">Ver Rede</p>
+                <p className="text-white font-medium">Ver Clientes</p>
               </CardContent>
             </Card>
           </Link>

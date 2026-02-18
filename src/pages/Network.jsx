@@ -194,7 +194,7 @@ export default function Network() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Meus Clientes</h1>
-          <p className="text-gray-400">Acompanhe sua rede e seus clientes indicados</p>
+          <p className="text-gray-400">Acompanhe seus clientes indicados</p>
         </div>
         
         <div className="flex gap-2">
@@ -235,13 +235,13 @@ export default function Network() {
         </Card>
         <Card className="bg-zinc-950 border-orange-500/20">
           <CardContent className="p-4 text-center">
-            <p className="text-gray-400 text-sm">Desempenho 1</p>
+            <p className="text-gray-400 text-sm">Clientes Diretos</p>
             <p className="text-2xl font-bold text-white">{directClients.length}/3</p>
           </CardContent>
         </Card>
         <Card className="bg-zinc-950 border-orange-500/20">
           <CardContent className="p-4 text-center">
-            <p className="text-gray-400 text-sm">Desempenho 2</p>
+            <p className="text-gray-400 text-sm">Clientes Indiretos</p>
             <p className="text-2xl font-bold text-white">{indirectClients.length}/9</p>
           </CardContent>
         </Card>
@@ -255,7 +255,7 @@ export default function Network() {
         </Card>
         <Card className="bg-zinc-950 border-orange-500/20">
           <CardContent className="p-4 text-center">
-            <p className="text-gray-400 text-sm">Desempenho Total</p>
+            <p className="text-gray-400 text-sm">Grupos Formados</p>
             <p className="text-2xl font-bold text-orange-500">{partner?.groups_formed || 0}</p>
           </CardContent>
         </Card>
@@ -268,11 +268,11 @@ export default function Network() {
         <TabsList className="bg-zinc-900 border border-orange-500/20">
           <TabsTrigger value="direct" className="data-[state=active]:bg-orange-500">
             <Users className="w-4 h-4 mr-2" />
-            Desempenho 1 ({directClients.length})
+            Clientes Diretos ({directClients.length})
           </TabsTrigger>
           <TabsTrigger value="indirect" className="data-[state=active]:bg-orange-500">
             <ChevronRight className="w-4 h-4 mr-2" />
-            Desempenho 2 ({indirectClients.length})
+            Clientes Indiretos ({indirectClients.length})
           </TabsTrigger>
         </TabsList>
 
