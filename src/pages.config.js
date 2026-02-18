@@ -63,6 +63,9 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
+import LojaCursos from './pages/LojaCursos';
+import MeusCursos from './pages/MeusCursos';
+import AdminCursosEAD from './pages/AdminCursosEAD';
 import __Layout from './Layout.jsx';
 
 
@@ -83,6 +86,9 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
+    "LojaCursos": LojaCursos,
+    "MeusCursos": MeusCursos,
+    "AdminCursosEAD": AdminCursosEAD,
 }
 
 export const pagesConfig = {
