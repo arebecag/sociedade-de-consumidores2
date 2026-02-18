@@ -59,7 +59,8 @@ export default function LojaCursos() {
       toast.error("Complete seu cadastro para comprar cursos.");
       return;
     }
-    if (comprasLiberadas[curso.id]) return;
+    if (statusCursos[curso.id] === 'liberado') return;
+    if (processingCursoId === curso.id) return; // lock
 
     if ((partner.bonus_for_purchases || 0) < curso.valorBonus) {
       toast.error("Saldo de bônus insuficiente para este curso.");
