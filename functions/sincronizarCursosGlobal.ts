@@ -24,11 +24,37 @@ Deno.serve(async (req) => {
 
     const data = await res.json();
 
-    // A API pode retornar array direto ou dentro de uma propriedade
-    const assinaturas = Array.isArray(data) ? data : (data.assinaturas || data.data || data.items || []);
+    // O retorno vem como XML dentro de data.raw
+    const xmlRaw = data.raw || data;
+    const xmlStr = typeof xmlRaw === 'string' ? xmlRaw : JSON.stringify(xmlRaw);
+
+    // Extrair todos os blocos <Produto_...>...</Produto_...>
+    const blocos = [];
+    const blocoRegex = /<Produto_[^>]*>([\s\S]*?)<\/Produto_[^>]*>/g;
+    let match;
+    while ((match = blocoRegex.exec(xmlStr)) !== null) {
+      blocos.push(match[1]);
+    }
+
+    if (!blocos.length) {
+      return Response.json({ message: 'Nenhum produto encontrado no XML', raw: xmlStr.slice(0, 500) });
+    }
+
+    // Extrair id e nome de cada bloco
+    const assinaturas = [];
+    for (const bloco of blocos) {
+      const idMatch = bloco.match(/<id>(.*?)<\/id>/);
+      const nomeMatch = bloco.match(/<nome>(.*?)<\/nome>/);
+      if (idMatch && nomeMatch) {
+        assinaturas.push({
+          id: parseInt(idMatch[1].trim()),
+          nome: nomeMatch[1].trim()
+        });
+      }
+    }
 
     if (!assinaturas.length) {
-      return Response.json({ message: 'Nenhuma assinatura retornada', raw: data });
+      return Response.json({ message: 'Nenhuma assinatura extraída do XML', xmlPreview: xmlStr.slice(0, 500) });
     }
 
     // Buscar cursos existentes
@@ -42,24 +68,19 @@ Deno.serve(async (req) => {
     let atualizados = 0;
 
     for (const ass of assinaturas) {
-      const idAss = ass.id || ass.idassinatura || ass.idAssinatura;
-      const nomeAss = ass.nome || ass.name || ass.titulo || String(idAss);
+      if (!ass.id) continue;
 
-      if (!idAss) continue;
-
-      if (mapaExistentes[idAss]) {
-        // Atualizar nome se mudou
-        if (mapaExistentes[idAss].nome !== nomeAss) {
-          await base44.asServiceRole.entities.CursosEAD.update(mapaExistentes[idAss].id, { nome: nomeAss });
+      if (mapaExistentes[ass.id]) {
+        if (mapaExistentes[ass.id].nome !== ass.nome) {
+          await base44.asServiceRole.entities.CursosEAD.update(mapaExistentes[ass.id].id, { nome: ass.nome });
           atualizados++;
         }
       } else {
-        // Criar novo
         await base44.asServiceRole.entities.CursosEAD.create({
-          nome: nomeAss,
-          descricao: nomeAss,
+          nome: ass.nome,
+          descricao: ass.nome,
           valorBonus: 100,
-          idAssinaturaGlobal: idAss,
+          idAssinaturaGlobal: ass.id,
           ativo: true
         });
         criados++;
