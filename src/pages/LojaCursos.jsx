@@ -11,14 +11,16 @@ import { toast } from "sonner";
 const URL_ACESSO = "https://globaleadflix.com.br/login";
 const fmt = (v) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0);
 
+// Status por cursoId: 'liberado' | 'processando' | 'erro'
 export default function LojaCursos() {
   const [cursos, setCursos] = useState([]);
   const [partner, setPartner] = useState(null);
-  const [comprasLiberadas, setComprasLiberadas] = useState({}); // cursoId -> true
+  const [statusCursos, setStatusCursos] = useState({}); // cursoId -> 'liberado' | 'processando' | 'erro'
   const [loading, setLoading] = useState(true);
   const [selectedCurso, setSelectedCurso] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [processingCursoId, setProcessingCursoId] = useState(null); // lock por curso
 
   useEffect(() => {
     loadData();
