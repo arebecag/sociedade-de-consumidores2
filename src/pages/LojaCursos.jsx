@@ -196,15 +196,20 @@ export default function LojaCursos() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cursos.map((curso) => {
-            const jaAdquirido = !!comprasLiberadas[curso.id];
+            const status = statusCursos[curso.id]; // 'liberado' | 'processando' | 'erro' | undefined
             const semSaldo = (partner?.bonus_for_purchases || 0) < curso.valorBonus;
+            const isProcessando = processingCursoId === curso.id || status === 'processando';
+
+            const borderClass =
+              status === 'liberado' ? "border-green-500/30" :
+              isProcessando ? "border-yellow-500/30" :
+              status === 'erro' ? "border-red-500/30" :
+              "border-orange-500/20 hover:border-orange-500/40";
 
             return (
               <Card
                 key={curso.id}
-                className={`bg-zinc-950 border transition-all overflow-hidden flex flex-col ${
-                  jaAdquirido ? "border-green-500/30" : "border-orange-500/20 hover:border-orange-500/40"
-                }`}
+                className={`bg-zinc-950 border transition-all overflow-hidden flex flex-col ${borderClass}`}
               >
                 {/* Imagem ou placeholder */}
                 {curso.imagem ? (
@@ -219,10 +224,19 @@ export default function LojaCursos() {
                   {/* Status badge */}
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="text-white font-semibold text-lg leading-tight">{curso.nome}</h3>
-                    {jaAdquirido ? (
+                    {status === 'liberado' ? (
                       <Badge className="bg-green-500/20 text-green-400 border-green-500/30 shrink-0">
                         <CheckCircle2 className="w-3 h-3 mr-1" />
                         Adquirido
+                      </Badge>
+                    ) : isProcessando ? (
+                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 shrink-0">
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Processando
+                      </Badge>
+                    ) : status === 'erro' ? (
+                      <Badge className="bg-red-500/20 text-red-400 border-red-500/30 shrink-0">
+                        Erro
                       </Badge>
                     ) : (
                       <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 shrink-0">
@@ -243,13 +257,25 @@ export default function LojaCursos() {
                   </div>
 
                   {/* Botão */}
-                  {jaAdquirido ? (
+                  {status === 'liberado' ? (
                     <Button
                       onClick={() => window.open(URL_ACESSO, '_blank')}
                       className="w-full bg-green-600 hover:bg-green-700 text-white"
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Acessar Curso
+                    </Button>
+                  ) : isProcessando ? (
+                    <Button disabled className="w-full bg-yellow-600/50 text-white cursor-not-allowed">
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Processando compra...
+                    </Button>
+                  ) : status === 'erro' ? (
+                    <Button
+                      onClick={() => handleComprarClick(curso)}
+                      className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Tentar Novamente
                     </Button>
                   ) : (
                     <Button
