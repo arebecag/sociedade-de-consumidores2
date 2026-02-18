@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Plus, Edit, Trash2, Save, X } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Save, X, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminCursosEAD() {
@@ -24,6 +24,7 @@ export default function AdminCursosEAD() {
   // Configurações EAD
   const [config, setConfig] = useState(null);
   const [savingConfig, setSavingConfig] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [configForm, setConfigForm] = useState({
     idTutorGlobal: 259,
     urlRedirecionamentoEAD: "",
@@ -126,6 +127,25 @@ export default function AdminCursosEAD() {
     }
   };
 
+  const handleSincronizar = async () => {
+    setSyncing(true);
+    try {
+      const response = await base44.functions.invoke('sincronizarCursosGlobal', {});
+      if (response.data?.success) {
+        toast.success(`Sincronizado! ${response.data.criados} criados, ${response.data.atualizados} atualizados.`);
+        loadData();
+      } else {
+        toast.error(response.data?.error || "Erro ao sincronizar");
+        console.log("Resposta bruta:", response.data);
+      }
+    } catch (error) {
+      toast.error("Erro ao sincronizar cursos");
+      console.error(error);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const handleSaveConfig = async () => {
     if (!configForm.idTutorGlobal || !configForm.urlRedirecionamentoEAD) {
       toast.error("Preencha todos os campos obrigatórios");
@@ -187,10 +207,21 @@ export default function AdminCursosEAD() {
           <h1 className="text-3xl font-bold text-white">Administração EAD</h1>
           <p className="text-gray-400">Gerencie cursos, compras e logs</p>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="bg-orange-500 hover:bg-orange-600">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Curso
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleSincronizar}
+            disabled={syncing}
+            variant="outline"
+            className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+          >
+            {syncing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+            Sincronizar Cursos da Global
+          </Button>
+          <Button onClick={() => handleOpenDialog()} className="bg-orange-500 hover:bg-orange-600">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Curso
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="cursos" className="space-y-4">
