@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.CursosEAD.create({
           nome: ass.nome,
           descricao: ass.nome,
-          valorBonus: 100,
+          valorBonus: 350,
           idAssinaturaGlobal: ass.id,
           ativo: true
         });
