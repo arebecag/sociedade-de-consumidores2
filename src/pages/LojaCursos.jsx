@@ -35,16 +35,18 @@ export default function LojaCursos() {
 
       const [allCursos, todasCompras] = await Promise.all([
         base44.entities.CursosEAD.filter({ ativo: true }),
-        p ? base44.entities.ComprasCursosEAD.filter({ usuarioId: p.id, status: 'LIBERADO' }) : Promise.resolve([])
+        p ? base44.entities.ComprasCursosEAD.filter({ usuarioId: p.id }) : Promise.resolve([])
       ]);
 
       setCursos(allCursos);
 
       const mapa = {};
       for (const c of todasCompras) {
-        mapa[c.cursoId] = true;
+        if (c.status === 'LIBERADO') mapa[c.cursoId] = 'liberado';
+        else if (c.status === 'PROCESSANDO') mapa[c.cursoId] = 'processando';
+        else if (c.status === 'ERRO') mapa[c.cursoId] = 'erro';
       }
-      setComprasLiberadas(mapa);
+      setStatusCursos(mapa);
     } catch (error) {
       console.error("Error:", error);
     } finally {
