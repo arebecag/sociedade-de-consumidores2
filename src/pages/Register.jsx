@@ -463,7 +463,7 @@ export default function Register() {
                         <DialogTrigger className="text-orange-500 hover:underline">
                           Regimento Interno
                         </DialogTrigger>
-                        <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto">
+                        <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto [&>button]:hidden">
                           <DialogHeader>
                             <DialogTitle className="text-white">Regimento Interno</DialogTitle>
                           </DialogHeader>
