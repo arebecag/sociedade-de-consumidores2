@@ -76,19 +76,17 @@ export default function Layout({ children, currentPageName }) {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
     { name: "Meu Perfil", icon: User, page: "Profile" },
-    { name: "Loja 3X3 SC", icon: ShoppingBag, page: "Store" },
+    { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },
     { name: "Meus Clientes", icon: Users, page: "Network" },
     { name: "Meus Bônus", icon: Award, page: "Bonus" },
-    { name: "Extrato", icon: FileText, page: "Extrato" },
-    { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },
-    { name: "Meu Site", icon: Globe, page: "MySite" },
     { name: "Marketing", icon: Megaphone, page: "Marketing" },
+    { name: "Cursos EAD", icon: GraduationCap, page: "LojaCursos" },
+    { name: "Meus Cursos", icon: GraduationCap, page: "MeusCursos" },
     { name: "Relatórios", icon: FileText, page: "Reports" },
     { name: "Receita Federal", icon: FileText, page: "IncomeReport" },
     { name: "Dúvidas", icon: HelpCircle, page: "FAQ" },
-    { name: "Cursos EAD", icon: GraduationCap, page: "LojaCursos" },
-    { name: "Meus Cursos", icon: GraduationCap, page: "MeusCursos" },
-    ];
+    { name: "Extrato", icon: FileText, page: "Extrato" },
+  ];
 
   // Admin-only menu items
   if (user?.role === 'admin') {
