@@ -347,7 +347,7 @@ export default function Dashboard() {
 
       {/* Network Stats */}
       <div>
-        <h2 className="text-xl font-semibold text-white mb-4">Minha Rede (indicados por mim)</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">Meus Clientes</h2>
         {networkStats.active === 0 && networkStats.pending === 0 && networkStats.excluded === 0 ? (
           <Card className="bg-zinc-950 border-orange-500/20">
             <CardContent className="p-8 text-center">
