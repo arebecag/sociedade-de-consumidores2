@@ -142,14 +142,7 @@ export default function Bonus() {
             </div>
           </div>
 
-          {/* Informações de Saque */}
-          <div className="mt-4 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
-            <p className="text-orange-500 font-semibold mb-2">Informações de Pagamento</p>
-            <ul className="text-gray-400 text-sm space-y-1">
-              <li>• Os depósitos serão feitos automaticamente toda segunda-feira das 00:00 às 06:00</li>
-              <li>• Qualquer valor disponível será depositado automaticamente</li>
-            </ul>
-          </div>
+
         </CardContent>
       </Card>
     );
