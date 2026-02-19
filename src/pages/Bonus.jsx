@@ -174,6 +174,15 @@ export default function Bonus() {
         <p className="text-gray-400">Acompanhe seus ganhos e graduação</p>
       </div>
 
+      {/* Informações de Pagamento - TOPO */}
+      <div className="p-4 bg-zinc-900 rounded-lg border border-orange-500/20">
+        <p className="text-orange-500 font-semibold text-base mb-2">📅 Informações de Pagamento</p>
+        <ul className="text-gray-300 text-sm space-y-1">
+          <li>• Os depósitos são feitos automaticamente toda <strong>segunda-feira</strong> das 00:00 às 06:00</li>
+          <li>• Qualquer valor disponível para saque será depositado automaticamente</li>
+        </ul>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-zinc-950 border-orange-500/20">
