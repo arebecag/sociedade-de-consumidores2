@@ -15,7 +15,6 @@ import { toast } from "sonner";
 const categories = {
   tele_consulta: "Tele Consulta",
   curso_online: "Curso Online",
-  faculdade_ead: "Faculdade EAD",
   ebook: "E-book",
   software: "Software",
   outros: "Outros"
