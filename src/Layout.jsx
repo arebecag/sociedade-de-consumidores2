@@ -113,8 +113,8 @@ export default function Layout({ children, currentPageName }) {
                 : "text-gray-300 hover:bg-orange-500/10 hover:text-orange-500"
             }`}
           >
-            <item.icon className="w-5 h-5 flex-shrink-0" />
-            <span className="font-medium">{item.name}</span>
+            <item.icon className="w-5 h-5 flex-shrink-0 min-w-[20px]" />
+            <span className="font-semibold text-base">{item.name}</span>
           </Link>
         ))}
       </nav>
