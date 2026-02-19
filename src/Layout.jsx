@@ -76,6 +76,7 @@ export default function Layout({ children, currentPageName }) {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
     { name: "Meu Perfil", icon: User, page: "Profile" },
+    { name: "Loja 3x3", icon: ShoppingBag, page: "Store" },
     { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },
     { name: "Meus Clientes", icon: Users, page: "Network" },
     { name: "Meus Bônus", icon: Award, page: "Bonus" },
