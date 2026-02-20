@@ -69,6 +69,8 @@ import Withdrawals from './pages/Withdrawals';
 import AdminContrato from './pages/AdminContrato';
 import AdminPagamentos from './pages/AdminPagamentos';
 import AdminCora from './pages/AdminCora';
+import PagamentoTed from './pages/PagamentoTed';
+import AdminPagamentosTed from './pages/AdminPagamentosTed';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +97,8 @@ export const PAGES = {
     "AdminContrato": AdminContrato,
     "AdminPagamentos": AdminPagamentos,
     "AdminCora": AdminCora,
+    "PagamentoTed": PagamentoTed,
+    "AdminPagamentosTed": AdminPagamentosTed,
 }
 
 export const pagesConfig = {
