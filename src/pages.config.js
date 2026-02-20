@@ -66,6 +66,7 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
+import AdminContrato from './pages/AdminContrato';
 import __Layout from './Layout.jsx';
 
 
@@ -89,6 +90,7 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
+    "AdminContrato": AdminContrato,
 }
 
 export const pagesConfig = {
