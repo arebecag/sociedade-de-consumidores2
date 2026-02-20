@@ -47,8 +47,12 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminContrato from './pages/AdminContrato';
+import AdminCora from './pages/AdminCora';
 import AdminCursosEAD from './pages/AdminCursosEAD';
 import AdminNetwork from './pages/AdminNetwork';
+import AdminPagamentos from './pages/AdminPagamentos';
+import AdminPagamentosTed from './pages/AdminPagamentosTed';
 import Bonus from './pages/Bonus';
 import Dashboard from './pages/Dashboard';
 import Extrato from './pages/Extrato';
@@ -59,6 +63,7 @@ import Marketing from './pages/Marketing';
 import MeusCursos from './pages/MeusCursos';
 import MySite from './pages/MySite';
 import Network from './pages/Network';
+import PagamentoTed from './pages/PagamentoTed';
 import PartnerSite from './pages/PartnerSite';
 import PayBoletos from './pages/PayBoletos';
 import Profile from './pages/Profile';
@@ -66,17 +71,18 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
-import AdminContrato from './pages/AdminContrato';
-import AdminPagamentos from './pages/AdminPagamentos';
-import AdminCora from './pages/AdminCora';
-import PagamentoTed from './pages/PagamentoTed';
-import AdminPagamentosTed from './pages/AdminPagamentosTed';
+import minhascobranAs from './pages/MinhasCobranças';
+import AdminFinanceiro from './pages/AdminFinanceiro';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminContrato": AdminContrato,
+    "AdminCora": AdminCora,
     "AdminCursosEAD": AdminCursosEAD,
     "AdminNetwork": AdminNetwork,
+    "AdminPagamentos": AdminPagamentos,
+    "AdminPagamentosTed": AdminPagamentosTed,
     "Bonus": Bonus,
     "Dashboard": Dashboard,
     "Extrato": Extrato,
@@ -87,6 +93,7 @@ export const PAGES = {
     "MeusCursos": MeusCursos,
     "MySite": MySite,
     "Network": Network,
+    "PagamentoTed": PagamentoTed,
     "PartnerSite": PartnerSite,
     "PayBoletos": PayBoletos,
     "Profile": Profile,
@@ -94,11 +101,8 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
-    "AdminContrato": AdminContrato,
-    "AdminPagamentos": AdminPagamentos,
-    "AdminCora": AdminCora,
-    "PagamentoTed": PagamentoTed,
-    "AdminPagamentosTed": AdminPagamentosTed,
+    "MinhasCobranças": minhascobranAs,
+    "AdminFinanceiro": AdminFinanceiro,
 }
 
 export const pagesConfig = {
