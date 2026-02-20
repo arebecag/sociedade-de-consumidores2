@@ -75,6 +75,7 @@ export default function Layout({ children, currentPageName }) {
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
+    { name: "Meu Site", icon: Globe, page: "MySite" },
     { name: "Meu Perfil", icon: User, page: "Profile" },
     { name: "Loja 3x3", icon: ShoppingBag, page: "Store" },
     { name: "Pagar Boletos", icon: Receipt, page: "PayBoletos" },
@@ -93,6 +94,7 @@ export default function Layout({ children, currentPageName }) {
   if (user?.role === 'admin') {
     menuItems.push({ name: "Admin: Auditoria", icon: Users, page: "AdminNetwork" });
     menuItems.push({ name: "Admin: EAD", icon: GraduationCap, page: "AdminCursosEAD" });
+    menuItems.push({ name: "Admin: Contrato", icon: FileText, page: "AdminContrato" });
   }
 
   const NavContent = () => (
