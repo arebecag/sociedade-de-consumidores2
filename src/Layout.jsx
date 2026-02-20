@@ -87,6 +87,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Relatórios", icon: FileText, page: "Reports" },
     { name: "Receita Federal", icon: FileText, page: "IncomeReport" },
     { name: "Dúvidas", icon: HelpCircle, page: "FAQ" },
+    { name: "Pagamento TED", icon: CreditCard, page: "PagamentoTed" },
     { name: "Extrato", icon: FileText, page: "Extrato" },
   ];
 
@@ -97,6 +98,7 @@ export default function Layout({ children, currentPageName }) {
     menuItems.push({ name: "Admin: Contrato", icon: FileText, page: "AdminContrato" });
     menuItems.push({ name: "Admin: Pagamentos", icon: CreditCard, page: "AdminPagamentos" });
     menuItems.push({ name: "Admin: Cobranças Cora", icon: Receipt, page: "AdminCora" });
+    menuItems.push({ name: "Admin: TED", icon: CreditCard, page: "AdminPagamentosTed" });
   }
 
   const NavContent = () => (
