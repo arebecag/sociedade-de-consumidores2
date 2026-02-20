@@ -89,11 +89,55 @@ export default function AdminContrato() {
   const pendentes = pagamentos.filter(p => p.status === "pendente");
   const pagos = pagamentos.filter(p => p.status === "pago");
 
+  const contratoTexto = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS
+
+Contratante: [Nome da Empresa / Pessoa]
+Contratada: [Seu nome / sua empresa]
+
+Objeto: Prestação de serviços técnicos de desenvolvimento, manutenção e integração de sistemas (Base44, integrações e ajustes correlatos).
+
+Valor e Forma de Pagamento:
+• R$ 350,00 (trezentos e cinquenta reais) por semana.
+• Pagamento toda segunda-feira.
+• Início dos pagamentos: 23/02/2026.
+
+Prazo:
+• 60 (sessenta) dias a contar de 23/02/2026.
+• Ao término, as partes poderão renegociar valores e condições.
+
+Rescisão:
+• Pode ser rescindido por qualquer das partes mediante aviso prévio de 7 dias.
+
+Disposições Gerais:
+• Serviços executados conforme demanda técnica acordada entre as partes.
+• Pagamentos realizados via transferência/PIX.
+
+Assinaturas:
+
+Contratante: ___________________________
+
+Contratada: ____________________________`;
+
+  const baixarContrato = () => {
+    const blob = new Blob([contratoTexto], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "contrato-prestacao-servicos.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-white">Contrato de Prestação</h1>
-        <p className="text-gray-400">Gestão do contrato de serviços</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Contrato de Prestação</h1>
+          <p className="text-gray-400">Gestão do contrato de serviços</p>
+        </div>
+        <Button onClick={baixarContrato} variant="outline" className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10">
+          <Download className="w-4 h-4 mr-2" /> Baixar Contrato (.txt)
+        </Button>
       </div>
 
       {/* Status geral */}

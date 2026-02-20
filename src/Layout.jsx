@@ -95,6 +95,8 @@ export default function Layout({ children, currentPageName }) {
     menuItems.push({ name: "Admin: Auditoria", icon: Users, page: "AdminNetwork" });
     menuItems.push({ name: "Admin: EAD", icon: GraduationCap, page: "AdminCursosEAD" });
     menuItems.push({ name: "Admin: Contrato", icon: FileText, page: "AdminContrato" });
+    menuItems.push({ name: "Admin: Pagamentos", icon: CreditCard, page: "AdminPagamentos" });
+    menuItems.push({ name: "Admin: Cobranças Cora", icon: Receipt, page: "AdminCora" });
   }
 
   const NavContent = () => (
