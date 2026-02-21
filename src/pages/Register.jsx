@@ -52,13 +52,16 @@ export default function Register() {
         setReferrerCode(code);
         loadReferrer(code);
       } else {
-        // Verificar se já existe algum parceiro cadastrado
-        const existingPartners = await base44.entities.Partner.list();
-        
-        if (existingPartners.length === 0) {
-          // Primeiro cadastro - não precisa de indicador
-          setIsFirstUser(true);
-          setReferrerName("Primeiro Cadastro (Administrador)");
+        // Sem código de indicação — verificar se é primeiro usuário
+        try {
+          const existingPartners = await base44.entities.Partner.list();
+          if (existingPartners.length === 0) {
+            setIsFirstUser(true);
+            setReferrerName("Primeiro Cadastro (Administrador)");
+          }
+        } catch (e) {
+          // Se falhar (ex: sem auth para listar), assume que não é primeiro usuário
+          console.warn("Não foi possível verificar primeiro usuário:", e);
         }
         setLoadingReferrer(false);
       }
