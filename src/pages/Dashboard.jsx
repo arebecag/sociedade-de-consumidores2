@@ -60,40 +60,51 @@ export default function Dashboard() {
     try {
       const partnerData = JSON.parse(pendingData);
       const user = await base44.auth.me();
-      
-      // Check if partner already exists
-      const existingPartners = await base44.entities.Partner.filter({ 
-        created_by: user.email 
-      });
-      
-      if (existingPartners.length === 0) {
-        // Create the partner
-        const newPartner = await base44.entities.Partner.create(partnerData);
-        
-        // Create network relation if has referrer
-        if (partnerData.referrer_id) {
+      if (!user) return;
+
+      // Limpar imediatamente para evitar loop em caso de erro
+      localStorage.removeItem("pendingPartnerData");
+
+      // Verificar se parceiro já existe (idempotência)
+      const existingPartners = await base44.entities.Partner.filter({ created_by: user.email });
+      if (existingPartners.length > 0) return;
+
+      // Criar parceiro
+      const newPartner = await base44.entities.Partner.create(partnerData);
+
+      // Criar relações de rede se houver indicador
+      if (partnerData.referrer_id) {
+        // Relação direta
+        await base44.entities.NetworkRelation.create({
+          referrer_id: partnerData.referrer_id,
+          referrer_name: partnerData.referrer_name,
+          referred_id: newPartner.id,
+          referred_name: partnerData.full_name,
+          relation_type: "direct",
+          is_spillover: false,
+          level: 1
+        });
+
+        // Buscar indicador para criar relação indireta
+        const referrerPartners = await base44.entities.Partner.filter({ id: partnerData.referrer_id });
+        if (referrerPartners.length > 0 && referrerPartners[0].referrer_id) {
           await base44.entities.NetworkRelation.create({
-            referrer_id: partnerData.referrer_id,
-            referrer_name: partnerData.referrer_name,
+            referrer_id: referrerPartners[0].referrer_id,
+            referrer_name: referrerPartners[0].referrer_name,
             referred_id: newPartner.id,
             referred_name: partnerData.full_name,
-            relation_type: "direct",
+            relation_type: "indirect",
             is_spillover: false,
-            level: 1
+            level: 2
           });
         }
-        
-        toast.success("Cadastro concluído com sucesso! Bem-vindo!");
-        localStorage.removeItem("pendingPartnerData");
-        
-        // Reload data
-        loadData();
-      } else {
-        localStorage.removeItem("pendingPartnerData");
       }
+
+      toast.success("Cadastro concluído! Bem-vindo(a) à Sociedade de Consumidores!");
+      loadData();
     } catch (error) {
-      console.error("Error completing registration:", error);
-      localStorage.removeItem("pendingPartnerData");
+      console.error("Erro ao finalizar cadastro:", error);
+      // Não exibir erro para o usuário — dados já foram salvos no localStorage antes do login
     }
   };
 
