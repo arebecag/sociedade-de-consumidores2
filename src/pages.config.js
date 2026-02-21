@@ -50,6 +50,7 @@
 import AdminContrato from './pages/AdminContrato';
 import AdminCora from './pages/AdminCora';
 import AdminCursosEAD from './pages/AdminCursosEAD';
+import AdminFinanceiro from './pages/AdminFinanceiro';
 import AdminNetwork from './pages/AdminNetwork';
 import AdminPagamentos from './pages/AdminPagamentos';
 import AdminPagamentosTed from './pages/AdminPagamentosTed';
@@ -61,6 +62,7 @@ import IncomeReport from './pages/IncomeReport';
 import LojaCursos from './pages/LojaCursos';
 import Marketing from './pages/Marketing';
 import MeusCursos from './pages/MeusCursos';
+import minhascobranAs from './pages/MinhasCobranças';
 import MySite from './pages/MySite';
 import Network from './pages/Network';
 import PagamentoTed from './pages/PagamentoTed';
@@ -71,8 +73,6 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
-import minhascobranAs from './pages/MinhasCobranças';
-import AdminFinanceiro from './pages/AdminFinanceiro';
 import __Layout from './Layout.jsx';
 
 
@@ -80,6 +80,7 @@ export const PAGES = {
     "AdminContrato": AdminContrato,
     "AdminCora": AdminCora,
     "AdminCursosEAD": AdminCursosEAD,
+    "AdminFinanceiro": AdminFinanceiro,
     "AdminNetwork": AdminNetwork,
     "AdminPagamentos": AdminPagamentos,
     "AdminPagamentosTed": AdminPagamentosTed,
@@ -91,6 +92,7 @@ export const PAGES = {
     "LojaCursos": LojaCursos,
     "Marketing": Marketing,
     "MeusCursos": MeusCursos,
+    "MinhasCobranças": minhascobranAs,
     "MySite": MySite,
     "Network": Network,
     "PagamentoTed": PagamentoTed,
@@ -101,8 +103,6 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
-    "MinhasCobranças": minhascobranAs,
-    "AdminFinanceiro": AdminFinanceiro,
 }
 
 export const pagesConfig = {

@@ -46,9 +46,15 @@ export default function MinhasCobranças() {
     if (!partner) return;
     setGerandoBoleto(true);
     try {
-      const res = await base44.functions.invoke("asaasGerarCobranca", {
-        partnerId: partner.id,
-        cpf: partner.cpf
+      const vencimento = new Date();
+      vencimento.setDate(vencimento.getDate() + 3);
+      const dataVencimento = vencimento.toISOString().split("T")[0];
+
+      const res = await base44.functions.invoke("gerarBoletoParaUsuario", {
+        userId: partner.id,
+        valor: 97.00,
+        descricao: "Ativação de Plano - Sociedade de Consumidores",
+        dataVencimento
       });
       if (res.data?.success) {
         toast.success(res.data.reutilizado ? "Usando cobrança existente!" : "Boleto gerado com sucesso!");
