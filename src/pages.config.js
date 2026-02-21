@@ -54,6 +54,7 @@ import AdminFinanceiro from './pages/AdminFinanceiro';
 import AdminNetwork from './pages/AdminNetwork';
 import AdminPagamentos from './pages/AdminPagamentos';
 import AdminPagamentosTed from './pages/AdminPagamentosTed';
+import AdminSaques from './pages/AdminSaques';
 import Bonus from './pages/Bonus';
 import Dashboard from './pages/Dashboard';
 import Extrato from './pages/Extrato';
@@ -74,7 +75,6 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
-import AdminSaques from './pages/AdminSaques';
 import __Layout from './Layout.jsx';
 
 
@@ -86,6 +86,7 @@ export const PAGES = {
     "AdminNetwork": AdminNetwork,
     "AdminPagamentos": AdminPagamentos,
     "AdminPagamentosTed": AdminPagamentosTed,
+    "AdminSaques": AdminSaques,
     "Bonus": Bonus,
     "Dashboard": Dashboard,
     "Extrato": Extrato,
@@ -106,7 +107,6 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
-    "AdminSaques": AdminSaques,
 }
 
 export const pagesConfig = {

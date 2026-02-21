@@ -98,7 +98,7 @@ export default function LojaCursos() {
     setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'processando' }));
 
     try {
-      // Verificar novamente no banco (segurança)
+      // Verificar novamente no banco (segurança contra duplo clique / race)
       const comprasExistentes = await base44.entities.ComprasCursosEAD.filter({
         usuarioId: partner.id,
         cursoId: selectedCurso.id,
@@ -110,16 +110,21 @@ export default function LojaCursos() {
         return;
       }
 
-      // Debitar bônus
-      await base44.entities.Partner.update(partner.id, {
-        bonus_for_purchases: (partner.bonus_for_purchases || 0) - selectedCurso.valorBonus,
-        total_spent_purchases: (partner.total_spent_purchases || 0) + selectedCurso.valorBonus
-      });
+      // Verificar saldo fresco no banco (evita usar saldo stale do state)
+      const partnersFrescos = await base44.entities.Partner.filter({ id: partner.id });
+      const partnerFresco = partnersFrescos[0];
+      const saldoAtual = partnerFresco?.bonus_for_purchases || 0;
 
-      // Criar registro de compra
+      if (saldoAtual < selectedCurso.valorBonus) {
+        toast.error(`Saldo insuficiente: R$ ${fmt(saldoAtual)} disponível.`);
+        setPartner(prev => ({ ...prev, bonus_for_purchases: saldoAtual }));
+        return;
+      }
+
+      // Criar registro de compra ANTES de debitar (se falhar aqui, nada foi debitado)
       const compra = await base44.entities.ComprasCursosEAD.create({
         usuarioId: partner.id,
-        usuarioEmail: partner.created_by,
+        usuarioEmail: partnerFresco.created_by || partner.created_by,
         cursoId: selectedCurso.id,
         cursoNome: selectedCurso.nome,
         dataCompra: new Date().toISOString(),
@@ -127,7 +132,7 @@ export default function LojaCursos() {
         valorBonus: selectedCurso.valorBonus
       });
 
-      // Liberar acesso via função
+      // Liberar acesso via função (inclui débito atômico no backend)
       const response = await base44.functions.invoke('liberarCursoIndividual', {
         compraId: compra.id,
         cursoId: selectedCurso.id
@@ -137,7 +142,8 @@ export default function LojaCursos() {
         setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'liberado' }));
         setPartner(prev => ({
           ...prev,
-          bonus_for_purchases: (prev.bonus_for_purchases || 0) - selectedCurso.valorBonus
+          bonus_for_purchases: saldoAtual - selectedCurso.valorBonus,
+          total_spent_purchases: (prev.total_spent_purchases || 0) + selectedCurso.valorBonus
         }));
         toast.success("🎉 Curso liberado com sucesso! Redirecionando...");
         setTimeout(() => {
