@@ -155,6 +155,8 @@ export default function MinhaAreaFinanceira() {
   const statusAtual = cobrancaAtiva ? STATUS_CONFIG[cobrancaAtiva.status] : null;
   const temPendente = cobranças.some(c => c.status === "PENDING");
   const saldoSaque = partner?.bonus_for_withdrawal || 0;
+  const temSaquePendente = saques.some(s => s.status === "PENDENTE");
+  const podeSacar = saldoSaque > 0 && !temSaquePendente && cobranças.some(c => ["CONFIRMED","RECEIVED"].includes(c.status));
 
   return (
     <div className="space-y-6">
