@@ -182,11 +182,13 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main className="lg:pl-64 pt-20 lg:pt-0 min-h-screen">
-        <div className="p-4 lg:p-8">
-          {children}
-        </div>
-      </main>
+          <main className="lg:pl-64 pt-20 lg:pt-0 min-h-screen">
+            <div className="p-4 lg:p-8">
+              <FinanceiroGuard currentPageName={currentPageName}>
+                {children}
+              </FinanceiroGuard>
+            </div>
+          </main>
     </div>
   );
 }
