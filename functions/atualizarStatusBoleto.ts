@@ -1,19 +1,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const BONUS_PERCENTUAL = 0.20;
+const PROXY_URL = "https://arebecag-asaas-proxy.vercel.app";
+const VALOR_PLANO = 97.00;
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
     const body = await req.json();
-    // Suporta chamada direta {paymentId, status} ou formato webhook Asaas {event, payment}
     const paymentId = body.paymentId || body.payment?.id;
     const status = body.status || body.payment?.status;
 
     if (!paymentId) return Response.json({ received: true, skipped: "sem paymentId" });
 
-    // Buscar boleto pelo asaasPaymentId
     const boletos = await base44.asServiceRole.entities.Financeiro.filter({ asaasPaymentId: paymentId });
     if (!boletos.length) return Response.json({ received: true, skipped: "boleto não encontrado" });
 
@@ -21,7 +21,9 @@ Deno.serve(async (req) => {
     const updateData = { status };
 
     if (["CONFIRMED", "RECEIVED"].includes(status)) {
-      updateData.dataPagamento = new Date().toISOString();
+      const agora = new Date().toISOString();
+      updateData.dataPagamento = agora;
+      updateData.acessoLiberado = true;
 
       // Liberar bônus apenas uma vez
       if (!boleto.bonusLiberado) {
@@ -52,6 +54,12 @@ Deno.serve(async (req) => {
           });
         }
       }
+
+      // Gerar próxima cobrança recorrente (+30 dias)
+      await gerarProximaCobranca(base44, boleto, agora);
+
+    } else if (status === "OVERDUE") {
+      updateData.acessoLiberado = false;
     }
 
     await base44.asServiceRole.entities.Financeiro.update(boleto.id, updateData);
@@ -61,3 +69,60 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
+
+async function gerarProximaCobranca(base44, boletoAtual, dataPagamento) {
+  try {
+    // Verificar se já existe PENDING para este usuário
+    const pendentes = await base44.asServiceRole.entities.Financeiro.filter({
+      userId: boletoAtual.userId,
+      status: "PENDING"
+    });
+    if (pendentes.length > 0) return; // já tem próximo boleto
+
+    // Calcular vencimento: +30 dias da data de pagamento
+    const proximoVencimento = new Date(dataPagamento);
+    proximoVencimento.setDate(proximoVencimento.getDate() + 30);
+    const dataVencimento = proximoVencimento.toISOString().split("T")[0];
+
+    // Criar cobrança na Asaas
+    const cobrancaResp = await fetch(`${PROXY_URL}/api/criar-cobranca`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer: boletoAtual.asaasCustomerId,
+        billingType: "BOLETO",
+        value: VALOR_PLANO,
+        dueDate: dataVencimento,
+        description: "Renovação Mensal - Sociedade de Consumidores"
+      })
+    });
+
+    if (!cobrancaResp.ok) {
+      console.error("Erro ao gerar recorrência:", await cobrancaResp.text());
+      return;
+    }
+
+    const cobrancaData = await cobrancaResp.json();
+
+    await base44.asServiceRole.entities.Financeiro.create({
+      userId: boletoAtual.userId,
+      userEmail: boletoAtual.userEmail,
+      userName: boletoAtual.userName,
+      asaasCustomerId: boletoAtual.asaasCustomerId,
+      asaasPaymentId: cobrancaData.id,
+      valor: VALOR_PLANO,
+      descricao: "Renovação Mensal - Sociedade de Consumidores",
+      invoiceUrl: cobrancaData.invoiceUrl || cobrancaData.bankSlipUrl,
+      bankSlipUrl: cobrancaData.bankSlipUrl,
+      status: "PENDING",
+      dataVencimento,
+      tipoPagamento: "BOLETO",
+      bonusLiberado: false,
+      acessoLiberado: false
+    });
+
+    console.log(`Próxima cobrança gerada para ${boletoAtual.userName}: vencimento ${dataVencimento}`);
+  } catch (err) {
+    console.error("Erro ao gerar próxima cobrança:", err.message);
+  }
+}
