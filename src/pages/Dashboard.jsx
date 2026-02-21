@@ -49,8 +49,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
-    handlePendingRegistration();
+    // Primeiro trata o cadastro pendente, depois carrega os dados
+    handlePendingRegistration().then(() => loadData());
   }, []);
 
   const handlePendingRegistration = async () => {
