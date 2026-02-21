@@ -29,8 +29,6 @@ const STATUS_SAQUE = {
   RECUSADO:  { label: "Recusado", color: "bg-red-500/20 text-red-400" },
 };
 
-const VALOR_MINIMO_SAQUE = 50;
-
 export default function MinhaAreaFinanceira() {
   const [cobranças, setCobranças] = useState([]);
   const [saques, setSaques] = useState([]);
@@ -38,6 +36,8 @@ export default function MinhaAreaFinanceira() {
   const [partner, setPartner] = useState(null);
   const [gerandoBoleto, setGerandoBoleto] = useState(false);
   const [solicitandoSaque, setSolicitandoSaque] = useState(false);
+  const [valorSaque, setValorSaque] = useState("");
+  const [pixKeySaque, setPixKeySaque] = useState("");
   const [aba, setAba] = useState("plano"); // plano | historico | saques
 
   useEffect(() => { loadData(); }, []);
