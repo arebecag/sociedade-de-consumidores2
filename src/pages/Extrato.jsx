@@ -364,11 +364,13 @@ export default function Extrato() {
                           <p className={`font-bold ${
                             transaction.txType === 'bonus' ? 'text-green-500' :
                             transaction.txType === 'withdrawal' ? 'text-red-500' :
+                            transaction.txType === 'curso' ? 'text-orange-400' :
                             'text-purple-500'
                           }`}>
                             {transaction.txType === 'bonus' && `+${formatNumber(transaction.total_amount)}`}
                             {transaction.txType === 'withdrawal' && `-${formatCurrency(transaction.amount)}`}
                             {transaction.txType === 'purchase' && formatCurrency(transaction.amount)}
+                            {transaction.txType === 'curso' && `-${formatNumber(transaction.valorBonus)}`}
                           </p>
                         </div>
                       </div>
