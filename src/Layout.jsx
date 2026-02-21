@@ -91,6 +91,7 @@ export default function Layout({ children, currentPageName }) {
     { name: "Dúvidas", icon: HelpCircle, page: "FAQ" },
     { name: "Pagamento TED", icon: CreditCard, page: "PagamentoTed" },
     { name: "Minhas Cobranças", icon: FileText, page: "MinhasCobranças" },
+    { name: "Área Financeira", icon: DollarSign, page: "MinhaAreaFinanceira" },
     { name: "Extrato", icon: FileText, page: "Extrato" },
   ];
 
