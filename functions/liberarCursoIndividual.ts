@@ -142,10 +142,12 @@ Deno.serve(async (req) => {
     }
 
     // ✅ Matrícula confirmada — agora debitar saldo com segurança
+    const saldoDepois = Math.max(0, saldoAtual - curso.valorBonus);
+
     await Promise.all([
       // Debitar bônus do parceiro
       base44.asServiceRole.entities.Partner.update(partner.id, {
-        bonus_for_purchases: saldoAtual - curso.valorBonus,
+        bonus_for_purchases: saldoDepois,
         total_spent_purchases: (partner.total_spent_purchases || 0) + curso.valorBonus
       }),
       // Marcar compra como LIBERADO
@@ -153,14 +155,14 @@ Deno.serve(async (req) => {
         status: 'LIBERADO',
         idAlunoGlobal
       }),
-      // Registrar log financeiro de auditoria
+      // Registrar log financeiro de auditoria com saldoAntes/saldoDepois
       base44.asServiceRole.entities.LogsFinanceiro.create({
         tipo: "BONUS",
         userId: partner.id,
         userEmail: user.email,
         userName: partner.full_name,
         valor: curso.valorBonus,
-        descricao: `BONUS_USADO_CURSO: ${curso.nome} (cursoId=${cursoId}, compraId=${compraId})`,
+        descricao: `BONUS_USADO_CURSO | Curso: ${curso.nome} | cursoId: ${cursoId} | compraId: ${compraId} | saldoAntes: ${saldoAtual.toFixed(2)} | saldoDepois: ${saldoDepois.toFixed(2)}`,
         referenciaId: compraId
       })
     ]);
