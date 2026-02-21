@@ -49,6 +49,7 @@ export default function MinhaAreaFinanceira() {
       const partners = await base44.entities.Partner.filter({ created_by: user.email });
       if (partners.length > 0) {
         setPartner(partners[0]);
+        setPixKeySaque(partners[0].pix_key || "");
         const [fins, sqs] = await Promise.all([
           base44.entities.Financeiro.filter({ userId: partners[0].id }, "-created_date", 50),
           base44.entities.Saques.filter({ userId: partners[0].id }, "-created_date", 20)
