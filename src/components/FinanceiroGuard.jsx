@@ -58,15 +58,13 @@ export default function FinanceiroGuard({ children, currentPageName }) {
       // Verificar cobrança mais recente
       const maisRecente = cobranças[0];
 
-      if (["CONFIRMED", "RECEIVED"].includes(maisRecente.status)) {
-        setStatus("liberado");
-      } else if (maisRecente.status === "OVERDUE") {
+      if (maisRecente.status === "OVERDUE") {
+        // Só bloqueia se está inadimplente (vencido)
         setStatus("bloqueado_overdue");
         setCobranca(maisRecente);
       } else {
-        // PENDING ou qualquer outro
-        setStatus("bloqueado_pending");
-        setCobranca(maisRecente);
+        // CONFIRMED, RECEIVED, PENDING, CANCELLED → acesso liberado
+        setStatus("liberado");
       }
     } catch (e) {
       // ✅ Fail-safe: nunca quebrar a aplicação
