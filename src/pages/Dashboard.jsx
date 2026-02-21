@@ -100,49 +100,6 @@ export default function Dashboard() {
   const loadData = async () => {
     try {
       const user = await base44.auth.me();
-      
-      // Check for pending registration
-      const pendingData = localStorage.getItem("pendingPartnerData");
-      if (pendingData) {
-        const partnerData = JSON.parse(pendingData);
-        const newPartner = await base44.entities.Partner.create(partnerData);
-        localStorage.removeItem("pendingPartnerData");
-
-        // Create network relation if has referrer
-        if (partnerData.referrer_id) {
-          // Buscar o referrer para pegar suas informações
-          const allPartners = await base44.entities.Partner.list();
-          const referrer = allPartners.find(p => p.id === partnerData.referrer_id);
-
-          if (referrer) {
-            // Criar relação direta
-            await base44.entities.NetworkRelation.create({
-              referrer_id: referrer.id,
-              referrer_name: referrer.full_name,
-              referred_id: newPartner.id,
-              referred_name: newPartner.full_name,
-              relation_type: "direct",
-              level: 1
-            });
-
-            // Criar relação indireta com o indicador do indicador
-            if (referrer.referrer_id) {
-              const indirectReferrer = allPartners.find(p => p.id === referrer.referrer_id);
-              if (indirectReferrer) {
-                await base44.entities.NetworkRelation.create({
-                  referrer_id: indirectReferrer.id,
-                  referrer_name: indirectReferrer.full_name,
-                  referred_id: newPartner.id,
-                  referred_name: newPartner.full_name,
-                  relation_type: "indirect",
-                  level: 2
-                });
-              }
-            }
-          }
-        }
-      }
-      
       const partners = await base44.entities.Partner.filter({ created_by: user.email });
       
       if (partners.length > 0) {
