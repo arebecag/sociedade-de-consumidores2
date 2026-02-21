@@ -286,6 +286,41 @@ export default function Extrato() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="cursos">
+          <Card className="bg-zinc-950 border-orange-500/20">
+            <CardHeader>
+              <CardTitle className="text-white">Cursos Adquiridos com Bônus</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {cursosLogs.length === 0 ? (
+                <div className="text-center py-12">
+                  <GraduationCap className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">Nenhum curso adquirido ainda.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cursosLogs.map((compra) => (
+                    <div key={compra.id} className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <GraduationCap className="w-5 h-5 text-blue-400" />
+                        <div>
+                          <p className="text-white font-medium">{compra.cursoNome}</p>
+                          <p className="text-gray-400 text-xs">BONUS_USADO_CURSO — ID: {compra.id?.slice(0, 8)}...</p>
+                          <p className="text-gray-500 text-xs">{new Date(compra.created_date).toLocaleString('pt-BR')}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-orange-400 font-bold">-{formatNumber(compra.valorBonus)}</p>
+                        <span className="text-xs text-green-400 font-medium">Liberado</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="all">
           <Card className="bg-zinc-950 border-orange-500/20">
             <CardHeader>
