@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 const PAGINAS_LIBERADAS = [
   "MinhasCobranças",
   "MinhaAreaFinanceira",
+  "AdminSaques",
   "LandingPage",
   "Register",
   "PartnerSite",
