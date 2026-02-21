@@ -32,13 +32,21 @@ Deno.serve(async (req) => {
 
     const cobranca = cobranças[0];
 
-    // Delegar para atualizarStatusBoleto com secret interno
+    // Delegar para atualizarStatusBoleto via fetch com secret interno
     const internalSecret = Deno.env.get("INTERNAL_SECRET");
-    const result = await base44.asServiceRole.functions.invoke("atualizarStatusBoleto", {
-      paymentId: payment.id,
-      status: payment.status
-    }, { headers: { "x-internal-secret": internalSecret || "" } });
+    const appId = Deno.env.get("BASE44_APP_ID");
+    const fnUrl = `https://appfunctions.base44.com/api/apps/${appId}/functions/atualizarStatusBoleto`;
 
+    const fnResp = await fetch(fnUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-internal-secret": internalSecret || ""
+      },
+      body: JSON.stringify({ paymentId: payment.id, status: payment.status })
+    });
+
+    const result = await fnResp.json();
     return Response.json({ received: true, processed: true, result });
 
   } catch (error) {
