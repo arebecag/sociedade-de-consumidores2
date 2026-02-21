@@ -6,6 +6,14 @@ const VALOR_PLANO = 97.00;
 
 Deno.serve(async (req) => {
   try {
+    // Proteção: só aceita chamadas internas via INTERNAL_SECRET
+    const internalSecret = Deno.env.get("INTERNAL_SECRET");
+    const receivedSecret = req.headers.get("x-internal-secret");
+    if (internalSecret && receivedSecret !== internalSecret) {
+      console.warn("atualizarStatusBoleto: acesso não autorizado bloqueado");
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const base44 = createClientFromRequest(req);
 
     const body = await req.json();

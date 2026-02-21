@@ -4,6 +4,14 @@ const BONUS_PERCENTUAL = 0.20; // 20% de bônus no pagamento
 
 Deno.serve(async (req) => {
   try {
+    // Validar token do webhook Asaas
+    const webhookToken = Deno.env.get("ASAAS_WEBHOOK_TOKEN");
+    const receivedToken = req.headers.get("asaas-access-token");
+    if (webhookToken && receivedToken !== webhookToken) {
+      console.warn("asaasWebhook: token inválido recebido:", receivedToken);
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const base44 = createClientFromRequest(req);
 
     const body = await req.json();
