@@ -23,7 +23,7 @@ const PAGINAS_LIBERADAS = [
 export default function FinanceiroGuard({ children, currentPageName }) {
   const [status, setStatus] = useState("checking");
   const [cobranca, setCobranca] = useState(null);
-  const [gerandoBoleto, setGerandoBoleto] = useState(false);
+
 
   useEffect(() => {
     if (PAGINAS_LIBERADAS.includes(currentPageName)) {
