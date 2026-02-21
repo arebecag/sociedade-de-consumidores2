@@ -49,7 +49,7 @@ export default function PartnerSite() {
     );
   }
 
-  const registerUrl = createPageUrl("Register") + "?ref=" + partner.unique_code;
+  const registerUrl = window.location.origin + createPageUrl("Register") + "?ref=" + partner.unique_code;
 
   return (
     <div className="min-h-screen bg-black">
