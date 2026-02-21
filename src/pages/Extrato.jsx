@@ -135,6 +135,10 @@ export default function Extrato() {
             <ShoppingBag className="w-4 h-4 mr-2" />
             Compras ({purchases.length})
           </TabsTrigger>
+          <TabsTrigger value="cursos" className="data-[state=active]:bg-orange-500">
+            <GraduationCap className="w-4 h-4 mr-2" />
+            Cursos EAD ({cursosLogs.length})
+          </TabsTrigger>
           <TabsTrigger value="all" className="data-[state=active]:bg-orange-500">
             <FileText className="w-4 h-4 mr-2" />
             Todas
