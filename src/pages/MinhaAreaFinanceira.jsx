@@ -92,23 +92,48 @@ export default function MinhaAreaFinanceira() {
 
   const solicitarSaque = async () => {
     if (!partner) return;
-    const saldoSaque = partner.bonus_for_withdrawal || 0;
-    if (saldoSaque < VALOR_MINIMO_SAQUE) {
-      toast.error(`Saldo mínimo para saque é ${formatCurrency(VALOR_MINIMO_SAQUE)}`);
-      return;
-    }
+    const saldo = partner.bonus_for_withdrawal || 0;
+    const valor = parseFloat(valorSaque);
+    const pixKey = pixKeySaque.trim();
+
+    // Validações
+    if (!pixKey) { toast.error("Informe a chave PIX para recebimento."); return; }
+    if (!valor || valor <= 0) { toast.error("Informe um valor válido para saque."); return; }
+    if (valor > saldo) { toast.error(`Valor excede o saldo disponível (${formatCurrency(saldo)})`); return; }
+
+    // Verificar acesso liberado
+    const temAcessoAtivo = cobranças.some(c => ["CONFIRMED", "RECEIVED"].includes(c.status));
+    if (!temAcessoAtivo) { toast.error("Necessário ter pelo menos um pagamento confirmado para sacar."); return; }
+
+    // Verificar se já tem saque pendente
+    const temPendente = saques.some(s => s.status === "PENDENTE");
+    if (temPendente) { toast.error("Você já possui uma solicitação de saque pendente."); return; }
+
     setSolicitandoSaque(true);
     try {
       await base44.entities.Saques.create({
         userId: partner.id,
         userEmail: partner.created_by,
         userName: partner.full_name,
-        valor: saldoSaque,
+        valor,
         status: "PENDENTE",
         dataSolicitacao: new Date().toISOString(),
-        pixKey: partner.pix_key || ""
+        pixKey
       });
+
+      // Log da solicitação
+      await base44.entities.LogsFinanceiro.create({
+        tipo: "SAQUE",
+        userId: partner.id,
+        userEmail: partner.created_by,
+        userName: partner.full_name,
+        valor,
+        descricao: `Saque solicitado. PIX: ${pixKey}`,
+        referenciaId: partner.id
+      });
+
       toast.success("Saque solicitado! Admin irá processar em breve.");
+      setValorSaque("");
       loadData();
     } catch (e) {
       toast.error("Erro ao solicitar saque");
