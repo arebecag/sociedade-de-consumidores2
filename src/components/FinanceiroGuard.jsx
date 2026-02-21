@@ -8,11 +8,14 @@ import { Card, CardContent } from "@/components/ui/card";
 // Páginas que não precisam de verificação de pagamento
 const PAGINAS_LIBERADAS = [
   "MinhasCobranças",
+  "MinhaAreaFinanceira",
   "LandingPage",
   "Register",
   "PartnerSite",
   "LojaCursos",
-  "Profile"
+  "Profile",
+  "MySite",
+  "Dashboard"
 ];
 
 export default function FinanceiroGuard({ children, currentPageName }) {
