@@ -43,7 +43,18 @@ export default function AdminSaques() {
     if (!window.confirm(`Confirmar pagamento de ${formatCurrency(saque.valor)} para ${saque.userName}?`)) return;
     setProcessando(saque.id);
     try {
-      // Buscar parceiro para verificar e debitar saldo
+      // Recarregar saque fresco para garantir idempotência
+      const saquesFrescos = await base44.entities.Saques.filter({ id: saque.id });
+      if (!saquesFrescos.length) { toast.error("Saque não encontrado."); return; }
+      const saqueFresco = saquesFrescos[0];
+
+      if (saqueFresco.status !== "PENDENTE") {
+        toast.error("Saque já foi processado por outro admin.");
+        loadData();
+        return;
+      }
+
+      // Buscar parceiro fresco para verificar saldo atual
       const parceiros = await base44.entities.Partner.filter({ id: saque.userId });
       if (!parceiros.length) { toast.error("Parceiro não encontrado"); return; }
       const p = parceiros[0];
@@ -54,17 +65,17 @@ export default function AdminSaques() {
         return;
       }
 
-      // Debitar saldo
-      await base44.entities.Partner.update(saque.userId, {
-        bonus_for_withdrawal: saldoAtual - saque.valor,
-        total_withdrawn: (p.total_withdrawn || 0) + saque.valor
-      });
-
-      // Atualizar saque
+      // Marcar saque como PAGO primeiro (evita duplo processamento)
       await base44.entities.Saques.update(saque.id, {
         status: "PAGO",
         dataPagamento: new Date().toISOString(),
         observacao: `Aprovado por ${user.email}`
+      });
+
+      // Debitar saldo
+      await base44.entities.Partner.update(saque.userId, {
+        bonus_for_withdrawal: saldoAtual - saque.valor,
+        total_withdrawn: (p.total_withdrawn || 0) + saque.valor
       });
 
       // Registrar log

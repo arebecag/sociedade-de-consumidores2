@@ -32,11 +32,12 @@ Deno.serve(async (req) => {
 
     const cobranca = cobranças[0];
 
-    // Delegar para atualizarStatusBoleto (centraliza lógica de bônus + recorrência + acesso)
+    // Delegar para atualizarStatusBoleto com secret interno
+    const internalSecret = Deno.env.get("INTERNAL_SECRET");
     const result = await base44.asServiceRole.functions.invoke("atualizarStatusBoleto", {
       paymentId: payment.id,
       status: payment.status
-    });
+    }, { headers: { "x-internal-secret": internalSecret || "" } });
 
     return Response.json({ received: true, processed: true, result });
 
