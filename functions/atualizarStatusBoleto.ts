@@ -106,7 +106,18 @@ async function gerarProximaCobranca(base44, boletoAtual, dataPagamento) {
     });
 
     if (!cobrancaResp.ok) {
-      console.error("Erro ao gerar recorrência:", await cobrancaResp.text());
+      const errText = await cobrancaResp.text();
+      console.error("Erro ao gerar recorrência:", errText);
+      // Registrar falha em LogsFinanceiro para visibilidade no admin
+      await base44.asServiceRole.entities.LogsFinanceiro.create({
+        tipo: "ESTORNO",
+        userId: boletoAtual.userId,
+        userEmail: boletoAtual.userEmail,
+        userName: boletoAtual.userName,
+        valor: 0,
+        descricao: `RECORRENCIA_FALHOU: paymentId=${boletoAtual.asaasPaymentId} | erro=${errText}`,
+        referenciaId: boletoAtual.id
+      }).catch(e => console.error("Erro ao salvar log de falha:", e.message));
       return;
     }
 
