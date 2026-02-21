@@ -62,6 +62,7 @@ import IncomeReport from './pages/IncomeReport';
 import LojaCursos from './pages/LojaCursos';
 import Marketing from './pages/Marketing';
 import MeusCursos from './pages/MeusCursos';
+import MinhaAreaFinanceira from './pages/MinhaAreaFinanceira';
 import minhascobranAs from './pages/MinhasCobranças';
 import MySite from './pages/MySite';
 import Network from './pages/Network';
@@ -73,7 +74,7 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
-import MinhaAreaFinanceira from './pages/MinhaAreaFinanceira';
+import AdminSaques from './pages/AdminSaques';
 import __Layout from './Layout.jsx';
 
 
@@ -93,6 +94,7 @@ export const PAGES = {
     "LojaCursos": LojaCursos,
     "Marketing": Marketing,
     "MeusCursos": MeusCursos,
+    "MinhaAreaFinanceira": MinhaAreaFinanceira,
     "MinhasCobranças": minhascobranAs,
     "MySite": MySite,
     "Network": Network,
@@ -104,7 +106,7 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
-    "MinhaAreaFinanceira": MinhaAreaFinanceira,
+    "AdminSaques": AdminSaques,
 }
 
 export const pagesConfig = {
