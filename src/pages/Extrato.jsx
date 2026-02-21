@@ -327,7 +327,7 @@ export default function Extrato() {
               <CardTitle className="text-white">Todas as Movimentações</CardTitle>
             </CardHeader>
             <CardContent>
-              {bonusTransactions.length === 0 && withdrawals.length === 0 && purchases.length === 0 ? (
+              {bonusTransactions.length === 0 && withdrawals.length === 0 && purchases.length === 0 && cursosLogs.length === 0 ? (
                 <div className="text-center py-12">
                   <FileText className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                   <p className="text-gray-400">Nenhuma movimentação ainda.</p>
@@ -337,7 +337,8 @@ export default function Extrato() {
                   {[
                     ...bonusTransactions.map(t => ({ ...t, txType: 'bonus' })),
                     ...withdrawals.map(t => ({ ...t, txType: 'withdrawal' })),
-                    ...purchases.map(t => ({ ...t, txType: 'purchase' }))
+                    ...purchases.map(t => ({ ...t, txType: 'purchase' })),
+                    ...cursosLogs.map(t => ({ ...t, txType: 'curso' }))
                   ]
                     .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
                     .map((transaction) => (
