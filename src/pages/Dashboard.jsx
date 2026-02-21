@@ -74,29 +74,40 @@ export default function Dashboard() {
 
       // Criar relações de rede se houver indicador
       if (partnerData.referrer_id) {
-        // Relação direta
-        await base44.entities.NetworkRelation.create({
-          referrer_id: partnerData.referrer_id,
-          referrer_name: partnerData.referrer_name,
-          referred_id: newPartner.id,
-          referred_name: partnerData.full_name,
-          relation_type: "direct",
-          is_spillover: false,
-          level: 1
-        });
-
-        // Buscar indicador para criar relação indireta
-        const referrerPartners = await base44.entities.Partner.filter({ id: partnerData.referrer_id });
-        if (referrerPartners.length > 0 && referrerPartners[0].referrer_id) {
+        try {
+          // Relação direta
           await base44.entities.NetworkRelation.create({
-            referrer_id: referrerPartners[0].referrer_id,
-            referrer_name: referrerPartners[0].referrer_name,
+            referrer_id: partnerData.referrer_id,
+            referrer_name: partnerData.referrer_name,
             referred_id: newPartner.id,
             referred_name: partnerData.full_name,
-            relation_type: "indirect",
+            relation_type: "direct",
             is_spillover: false,
-            level: 2
+            level: 1
           });
+        } catch (e) {
+          console.error("Erro ao criar relação direta:", e);
+        }
+
+        try {
+          // Buscar relação direta do indicador para encontrar o avô
+          const referrerRelations = await base44.entities.NetworkRelation.filter({
+            referred_id: partnerData.referrer_id,
+            relation_type: "direct"
+          });
+          if (referrerRelations.length > 0) {
+            await base44.entities.NetworkRelation.create({
+              referrer_id: referrerRelations[0].referrer_id,
+              referrer_name: referrerRelations[0].referrer_name,
+              referred_id: newPartner.id,
+              referred_name: partnerData.full_name,
+              relation_type: "indirect",
+              is_spillover: false,
+              level: 2
+            });
+          }
+        } catch (e) {
+          console.error("Erro ao criar relação indireta:", e);
         }
       }
 
