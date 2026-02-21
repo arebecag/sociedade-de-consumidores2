@@ -347,11 +347,13 @@ export default function Extrato() {
                           {transaction.txType === 'bonus' && <TrendingUp className="w-5 h-5 text-green-500" />}
                           {transaction.txType === 'withdrawal' && <TrendingDown className="w-5 h-5 text-red-500" />}
                           {transaction.txType === 'purchase' && <ShoppingBag className="w-5 h-5 text-purple-500" />}
+                          {transaction.txType === 'curso' && <GraduationCap className="w-5 h-5 text-blue-400" />}
                           <div>
                             <p className="text-white font-medium">
                               {transaction.txType === 'bonus' && `Bônus ${transaction.type === 'direct' ? 'Direto' : 'Indireto'}`}
                               {transaction.txType === 'withdrawal' && 'Saque via PIX'}
                               {transaction.txType === 'purchase' && transaction.product_name}
+                              {transaction.txType === 'curso' && `Curso: ${transaction.cursoNome}`}
                             </p>
                             <p className="text-gray-500 text-xs">
                               {new Date(transaction.created_date).toLocaleString('pt-BR')}
