@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const PROXY_URL = "https://arebecag-asaas-proxy.vercel.app";
-const BONUS_PERCENTUAL = 0.20;
 
 Deno.serve(async (req) => {
   try {
@@ -30,49 +29,21 @@ Deno.serve(async (req) => {
 
       if (novoStatus === cobranca.status) continue;
 
-      // Atualizar status
-      await base44.asServiceRole.entities.Financeiro.update(cobranca.id, {
-        status: novoStatus,
-        invoiceUrl: data.invoiceUrl || cobranca.invoiceUrl,
-        bankSlipUrl: data.bankSlipUrl || cobranca.bankSlipUrl
+      // Atualizar URLs se disponíveis
+      if (data.invoiceUrl || data.bankSlipUrl) {
+        await base44.asServiceRole.entities.Financeiro.update(cobranca.id, {
+          invoiceUrl: data.invoiceUrl || cobranca.invoiceUrl,
+          bankSlipUrl: data.bankSlipUrl || cobranca.bankSlipUrl
+        });
+      }
+
+      // Delegar atualização de status e bônus para atualizarStatusBoleto
+      await base44.asServiceRole.functions.invoke("atualizarStatusBoleto", {
+        paymentId: cobranca.asaasPaymentId,
+        status: novoStatus
       });
 
-      // Se confirmado e bônus ainda não liberado
-      if (["CONFIRMED", "RECEIVED"].includes(novoStatus) && !cobranca.bonusLiberado) {
-        await base44.asServiceRole.entities.Financeiro.update(cobranca.id, {
-          dataPagamento: new Date().toISOString(),
-          bonusLiberado: true
-        });
-
-        const valorBonus = (cobranca.valor || 0) * BONUS_PERCENTUAL;
-
-        const parceiros = await base44.asServiceRole.entities.Partner.filter({ id: cobranca.userId });
-        if (parceiros.length > 0) {
-          const parceiro = parceiros[0];
-          await base44.asServiceRole.entities.Partner.update(cobranca.userId, {
-            bonus_for_withdrawal: (parceiro.bonus_for_withdrawal || 0) + valorBonus * 0.5,
-            bonus_for_purchases: (parceiro.bonus_for_purchases || 0) + valorBonus * 0.5,
-            total_bonus_generated: (parceiro.total_bonus_generated || 0) + valorBonus,
-            first_purchase_done: true
-          });
-
-          await base44.asServiceRole.entities.BonusTransaction.create({
-            partner_id: cobranca.userId,
-            partner_name: cobranca.userName,
-            purchase_id: cobranca.id,
-            type: "direct",
-            percentage: BONUS_PERCENTUAL * 100,
-            total_amount: valorBonus,
-            amount_for_withdrawal: valorBonus * 0.5,
-            amount_for_purchases: valorBonus * 0.5,
-            status: "credited"
-          });
-
-          await base44.asServiceRole.entities.Financeiro.update(cobranca.id, { valorBonus });
-        }
-
-        confirmadas++;
-      }
+      if (["CONFIRMED", "RECEIVED"].includes(novoStatus)) confirmadas++;
     }
 
     return Response.json({
