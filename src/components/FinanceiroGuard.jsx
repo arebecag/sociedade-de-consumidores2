@@ -5,7 +5,7 @@ import { Loader2, Lock, AlertTriangle, ExternalLink, FileText } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-// Páginas que não precisam de verificação de pagamento
+// Páginas sempre liberadas (sem verificação financeira)
 const PAGINAS_LIBERADAS = [
   "MinhasCobranças",
   "MinhaAreaFinanceira",
@@ -16,11 +16,12 @@ const PAGINAS_LIBERADAS = [
   "LojaCursos",
   "Profile",
   "MySite",
-  "Dashboard"
+  "Dashboard",
+  "FAQ"
 ];
 
 export default function FinanceiroGuard({ children, currentPageName }) {
-  const [status, setStatus] = useState("checking"); // checking | liberado | bloqueado_pending | bloqueado_overdue | sem_cobranca
+  const [status, setStatus] = useState("checking");
   const [cobranca, setCobranca] = useState(null);
   const [gerandoBoleto, setGerandoBoleto] = useState(false);
 
@@ -35,23 +36,26 @@ export default function FinanceiroGuard({ children, currentPageName }) {
   const verificarAcesso = async () => {
     try {
       const user = await base44.auth.me();
+      // Sem usuário autenticado → libera (auth cuida do redirect)
       if (!user) { setStatus("liberado"); return; }
 
       const partners = await base44.entities.Partner.filter({ created_by: user.email });
+
+      // ✅ Nova regra: Partner não existe ainda → acesso liberado (onboarding em andamento)
       if (!partners.length) { setStatus("liberado"); return; }
 
       const partner = partners[0];
 
       // Buscar cobranças do usuário, mais recente primeiro
-      const cobranças = await base44.entities.Financeiro.filter({ userId: partner.id }, "-created_date", 10);
+      const cobranças = await base44.entities.Financeiro.filter({ userId: partner.id }, "-created_date", 5);
 
+      // ✅ Nova regra: Sem nenhuma cobrança → acesso liberado (só não gera bônus)
       if (!cobranças.length) {
-        setStatus("sem_cobranca");
-        setCobranca({ partner });
+        setStatus("liberado");
         return;
       }
 
-      // Verificar se há alguma CONFIRMED/RECEIVED ativa (a mais recente)
+      // Verificar cobrança mais recente
       const maisRecente = cobranças[0];
 
       if (["CONFIRMED", "RECEIVED"].includes(maisRecente.status)) {
@@ -59,16 +63,15 @@ export default function FinanceiroGuard({ children, currentPageName }) {
       } else if (maisRecente.status === "OVERDUE") {
         setStatus("bloqueado_overdue");
         setCobranca(maisRecente);
-      } else if (maisRecente.status === "PENDING") {
-        setStatus("bloqueado_pending");
-        setCobranca(maisRecente);
       } else {
+        // PENDING ou qualquer outro
         setStatus("bloqueado_pending");
         setCobranca(maisRecente);
       }
     } catch (e) {
+      // ✅ Fail-safe: nunca quebrar a aplicação
       console.error("FinanceiroGuard error:", e);
-      setStatus("liberado"); // em caso de erro, libera para não bloquear
+      setStatus("liberado");
     }
   };
 
