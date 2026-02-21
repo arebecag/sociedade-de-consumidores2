@@ -37,7 +37,7 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   const checkAuth = async () => {
-    const publicPages = ["LandingPage", "Register", "PartnerSite", "LojaCursos"];
+    const publicPages = ["LandingPage", "Register", "PartnerSite", "LojaCursos", "FAQ"];
     if (publicPages.includes(currentPageName)) {
       return;
     }
