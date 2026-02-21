@@ -10,6 +10,7 @@ export default function Extrato() {
   const [bonusTransactions, setBonusTransactions] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
   const [purchases, setPurchases] = useState([]);
+  const [cursosLogs, setCursosLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
