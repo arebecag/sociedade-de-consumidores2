@@ -75,31 +75,7 @@ export default function FinanceiroGuard({ children, currentPageName }) {
     }
   };
 
-  const gerarBoleto = async () => {
-    if (!cobranca?.partner) return;
-    setGerandoBoleto(true);
-    try {
-      const vencimento = new Date();
-      vencimento.setDate(vencimento.getDate() + 3);
-      const dataVencimento = vencimento.toISOString().split("T")[0];
 
-      const res = await base44.functions.invoke("gerarBoletoParaUsuario", {
-        userId: cobranca.partner.id,
-        valor: 97.00,
-        descricao: "Ativação de Plano - Sociedade de Consumidores",
-        dataVencimento
-      });
-
-      if (res.data?.success) {
-        setCobranca(res.data.boleto);
-        setStatus("bloqueado_pending");
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setGerandoBoleto(false);
-    }
-  };
 
   if (status === "checking") {
     return (
