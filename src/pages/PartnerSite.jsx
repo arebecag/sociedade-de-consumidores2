@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { Loader2, Phone, Mail } from "lucide-react";
+import { Loader2, Phone, Mail, AlertCircle } from "lucide-react";
 
 export default function PartnerSite() {
   const [partner, setPartner] = useState(null);
