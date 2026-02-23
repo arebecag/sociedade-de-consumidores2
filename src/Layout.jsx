@@ -52,62 +52,100 @@ export default function Layout({ children, currentPageName }) {
     }
   };
 
+  const createNetworkRelations = async (newPartnerId, newPartnerName, referrerId, referrerName) => {
+    try {
+      await base44.entities.NetworkRelation.create({
+        referrer_id: referrerId,
+        referrer_name: referrerName,
+        referred_id: newPartnerId,
+        referred_name: newPartnerName,
+        relation_type: "direct",
+        is_spillover: false,
+        level: 1
+      });
+      console.log("[Partner] Relação direta criada com sucesso");
+    } catch (e) {
+      console.error("[Partner] Erro ao criar relação direta:", e);
+    }
+
+    try {
+      const referrerRelations = await base44.entities.NetworkRelation.filter({
+        referred_id: referrerId,
+        relation_type: "direct"
+      });
+      if (referrerRelations.length > 0) {
+        await base44.entities.NetworkRelation.create({
+          referrer_id: referrerRelations[0].referrer_id,
+          referrer_name: referrerRelations[0].referrer_name,
+          referred_id: newPartnerId,
+          referred_name: newPartnerName,
+          relation_type: "indirect",
+          is_spillover: false,
+          level: 2
+        });
+        console.log("[Partner] Relação indireta criada com sucesso");
+      }
+    } catch (e) {
+      console.error("[Partner] Erro ao criar relação indireta:", e);
+    }
+  };
+
   const loadUserData = async () => {
     try {
       const userData = await base44.auth.me();
       setUser(userData);
 
-      // Processar cadastro pendente em qualquer página após login
+      // Verificar Partner existente primeiro
+      let existingPartners = [];
+      try {
+        existingPartners = await base44.entities.Partner.filter({ created_by: userData.email });
+      } catch (e) {
+        console.error("[Partner] Erro ao buscar partner existente:", e);
+      }
+
+      // Processar cadastro pendente
       const pendingData = localStorage.getItem("pendingPartnerData");
       if (pendingData) {
-        try {
-          const partnerData = JSON.parse(pendingData);
-          const existingPartners = await base44.entities.Partner.filter({ created_by: userData.email });
-          if (existingPartners.length === 0) {
+        // Remover imediatamente para evitar loop
+        localStorage.removeItem("pendingPartnerData");
+
+        if (existingPartners.length === 0) {
+          try {
+            const partnerData = JSON.parse(pendingData);
+            console.log("[Partner] Criando novo partner para:", userData.email);
             const newPartner = await base44.entities.Partner.create(partnerData);
+            console.log("[Partner] Partner criado com ID:", newPartner.id);
+
             if (partnerData.referrer_id) {
-              await base44.entities.NetworkRelation.create({
-                referrer_id: partnerData.referrer_id,
-                referrer_name: partnerData.referrer_name,
-                referred_id: newPartner.id,
-                referred_name: partnerData.full_name,
-                relation_type: "direct",
-                is_spillover: false,
-                level: 1
-              });
-              // Buscar avô para relação indireta
-              const referrerRelations = await base44.entities.NetworkRelation.filter({
-                referred_id: partnerData.referrer_id,
-                relation_type: "direct"
-              });
-              if (referrerRelations.length > 0) {
-                await base44.entities.NetworkRelation.create({
-                  referrer_id: referrerRelations[0].referrer_id,
-                  referrer_name: referrerRelations[0].referrer_name,
-                  referred_id: newPartner.id,
-                  referred_name: partnerData.full_name,
-                  relation_type: "indirect",
-                  is_spillover: false,
-                  level: 2
-                });
-              }
+              await createNetworkRelations(
+                newPartner.id,
+                partnerData.full_name,
+                partnerData.referrer_id,
+                partnerData.referrer_name
+              );
             }
+
+            setPartner(newPartner);
+            return;
+          } catch (e) {
+            console.error("[Partner] FALHA CRÍTICA ao criar partner:", e, "Dados:", pendingData);
+            // Não bloqueia o login — o usuário ainda consegue acessar
           }
-          localStorage.removeItem("pendingPartnerData");
-          setPartner(existingPartners[0] || (await base44.entities.Partner.filter({ created_by: userData.email }))[0]);
+        } else {
+          console.log("[Partner] Partner já existe, ignorando pendingPartnerData");
+          setPartner(existingPartners[0]);
           return;
-        } catch (e) {
-          console.error("Erro ao processar cadastro pendente:", e);
-          localStorage.removeItem("pendingPartnerData");
         }
       }
 
-      const partners = await base44.entities.Partner.filter({ created_by: userData.email });
-      if (partners.length > 0) {
-        setPartner(partners[0]);
+      // Self-healing: se não tem Partner mas tem dados no localStorage de sessão anterior
+      if (existingPartners.length > 0) {
+        setPartner(existingPartners[0]);
+      } else {
+        console.warn("[Partner] Usuário logado sem Partner:", userData.email);
       }
     } catch (error) {
-      // User not logged in
+      // User not logged in — silencioso
     }
   };
 
