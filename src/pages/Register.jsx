@@ -432,8 +432,10 @@ export default function Register() {
                     <Label htmlFor="terms" className="text-gray-300 text-sm cursor-pointer">
                       Li e aceito o{" "}
                       <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
-                        <DialogTrigger className="text-orange-500 hover:underline">
-                          Contrato de Prestação de Serviços
+                        <DialogTrigger asChild>
+                          <button type="button" className="text-orange-500 hover:underline">
+                            Contrato de Prestação de Serviços
+                          </button>
                         </DialogTrigger>
                         <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto [&>button]:hidden">
                           <DialogHeader>
