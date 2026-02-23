@@ -536,15 +536,7 @@ export default function Register() {
                 {loading ? "Cadastrando..." : "Cadastrar"}
               </Button>
 
-              <div className="text-center mt-4">
-                <button
-                  type="button"
-                  onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-                  className="text-orange-500 hover:text-orange-400 text-sm"
-                >
-                  Já tem uma conta? Faça login
-                </button>
-              </div>
+
             </form>
           </CardContent>
         </Card>
