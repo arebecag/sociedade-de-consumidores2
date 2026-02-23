@@ -156,56 +156,65 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("[Register] Botão cadastrar acionado");
+
     const newErrors = {};
 
     if (!formData.full_name.trim()) {
+      console.log("[Register] Validação falhou: nome vazio");
       newErrors.full_name = "Nome completo é obrigatório";
     }
     if (!formData.birth_date) {
+      console.log("[Register] Validação falhou: data de nascimento vazia");
       newErrors.birth_date = "Data de nascimento é obrigatória";
     } else if (!validateAge(formData.birth_date)) {
+      console.log("[Register] Validação falhou: menor de 15 anos");
       newErrors.birth_date = "Você precisa ter pelo menos 15 anos";
     }
     if (!formData.gender) {
+      console.log("[Register] Validação falhou: gênero não selecionado");
       newErrors.gender = "Gênero é obrigatório";
     }
     if (!formData.email) {
+      console.log("[Register] Validação falhou: email vazio");
       newErrors.email = "E-mail é obrigatório";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      console.log("[Register] Validação falhou: email inválido");
       newErrors.email = "E-mail inválido";
     }
     if (!formData.phone || formData.phone.replace(/\D/g, "").length < 11) {
-      newErrors.phone = "Telefone com DDD é obrigatório";
+      console.log("[Register] Validação falhou: telefone inválido");
+      newErrors.phone = "Telefone com DDD é obrigatório (ex: 11 99999-9999)";
     }
     if (!passwordStrength.valid) {
-      newErrors.password = passwordStrength.message;
+      console.log("[Register] Validação falhou: senha fraca -", passwordStrength.message);
+      newErrors.password = passwordStrength.message || "Senha inválida";
     }
     if (!formData.accepted_terms) {
+      console.log("[Register] Validação falhou: termos não aceitos");
       newErrors.accepted_terms = "Você precisa aceitar o contrato";
     }
     if (!formData.accepted_rules) {
+      console.log("[Register] Validação falhou: regimento não aceito");
       newErrors.accepted_rules = "Você precisa aceitar o regimento";
     }
     if (!isFirstUser && !referrerPartnerId) {
+      console.log("[Register] Validação falhou: sem indicador válido");
       newErrors.referrer = "Indicador inválido ou não encontrado";
     }
 
     if (Object.keys(newErrors).length > 0) {
+      console.log("[Register] Erros de validação encontrados:", newErrors);
       setErrors(newErrors);
+      toast.error("Por favor, corrija os campos destacados em vermelho.");
       return;
     }
 
+    console.log("[Register] Validações passaram, iniciando cadastro...");
     setLoading(true);
     try {
-      // Validate referrer one more time before submitting
-      if (!isFirstUser && !referrerPartnerId) {
-        toast.error("Indicador inválido");
-        setLoading(false);
-        return;
-      }
-
-      // Create partner record
       const uniqueCode = await generateUniqueCode();
+      console.log("[Register] Código único gerado:", uniqueCode);
       
       const partnerData = {
         full_name: formData.full_name,
@@ -237,16 +246,14 @@ export default function Register() {
         display_name: formData.full_name.split(" ")[0]
       };
 
-      // Store partner data to be created after login
       localStorage.setItem("pendingPartnerData", JSON.stringify(partnerData));
+      console.log("[Register] Dados salvos no localStorage, redirecionando para login...");
       
-      // Redirect to login for actual account creation
       base44.auth.redirectToLogin(createPageUrl("Dashboard"));
       
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("Erro ao cadastrar. Tente novamente.");
-    } finally {
+      console.error("[Register] Erro no cadastro:", error);
+      toast.error("Erro ao cadastrar: " + (error.message || "Tente novamente."));
       setLoading(false);
     }
   };
