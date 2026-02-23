@@ -320,14 +320,6 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (!partner) return;
-    
-    const missingFields = validateRequiredFields();
-    
-    if (missingFields.length > 0) {
-      toast.error(`Campos obrigatórios faltando: ${missingFields.join(", ")}`);
-      return;
-    }
-    
     setSaving(true);
     try {
       // Check if all required fields are now complete
