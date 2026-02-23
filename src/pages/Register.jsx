@@ -287,6 +287,15 @@ export default function Register() {
         <Card className="bg-zinc-950 border-orange-500/20">
           <CardHeader>
             <CardTitle className="text-white">Formulário de Cadastro</CardTitle>
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+                className="text-orange-500 hover:text-orange-400 text-sm font-medium border border-orange-500/30 rounded-lg px-4 py-2 hover:bg-orange-500/10 transition-colors"
+              >
+                Já tem uma conta? Faça login
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
