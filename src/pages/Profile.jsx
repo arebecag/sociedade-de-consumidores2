@@ -499,7 +499,7 @@ export default function Profile() {
                   <Label className="text-white">E-mail de Cadastro</Label>
                   <div className="flex gap-2">
                     <Input
-                      value={partner?.created_by || ""}
+                      value={userEmail || partner?.created_by || ""}
                       disabled
                       className="bg-zinc-900 border-zinc-700 text-gray-400 flex-1"
                     />
