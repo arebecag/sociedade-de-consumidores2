@@ -267,14 +267,27 @@ export default function Register() {
         display_name: formData.full_name.split(" ")[0]
       };
 
+      // Salvar dados do parceiro antes de criar a conta
       localStorage.setItem("pendingPartnerData", JSON.stringify(partnerData));
-      console.log("[Register] Dados salvos no localStorage, redirecionando para login...");
-      
-      base44.auth.redirectToLogin(createPageUrl("Dashboard"));
+      console.log("[Register] Dados salvos no localStorage");
+
+      // Criar conta de autenticação
+      console.log("[Register] Criando conta de autenticação para:", formData.email);
+      await base44.auth.signUp(formData.email, formData.password, formData.full_name);
+      console.log("[Register] Conta criada com sucesso, redirecionando para o sistema...");
+
+      // Redirecionar para o Dashboard (já logado após signUp)
+      navigate(createPageUrl("Dashboard"));
       
     } catch (error) {
       console.error("[Register] Erro no cadastro:", error);
-      toast.error("Erro ao cadastrar: " + (error.message || "Tente novamente."));
+      // Se erro for de email já cadastrado
+      if (error.message?.includes("already") || error.message?.includes("exists") || error.message?.includes("registered")) {
+        toast.error("Este e-mail já está cadastrado. Faça login ou use outro e-mail.");
+      } else {
+        toast.error("Erro ao cadastrar: " + (error.message || "Tente novamente."));
+      }
+      localStorage.removeItem("pendingPartnerData");
       setLoading(false);
     }
   };
