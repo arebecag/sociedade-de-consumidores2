@@ -56,7 +56,52 @@ export default function Layout({ children, currentPageName }) {
     try {
       const userData = await base44.auth.me();
       setUser(userData);
-      
+
+      // Processar cadastro pendente em qualquer página após login
+      const pendingData = localStorage.getItem("pendingPartnerData");
+      if (pendingData) {
+        try {
+          const partnerData = JSON.parse(pendingData);
+          const existingPartners = await base44.entities.Partner.filter({ created_by: userData.email });
+          if (existingPartners.length === 0) {
+            const newPartner = await base44.entities.Partner.create(partnerData);
+            if (partnerData.referrer_id) {
+              await base44.entities.NetworkRelation.create({
+                referrer_id: partnerData.referrer_id,
+                referrer_name: partnerData.referrer_name,
+                referred_id: newPartner.id,
+                referred_name: partnerData.full_name,
+                relation_type: "direct",
+                is_spillover: false,
+                level: 1
+              });
+              // Buscar avô para relação indireta
+              const referrerRelations = await base44.entities.NetworkRelation.filter({
+                referred_id: partnerData.referrer_id,
+                relation_type: "direct"
+              });
+              if (referrerRelations.length > 0) {
+                await base44.entities.NetworkRelation.create({
+                  referrer_id: referrerRelations[0].referrer_id,
+                  referrer_name: referrerRelations[0].referrer_name,
+                  referred_id: newPartner.id,
+                  referred_name: partnerData.full_name,
+                  relation_type: "indirect",
+                  is_spillover: false,
+                  level: 2
+                });
+              }
+            }
+          }
+          localStorage.removeItem("pendingPartnerData");
+          setPartner(existingPartners[0] || (await base44.entities.Partner.filter({ created_by: userData.email }))[0]);
+          return;
+        } catch (e) {
+          console.error("Erro ao processar cadastro pendente:", e);
+          localStorage.removeItem("pendingPartnerData");
+        }
+      }
+
       const partners = await base44.entities.Partner.filter({ created_by: userData.email });
       if (partners.length > 0) {
         setPartner(partners[0]);
