@@ -107,7 +107,7 @@ export default function Register() {
     if (!hasNumber) {
       return { valid: false, message: "Precisa ter número" };
     }
-    return { valid: true, message: "Senha forte" };
+    return { valid: true, message: "Senha válida ✓" };
   };
 
   const validateAge = (birthDate) => {
