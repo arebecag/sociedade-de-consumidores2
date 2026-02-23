@@ -333,10 +333,24 @@ export default function Register() {
                   <Label className="text-orange-400 text-sm">Primeiro Cadastro</Label>
                   <p className="text-white font-semibold text-lg">Cadastro Administrador (sem indicador)</p>
                 </div>
-              ) : (
+              ) : referrerPartnerId ? (
                 <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
                   <Label className="text-gray-400 text-sm">Indicador</Label>
                   <p className="text-white font-semibold text-lg">{referrerName}</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label className="text-white">Código do Indicador *</Label>
+                  <Input
+                    placeholder="Digite o código do seu indicador"
+                    className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500 uppercase"
+                    onChange={(e) => handleManualReferrerCode(e.target.value)}
+                  />
+                  {referrerPartnerId === null && referrerName && (
+                    <p className="text-green-500 text-sm">Indicador: {referrerName} ✓</p>
+                  )}
+                  {errors.referrer && <p className="text-red-500 text-sm">{errors.referrer}</p>}
+                  <p className="text-gray-500 text-xs">Peça o código para a pessoa que te indicou</p>
                 </div>
               )}
 
