@@ -198,6 +198,7 @@ export default function Profile() {
   const loadData = async () => {
     try {
       const user = await base44.auth.me();
+      setUserEmail(user.email || "");
       const partners = await base44.entities.Partner.filter({ created_by: user.email });
       
       if (partners.length > 0) {
