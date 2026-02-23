@@ -22,14 +22,13 @@ export default function PartnerSite() {
         return;
       }
 
-      // Busca todos e filtra localmente — funciona sem autenticação
-      try {
-        const allPartners = await base44.entities.Partner.list();
-        const match = allPartners.find(p => p.unique_code === code);
-        if (match) setPartner(match);
-      } catch (err) {
-        console.error("Erro ao carregar parceiro:", err);
+      // Usa backend function com service role — funciona sem autenticação
+      const res = await base44.functions.invoke('getPartnerByCode', { code });
+      if (res.data && res.data.id) {
+        setPartner(res.data);
       }
+    } catch (err) {
+      console.error("Erro ao carregar parceiro:", err);
     } finally {
       setLoading(false);
     }
