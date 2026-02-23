@@ -273,7 +273,7 @@ export default function Register() {
 
       // Criar conta de autenticação
       console.log("[Register] Criando conta de autenticação para:", formData.email);
-      await base44.auth.register({ email: formData.email, password: formData.password });
+      await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
       console.log("[Register] Conta criada com sucesso, redirecionando para o sistema...");
 
       // Redirecionar para o Dashboard (já logado após register)
