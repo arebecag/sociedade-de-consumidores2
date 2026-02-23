@@ -464,6 +464,19 @@ export default function Profile() {
               <CardTitle className="text-white">Dados Pessoais</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Status atual */}
+              {partner && (
+                <div className="p-4 bg-zinc-900 rounded-lg flex items-center gap-3">
+                  <span className="text-gray-400 text-sm font-medium">Status da conta:</span>
+                  <span className={`px-3 py-1 rounded-full font-bold text-sm ${
+                    partner.status === 'ativo' ? 'bg-green-500/20 text-green-400' :
+                    partner.status === 'pendente' ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-red-500/20 text-red-400'
+                  }`}>
+                    {partner.status?.toUpperCase() || "—"}
+                  </span>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label className="text-white">Nome Completo</Label>
