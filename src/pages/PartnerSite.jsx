@@ -22,27 +22,13 @@ export default function PartnerSite() {
         return;
       }
 
-      // Tenta buscar via SDK
-      let found = false;
+      // Busca todos e filtra localmente — funciona sem autenticação
       try {
-        const partners = await base44.entities.Partner.filter({ unique_code: code });
-        if (partners.length > 0) {
-          setPartner(partners[0]);
-          found = true;
-        }
-      } catch (sdkError) {
-        console.warn("SDK filter falhou, tentando list:", sdkError);
-      }
-
-      // Fallback: busca via list (caso filter falhe por auth)
-      if (!found) {
-        try {
-          const allPartners = await base44.entities.Partner.list();
-          const match = allPartners.find(p => p.unique_code === code);
-          if (match) setPartner(match);
-        } catch (listError) {
-          console.error("Erro ao carregar parceiro:", listError);
-        }
+        const allPartners = await base44.entities.Partner.list();
+        const match = allPartners.find(p => p.unique_code === code);
+        if (match) setPartner(match);
+      } catch (err) {
+        console.error("Erro ao carregar parceiro:", err);
       }
     } finally {
       setLoading(false);
