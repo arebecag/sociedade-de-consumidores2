@@ -341,17 +341,27 @@ export default function Register() {
               {/* Gender */}
               <div className="space-y-2">
                 <Label className="text-white">Gênero *</Label>
-                <Select value={formData.gender} onValueChange={(v) => handleChange("gender", v)}>
-                  <SelectTrigger className="bg-zinc-900 border-zinc-700 text-white">
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-700">
-                    <SelectItem value="masculino">Masculino</SelectItem>
-                    <SelectItem value="feminino">Feminino</SelectItem>
-                    <SelectItem value="outro">Outro</SelectItem>
-                    <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: "masculino", label: "Masculino" },
+                    { value: "feminino", label: "Feminino" },
+                    { value: "outro", label: "Outro" },
+                    { value: "prefiro_nao_informar", label: "Prefiro não informar" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleChange("gender", opt.value)}
+                      className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                        formData.gender === opt.value
+                          ? "bg-orange-500 border-orange-500 text-white"
+                          : "bg-zinc-900 border-zinc-700 text-gray-300 hover:border-orange-500 hover:text-orange-500"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
                 {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
               </div>
 
