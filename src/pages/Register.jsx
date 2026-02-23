@@ -435,47 +435,15 @@ export default function Register() {
                     onCheckedChange={(checked) => handleChange("accepted_terms", checked)}
                     className="border-orange-500 data-[state=checked]:bg-orange-500"
                   />
-                  <div className="flex-1">
-                    <Label htmlFor="terms" className="text-gray-300 text-sm cursor-pointer">
-                      Li e aceito o{" "}
-                      <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
-                        <DialogTrigger asChild>
-                          <button type="button" className="text-orange-500 hover:underline">
-                            Contrato de Prestação de Serviços
-                          </button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto [&>button]:hidden">
-                          <DialogHeader>
-                            <DialogTitle className="text-white">Contrato de Prestação de Serviços</DialogTitle>
-                          </DialogHeader>
-                          <div className="text-gray-300 text-sm space-y-4">
-                            <p className="text-red-400 font-bold">NUNCA CAIA EM GOLPES</p>
-                            <p className="text-red-300"><strong>ATENÇÃO:</strong> A SOCIEDADE DE CONSUMIDORES NUNCA envia cobrança por PIX. A única forma de pagamento é por boleto gerado em nosso sistema por COMPRA DE PRODUTOS E SERVIÇOS. Os boletos podem ser pagos com PIX.</p>
-                            <p>Fique atento com e-mails falsos pedindo pagamento ou enviando boletos.</p>
-                            <p className="text-yellow-300"><strong>ATENÇÃO:</strong> NUNCA GASTE SEU DINHEIRO fazendo compras exageradas em nossa plataforma. Use nosso sistema de GERAÇÃO de BÔNUS para fazer suas compras.</p>
-                            <p className="text-green-400 font-bold">GARANTIA ABSOLUTA!</p>
-                            <p>Se não estiver satisfeito, devolvemos o seu dinheiro sem perguntas.</p>
-                            <p className="mt-4"><strong>Definições de nomenclaturas:</strong></p>
-                            <p>CLIENTE PARCEIRO, é aquele que participa de nossa SOCIEDADE DE CONSUMIDORES ficando ATIVO na plataforma.</p>
-                            <p className="mt-4"><strong>CLÁUSULA 1 – DO OBJETO:</strong></p>
-                            <p>Uma PLATAFORMA ONLINE que administra um sistema inteligente de SOCIEDADE DE CONSUMIDORES e distribuição de BÔNUS entre seus associados. Os BÔNUS são gerados, pelas compras dos produtos expostos dentro do em nossa loja.</p>
-                            <p>Todo PARCEIRO ao se cadastrar estará ciente que não possui nenhum vínculo empregatício com a GESTORA.</p>
-                            <p className="mt-4"><strong>CLÁUSULA 2 – DEVERES DA GESTORA:</strong></p>
-                            <p>• Prestar atendimento aos clientes por telefone, chat, e-mail, whatsapp ou atendimento presencial.</p>
-                            <p>• Disponibilizar um ESCRITÓRIO VIRTUAL onde cada PARCEIRO poderá administrar seu PRÓPRIO NEGÓCIO.</p>
-                            <p>• Manter o sistema em funcionamento e realizar depósitos semanalmente.</p>
-                            <p>• Emitir notas fiscais a cada produto comprado.</p>
-                            <p className="mt-4"><strong>CLÁUSULA 3 – DEVERES DO CLIENTE ASSOCIADO:</strong></p>
-                            <p>• Usar o site pessoal GRATUITO para divulgação e cadastramento de novos CLIENTES.</p>
-                            <p>• Efetuar as compras mensais e seguir os regulamentos do REGIMENTO INTERNO.</p>
-                            <p>• Ser maior de 15 anos completos e ter endereço físico.</p>
-                            <p>• Não OSTENTAR em redes sociais.</p>
-                            <p className="mt-4"><strong>CLÁUSULA 4 – DO FORUM:</strong></p>
-                            <p>Escolhem a CÂMARA DE INTERMEDIAÇÃO da comarca de São Paulo, para dirimir quaisquer questões oriundas deste contrato.</p>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </Label>
+                  <div className="flex-1 text-gray-300 text-sm">
+                    Li e aceito o{" "}
+                    <button
+                      type="button"
+                      onClick={() => setTermsOpen(true)}
+                      className="text-orange-500 hover:underline font-medium"
+                    >
+                      Contrato de Prestação de Serviços
+                    </button>
                   </div>
                 </div>
                 {errors.accepted_terms && <p className="text-red-500 text-sm">{errors.accepted_terms}</p>}
@@ -487,62 +455,90 @@ export default function Register() {
                     onCheckedChange={(checked) => handleChange("accepted_rules", checked)}
                     className="border-orange-500 data-[state=checked]:bg-orange-500"
                   />
-                  <div className="flex-1">
-                    <Label htmlFor="rules" className="text-gray-300 text-sm cursor-pointer">
-                      Li e aceito o{" "}
-                      <Dialog open={rulesOpen} onOpenChange={setRulesOpen}>
-                        <DialogTrigger asChild>
-                          <button type="button" className="text-orange-500 hover:underline">
-                            Regimento Interno
-                          </button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto [&>button]:hidden">
-                          <DialogHeader>
-                            <DialogTitle className="text-white">Regimento Interno</DialogTitle>
-                          </DialogHeader>
-                          <div className="text-gray-300 text-sm space-y-4">
-                            <p className="text-red-400 font-bold">NUNCA CAIA EM GOLPES</p>
-                            <p className="text-red-300"><strong>ATENÇÃO:</strong> A SOCIEDADE DE CONSUMIDORES NUNCA envia cobrança por PIX. A única forma de pagamento é por boleto gerado em nosso sistema por COMPRA DE PRODUTOS E SERVIÇOS.</p>
-                            <p className="text-yellow-300"><strong>ATENÇÃO:</strong> NUNCA GASTE SEU DINHEIRO fazendo compras exageradas em nossa plataforma. FAÇA SOMENTE AS COMPRAS MÍNIMAS MENSAIS. Use nosso sistema de GERAÇÃO de BÔNUS para fazer suas compras.</p>
-                            <p className="text-green-400 font-bold">GARANTIA ABSOLUTA!</p>
-                            <p>Se não estiver satisfeito, devolvemos o seu dinheiro sem perguntas.</p>
-                            
-                            <p className="mt-4"><strong>REGIMENTO 1 – NOMENCLATURAS</strong></p>
-                            <p>• BÔNUS: Saldo gerado pelas compras de seus clientes cadastrados.</p>
-                            <p>• CLIENTE ATIVO: Faz compras mensais e está em dia.</p>
-                            <p>• CLIENTE PENDENTE: Tem pendências na plataforma.</p>
-                            
-                            <p className="mt-4"><strong>REGIMENTO 2 – PAGAMENTO DOS BOLETOS</strong></p>
-                            <p>Nosso sistema permite pagar seus boletos com seus BÔNUS através de PIX ou código de barras.</p>
-                            
-                            <p className="mt-4"><strong>REGIMENTO 5 – STATUS</strong></p>
-                            <p>• ATIVO: Em dia com todos os compromissos.</p>
-                            <p>• PENDENTE: Falta de compra, informações ou autorização.</p>
-                            <p>• EXCLUÍDO: Fraudes ou descumprimento do regimento.</p>
-                            
-                            <p className="mt-4"><strong>REGIMENTO 10 – CONTA BANCÁRIA</strong></p>
-                            <p>Deverá ter uma conta bancária cadastrada no seu próprio CPF. Depósitos não podem ser feitos em conta de terceiros.</p>
-                            
-                            <p className="mt-4"><strong>REGIMENTO 11 – DEPÓSITOS EM CONTA</strong></p>
-                            <p>Valor mínimo para DEPÓSITO: R$ 30,00. Depositado AUTOMATICAMENTE toda segunda-feira.</p>
-                            
-                            <p className="mt-4"><strong>REGIMENTO 12 – GERAÇÃO DE BÔNUS</strong></p>
-                            <p>A geração de BÔNUS pode chegar a até 40% do valor da compra dos seus clientes. 50% para saque e 50% para compras.</p>
-                            
-                            <p className="mt-4"><strong>REGIMENTO 14 – GRADUAÇÃO</strong></p>
-                            <p>• LÍDER: 60 clientes ativos, até 32% de bônus.</p>
-                            <p>• ESTRELA: 120 clientes ativos, até 34% de bônus.</p>
-                            <p>• BRONZE: 240 clientes ativos, até 36% de bônus.</p>
-                            <p>• PRATA: 480 clientes ativos, até 38% de bônus.</p>
-                            <p>• OURO: 960 clientes ativos, até 40% de bônus.</p>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </Label>
+                  <div className="flex-1 text-gray-300 text-sm">
+                    Li e aceito o{" "}
+                    <button
+                      type="button"
+                      onClick={() => setRulesOpen(true)}
+                      className="text-orange-500 hover:underline font-medium"
+                    >
+                      Regimento Interno
+                    </button>
                   </div>
                 </div>
                 {errors.accepted_rules && <p className="text-red-500 text-sm">{errors.accepted_rules}</p>}
               </div>
+
+              {/* Dialogs fora do form para evitar HTML inválido */}
+              <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
+                <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Contrato de Prestação de Serviços</DialogTitle>
+                  </DialogHeader>
+                  <div className="text-gray-300 text-sm space-y-4">
+                    <p className="text-red-400 font-bold">NUNCA CAIA EM GOLPES</p>
+                    <p className="text-red-300"><strong>ATENÇÃO:</strong> A SOCIEDADE DE CONSUMIDORES NUNCA envia cobrança por PIX. A única forma de pagamento é por boleto gerado em nosso sistema por COMPRA DE PRODUTOS E SERVIÇOS. Os boletos podem ser pagos com PIX.</p>
+                    <p>Fique atento com e-mails falsos pedindo pagamento ou enviando boletos.</p>
+                    <p className="text-yellow-300"><strong>ATENÇÃO:</strong> NUNCA GASTE SEU DINHEIRO fazendo compras exageradas em nossa plataforma. Use nosso sistema de GERAÇÃO de BÔNUS para fazer suas compras.</p>
+                    <p className="text-green-400 font-bold">GARANTIA ABSOLUTA!</p>
+                    <p>Se não estiver satisfeito, devolvemos o seu dinheiro sem perguntas.</p>
+                    <p className="mt-4"><strong>Definições de nomenclaturas:</strong></p>
+                    <p>CLIENTE PARCEIRO, é aquele que participa de nossa SOCIEDADE DE CONSUMIDORES ficando ATIVO na plataforma.</p>
+                    <p className="mt-4"><strong>CLÁUSULA 1 – DO OBJETO:</strong></p>
+                    <p>Uma PLATAFORMA ONLINE que administra um sistema inteligente de SOCIEDADE DE CONSUMIDORES e distribuição de BÔNUS entre seus associados. Os BÔNUS são gerados pelas compras dos produtos expostos em nossa loja.</p>
+                    <p>Todo PARCEIRO ao se cadastrar estará ciente que não possui nenhum vínculo empregatício com a GESTORA.</p>
+                    <p className="mt-4"><strong>CLÁUSULA 2 – DEVERES DA GESTORA:</strong></p>
+                    <p>• Prestar atendimento aos clientes por telefone, chat, e-mail, whatsapp ou atendimento presencial.</p>
+                    <p>• Disponibilizar um ESCRITÓRIO VIRTUAL onde cada PARCEIRO poderá administrar seu PRÓPRIO NEGÓCIO.</p>
+                    <p>• Manter o sistema em funcionamento e realizar depósitos semanalmente.</p>
+                    <p>• Emitir notas fiscais a cada produto comprado.</p>
+                    <p className="mt-4"><strong>CLÁUSULA 3 – DEVERES DO CLIENTE ASSOCIADO:</strong></p>
+                    <p>• Usar o site pessoal GRATUITO para divulgação e cadastramento de novos CLIENTES.</p>
+                    <p>• Efetuar as compras mensais e seguir os regulamentos do REGIMENTO INTERNO.</p>
+                    <p>• Ser maior de 15 anos completos e ter endereço físico.</p>
+                    <p>• Não OSTENTAR em redes sociais.</p>
+                    <p className="mt-4"><strong>CLÁUSULA 4 – DO FORUM:</strong></p>
+                    <p>Escolhem a CÂMARA DE INTERMEDIAÇÃO da comarca de São Paulo, para dirimir quaisquer questões oriundas deste contrato.</p>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={rulesOpen} onOpenChange={setRulesOpen}>
+                <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Regimento Interno</DialogTitle>
+                  </DialogHeader>
+                  <div className="text-gray-300 text-sm space-y-4">
+                    <p className="text-red-400 font-bold">NUNCA CAIA EM GOLPES</p>
+                    <p className="text-red-300"><strong>ATENÇÃO:</strong> A SOCIEDADE DE CONSUMIDORES NUNCA envia cobrança por PIX. A única forma de pagamento é por boleto gerado em nosso sistema por COMPRA DE PRODUTOS E SERVIÇOS.</p>
+                    <p className="text-yellow-300"><strong>ATENÇÃO:</strong> NUNCA GASTE SEU DINHEIRO fazendo compras exageradas em nossa plataforma. FAÇA SOMENTE AS COMPRAS MÍNIMAS MENSAIS.</p>
+                    <p className="text-green-400 font-bold">GARANTIA ABSOLUTA!</p>
+                    <p>Se não estiver satisfeito, devolvemos o seu dinheiro sem perguntas.</p>
+                    <p className="mt-4"><strong>REGIMENTO 1 – NOMENCLATURAS</strong></p>
+                    <p>• BÔNUS: Saldo gerado pelas compras de seus clientes cadastrados.</p>
+                    <p>• CLIENTE ATIVO: Faz compras mensais e está em dia.</p>
+                    <p>• CLIENTE PENDENTE: Tem pendências na plataforma.</p>
+                    <p className="mt-4"><strong>REGIMENTO 2 – PAGAMENTO DOS BOLETOS</strong></p>
+                    <p>Nosso sistema permite pagar seus boletos com seus BÔNUS através de PIX ou código de barras.</p>
+                    <p className="mt-4"><strong>REGIMENTO 5 – STATUS</strong></p>
+                    <p>• ATIVO: Em dia com todos os compromissos.</p>
+                    <p>• PENDENTE: Falta de compra, informações ou autorização.</p>
+                    <p>• EXCLUÍDO: Fraudes ou descumprimento do regimento.</p>
+                    <p className="mt-4"><strong>REGIMENTO 10 – CONTA BANCÁRIA</strong></p>
+                    <p>Deverá ter uma conta bancária cadastrada no seu próprio CPF. Depósitos não podem ser feitos em conta de terceiros.</p>
+                    <p className="mt-4"><strong>REGIMENTO 11 – DEPÓSITOS EM CONTA</strong></p>
+                    <p>Valor mínimo para DEPÓSITO: R$ 30,00. Depositado AUTOMATICAMENTE toda segunda-feira.</p>
+                    <p className="mt-4"><strong>REGIMENTO 12 – GERAÇÃO DE BÔNUS</strong></p>
+                    <p>A geração de BÔNUS pode chegar a até 40% do valor da compra dos seus clientes. 50% para saque e 50% para compras.</p>
+                    <p className="mt-4"><strong>REGIMENTO 14 – GRADUAÇÃO</strong></p>
+                    <p>• LÍDER: 60 clientes ativos, até 32% de bônus.</p>
+                    <p>• ESTRELA: 120 clientes ativos, até 34% de bônus.</p>
+                    <p>• BRONZE: 240 clientes ativos, até 36% de bônus.</p>
+                    <p>• PRATA: 480 clientes ativos, até 38% de bônus.</p>
+                    <p>• OURO: 960 clientes ativos, até 40% de bônus.</p>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <Button
                 type="submit"
