@@ -17,14 +17,33 @@ export default function PartnerSite() {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get("p");
       
-      if (code) {
+      if (!code) {
+        setLoading(false);
+        return;
+      }
+
+      // Tenta buscar via SDK
+      let found = false;
+      try {
         const partners = await base44.entities.Partner.filter({ unique_code: code });
         if (partners.length > 0) {
           setPartner(partners[0]);
+          found = true;
+        }
+      } catch (sdkError) {
+        console.warn("SDK filter falhou, tentando list:", sdkError);
+      }
+
+      // Fallback: busca via list (caso filter falhe por auth)
+      if (!found) {
+        try {
+          const allPartners = await base44.entities.Partner.list();
+          const match = allPartners.find(p => p.unique_code === code);
+          if (match) setPartner(match);
+        } catch (listError) {
+          console.error("Erro ao carregar parceiro:", listError);
         }
       }
-    } catch (error) {
-      console.error("Error loading partner:", error);
     } finally {
       setLoading(false);
     }
