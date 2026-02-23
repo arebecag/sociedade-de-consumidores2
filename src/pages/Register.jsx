@@ -97,16 +97,16 @@ export default function Register() {
 
     if (!isLongEnough) {
       return { valid: false, message: "Mínimo 8 caracteres" };
-    }
-    if (!hasUpperCase) {
-      return { valid: false, message: "Precisa ter letra maiúscula" };
-    }
-    if (!hasLowerCase) {
-      return { valid: false, message: "Precisa ter letra minúscula" };
-    }
-    if (!hasNumber) {
-      return { valid: false, message: "Precisa ter número" };
-    }
+      }
+      if (!hasUpperCase) {
+      return { valid: false, message: "Precisa ter letra maiúscula (ex: A, B, C)" };
+      }
+      if (!hasLowerCase) {
+      return { valid: false, message: "Precisa ter letra minúscula (ex: a, b, c)" };
+      }
+      if (!hasNumber) {
+      return { valid: false, message: "Precisa ter um número (ex: 1, 2, 3)" };
+      }
     return { valid: true, message: "Senha válida ✓" };
   };
 
