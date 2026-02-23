@@ -71,6 +71,27 @@ export default function Register() {
     }
   };
 
+  const handleManualReferrerCode = async (code) => {
+    if (!code || code.trim().length < 3) {
+      setReferrerPartnerId(null);
+      setReferrerName("");
+      return;
+    }
+    try {
+      const partners = await base44.entities.Partner.filter({ unique_code: code.trim().toUpperCase() });
+      if (partners.length > 0) {
+        setReferrerName(partners[0].display_name || partners[0].full_name);
+        setReferrerPartnerId(partners[0].id);
+        setErrors(prev => ({ ...prev, referrer: "" }));
+      } else {
+        setReferrerPartnerId(null);
+        setReferrerName("");
+      }
+    } catch (e) {
+      setReferrerPartnerId(null);
+    }
+  };
+
   const loadReferrer = async (code) => {
     try {
       const partners = await base44.entities.Partner.filter({ unique_code: code });
