@@ -322,20 +322,15 @@ export default function Profile() {
     if (!partner) return;
     setSaving(true);
     try {
-      // Check if all required fields are now complete
       const allComplete = formData.cpf && formData.pix_key && formData.pix_key_type &&
                          formData.address.cep && formData.address.street && formData.address.number &&
                          formData.address.neighborhood && formData.address.city && formData.address.state;
       
       const updateData = { ...formData };
       
-      // Remove pending reasons if all fields are complete
       if (allComplete && partner.pending_reasons?.length > 0) {
         const newReasons = partner.pending_reasons.filter(r => r !== "Falta de informações no cadastro");
         updateData.pending_reasons = newReasons;
-        
-        // If only "first purchase" remains and no other reasons, keep status pending
-        // If all reasons removed and first purchase done, set to active
         if (newReasons.length === 0 && partner.first_purchase_done) {
           updateData.status = "ativo";
         }
