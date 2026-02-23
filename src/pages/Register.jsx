@@ -484,8 +484,10 @@ export default function Register() {
                     <Label htmlFor="rules" className="text-gray-300 text-sm cursor-pointer">
                       Li e aceito o{" "}
                       <Dialog open={rulesOpen} onOpenChange={setRulesOpen}>
-                        <DialogTrigger className="text-orange-500 hover:underline">
-                          Regimento Interno
+                        <DialogTrigger asChild>
+                          <button type="button" className="text-orange-500 hover:underline">
+                            Regimento Interno
+                          </button>
                         </DialogTrigger>
                         <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto [&>button]:hidden">
                           <DialogHeader>
