@@ -254,37 +254,15 @@ export default function Register() {
       const newPartner = await base44.entities.Partner.create(partnerData);
       console.log("[Register] Partner criado com sucesso ✓ ID:", newPartner.id, "Nome:", newPartner.full_name);
 
-      // 4. Criar relações de rede se tiver indicador
+      // 4. Criar relações de rede com lógica de derramamento automático
       if (referrerPartnerId) {
         try {
-          await base44.entities.NetworkRelation.create({
-            referrer_id: referrerPartnerId,
-            referrer_name: referrerName,
-            referred_id: newPartner.id,
-            referred_name: formData.full_name,
-            relation_type: "direct",
-            is_spillover: false,
-            level: 1
-          });
-          console.log("[Register] Relação direta criada");
-
-          // Relação indireta (indicador do indicador)
-          const referrerRelations = await base44.entities.NetworkRelation.filter({
-            referred_id: referrerPartnerId,
-            relation_type: "direct"
-          });
-          if (referrerRelations.length > 0) {
-            await base44.entities.NetworkRelation.create({
-              referrer_id: referrerRelations[0].referrer_id,
-              referrer_name: referrerRelations[0].referrer_name,
-              referred_id: newPartner.id,
-              referred_name: formData.full_name,
-              relation_type: "indirect",
-              is_spillover: false,
-              level: 2
-            });
-            console.log("[Register] Relação indireta criada");
-          }
+          await createNetworkRelationsWithSpillover(
+            referrerPartnerId,
+            referrerName,
+            newPartner.id,
+            formData.full_name
+          );
         } catch (relErr) {
           console.error("[Register] Erro ao criar relações de rede (não crítico):", relErr);
         }
