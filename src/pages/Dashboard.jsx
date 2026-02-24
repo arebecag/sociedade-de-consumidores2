@@ -273,7 +273,7 @@ export default function Dashboard() {
       {/* Network Stats */}
       <div>
         <h2 className="text-xl font-semibold text-white mb-4">Meus Clientes</h2>
-        {networkStats.active === 0 && networkStats.pending === 0 && networkStats.excluded === 0 ? (
+        {networkStats.direct === 0 && networkStats.indirect === 0 ? (
           <Card className="bg-zinc-950 border-orange-500/20">
             <CardContent className="p-8 text-center">
               <Users className="w-12 h-12 text-gray-600 mx-auto mb-3" />
@@ -282,7 +282,25 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <StatCard
+              title="Total de Clientes"
+              value={networkStats.direct + networkStats.indirect}
+              icon={Users}
+              color="text-orange-500"
+            />
+            <StatCard
+              title="Clientes Diretos"
+              value={`${networkStats.direct}/3`}
+              icon={Users}
+              color="text-blue-400"
+            />
+            <StatCard
+              title="Clientes Indiretos"
+              value={`${networkStats.indirect}/9`}
+              icon={Users}
+              color="text-purple-400"
+            />
             <StatCard
               title="Clientes Ativos"
               value={networkStats.active}
@@ -294,12 +312,6 @@ export default function Dashboard() {
               value={networkStats.pending}
               icon={AlertCircle}
               color="text-yellow-500"
-            />
-            <StatCard
-              title="Clientes Excluídos"
-              value={networkStats.excluded}
-              icon={XCircle}
-              color="text-red-500"
             />
           </div>
         )}
