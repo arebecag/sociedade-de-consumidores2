@@ -45,7 +45,7 @@ const GraduationBadge = ({ graduation }) => {
 export default function Dashboard() {
   const [partner, setPartner] = useState(null);
   const [myReferrer, setMyReferrer] = useState(null);
-  const [networkStats, setNetworkStats] = useState({ active: 0, pending: 0, excluded: 0 });
+  const [networkStats, setNetworkStats] = useState({ direct: 0, indirect: 0, active: 0, pending: 0, excluded: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
