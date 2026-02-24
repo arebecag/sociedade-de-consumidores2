@@ -250,9 +250,9 @@ export default function Register() {
         display_name: formData.full_name.split(" ")[0]
       };
 
-      console.log("[Register] Criando Partner...");
+      console.log("[Register] ETAPA 3: Criando Partner com dados:", JSON.stringify(partnerData));
       const newPartner = await base44.entities.Partner.create(partnerData);
-      console.log("[Register] Partner criado com ID:", newPartner.id);
+      console.log("[Register] Partner criado com sucesso ✓ ID:", newPartner.id, "Nome:", newPartner.full_name);
 
       // 4. Criar relações de rede se tiver indicador
       if (referrerPartnerId) {
