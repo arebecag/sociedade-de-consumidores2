@@ -292,7 +292,8 @@ export default function Register() {
 
       // 5. Limpar qualquer pendingPartnerData antigo e redirecionar
       localStorage.removeItem("pendingPartnerData");
-      console.log("[Register] Cadastro completo! Redirecionando para Dashboard...");
+      console.log("[Register] ETAPA 5: Cadastro 100% completo! Redirecionando para Dashboard...");
+      toast.success("Cadastro realizado com sucesso! Bem-vindo(a)!");
       navigate(createPageUrl("Dashboard"));
 
     } catch (error) {
