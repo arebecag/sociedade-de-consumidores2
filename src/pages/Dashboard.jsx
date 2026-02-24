@@ -78,23 +78,30 @@ export default function Dashboard() {
           }
         }
 
-        // Get network stats (quem eu indiquei) - busca por referrer_id
-        const myNetwork = await base44.entities.NetworkRelation.filter({ 
-          referrer_id: partners[0].id 
-        });
+        // Get network stats — busca DIRETOS e INDIRETOS separadamente
+        const [directRelations, indirectRelations] = await Promise.all([
+          base44.entities.NetworkRelation.filter({ referrer_id: partners[0].id, relation_type: "direct" }),
+          base44.entities.NetworkRelation.filter({ referrer_id: partners[0].id, relation_type: "indirect" })
+        ]);
 
-        if (myNetwork.length > 0) {
-          const referredIds = myNetwork.map(n => n.referred_id);
+        const allReferredIds = [...new Set([
+          ...directRelations.map(n => n.referred_id),
+          ...indirectRelations.map(n => n.referred_id)
+        ])];
+
+        if (allReferredIds.length > 0) {
           const allPartners = await base44.entities.Partner.list();
-          const myReferred = allPartners.filter(p => referredIds.includes(p.id));
+          const myReferred = allPartners.filter(p => allReferredIds.includes(p.id));
 
           setNetworkStats({
+            direct: directRelations.length,
+            indirect: indirectRelations.length,
             active: myReferred.filter(p => p.status === 'ativo').length,
             pending: myReferred.filter(p => p.status === 'pendente').length,
             excluded: myReferred.filter(p => p.status === 'excluido').length
           });
         } else {
-          setNetworkStats({ active: 0, pending: 0, excluded: 0 });
+          setNetworkStats({ direct: 0, indirect: 0, active: 0, pending: 0, excluded: 0 });
         }
       }
     } catch (error) {
