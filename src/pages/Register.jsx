@@ -317,10 +317,23 @@ export default function Register() {
       const uniqueCode = await generateUniqueCode();
       console.log("[Register] Código único gerado:", uniqueCode);
 
-      // 2. Criar conta de autenticação
+      // 2. Criar conta de autenticação - DEVE suceder antes de qualquer outra coisa
       console.log("[Register] ETAPA 2: Criando auth para:", formData.email);
-      await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
-      console.log("[Register] Auth criado com sucesso ✓");
+      let authResult;
+      try {
+        authResult = await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
+        console.log("[Register] Auth criado com sucesso ✓", authResult);
+      } catch (authError) {
+        console.error("[Register] FALHA na criação do auth:", authError);
+        throw authError; // Re-lança para o catch externo tratar
+      }
+
+      // Verificar se o usuário realmente está autenticado após o register
+      const meCheck = await base44.auth.me();
+      console.log("[Register] Verificação pós-auth:", meCheck?.email);
+      if (!meCheck) {
+        throw new Error("Autenticação não confirmada após registro");
+      }
 
       // 3. Criar Partner imediatamente (usuário já está autenticado após register)
       console.log("[Register] ETAPA 3: Preparando dados do Partner...");
