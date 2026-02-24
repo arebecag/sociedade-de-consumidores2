@@ -103,39 +103,11 @@ export default function Layout({ children, currentPageName }) {
         console.error("[Partner] Erro ao buscar partner existente:", e);
       }
 
-      // Processar cadastro pendente
+      // Limpar qualquer pendingPartnerData residual (a criação agora é feita no Register)
       const pendingData = localStorage.getItem("pendingPartnerData");
       if (pendingData) {
-        // Remover imediatamente para evitar loop
         localStorage.removeItem("pendingPartnerData");
-
-        if (existingPartners.length === 0) {
-          try {
-            const partnerData = JSON.parse(pendingData);
-            console.log("[Partner] Criando novo partner para:", userData.email);
-            const newPartner = await base44.entities.Partner.create(partnerData);
-            console.log("[Partner] Partner criado com ID:", newPartner.id);
-
-            if (partnerData.referrer_id) {
-              await createNetworkRelations(
-                newPartner.id,
-                partnerData.full_name,
-                partnerData.referrer_id,
-                partnerData.referrer_name
-              );
-            }
-
-            setPartner(newPartner);
-            return;
-          } catch (e) {
-            console.error("[Partner] FALHA CRÍTICA ao criar partner:", e, "Dados:", pendingData);
-            // Não bloqueia o login — o usuário ainda consegue acessar
-          }
-        } else {
-          console.log("[Partner] Partner já existe, ignorando pendingPartnerData");
-          setPartner(existingPartners[0]);
-          return;
-        }
+        console.log("[Layout] pendingPartnerData residual removido");
       }
 
       // Self-healing: se não tem Partner mas tem dados no localStorage de sessão anterior
