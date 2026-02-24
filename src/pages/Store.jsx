@@ -155,8 +155,8 @@ export default function Store() {
           
           // Comissão de 40% do valor pago
           const totalBonus = amount * 0.40;
-          const bonusWithdrawal = totalBonus * 0.5;
-          const bonusPurchases = totalBonus * 0.5;
+          const bonusWithdrawal = totalBonus * 1.0; // 100% para saque/depósito
+          const bonusPurchases = totalBonus * 0.0;  // 0% para compras (removido split)
 
           await base44.entities.BonusTransaction.create({
             partner_id: directReferrer.id,

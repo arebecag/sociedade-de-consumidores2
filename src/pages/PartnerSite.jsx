@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { Loader2, Phone, Mail, AlertCircle } from "lucide-react";
+import { Loader2, Phone, Mail, AlertCircle, LogIn } from "lucide-react";
 
 export default function PartnerSite() {
   const [partner, setPartner] = useState(null);
@@ -58,7 +58,17 @@ export default function PartnerSite() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="py-8 px-4 text-center border-b border-orange-500/20">
+      <header className="py-8 px-4 text-center border-b border-orange-500/20 relative">
+        <div className="absolute top-4 right-4">
+          <Button
+            onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+            variant="outline"
+            className="border-orange-500/50 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors"
+          >
+            <LogIn className="w-4 h-4 mr-2" />
+            Entrar
+          </Button>
+        </div>
         <h1 className="text-4xl md:text-5xl font-bold text-orange-500">Sociedade de</h1>
         <h1 className="text-4xl md:text-5xl font-bold text-white">Consumidores</h1>
       </header>
