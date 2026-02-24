@@ -191,13 +191,25 @@ export default function Layout({ children, currentPageName }) {
       <div className="p-4 border-t border-orange-500/20">
         {partner && (
           <div className="mb-4 p-3 bg-orange-500/10 rounded-lg">
-            <p className="text-sm text-gray-400">Status</p>
-            <p className={`font-semibold ${
-              partner.status === 'ativo' ? 'text-green-500' :
-              partner.status === 'pendente' ? 'text-yellow-500' : 'text-red-500'
-            }`}>
-              {partner.status?.toUpperCase()}
-            </p>
+            <p className="text-xs text-gray-400 mb-1">Conta</p>
+            <p className="text-white text-sm font-medium truncate">{partner.display_name || partner.full_name}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
+                partner.status === 'ativo' ? 'bg-green-500' :
+                partner.status === 'pendente' ? 'bg-yellow-500' : 'bg-red-500'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                partner.status === 'ativo' ? 'text-green-500' :
+                partner.status === 'pendente' ? 'text-yellow-500' : 'text-red-500'
+              }`}>
+                {partner.status?.toUpperCase()}
+              </p>
+            </div>
+            {partner.status === 'pendente' && partner.pending_reasons?.length > 0 && (
+              <p className="text-yellow-600 text-xs mt-1 leading-tight">
+                {partner.pending_reasons[0]}
+              </p>
+            )}
           </div>
         )}
         <Button
