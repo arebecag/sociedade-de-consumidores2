@@ -214,11 +214,12 @@ export default function Register() {
       console.log("[Register] Código único gerado:", uniqueCode);
 
       // 2. Criar conta de autenticação
-      console.log("[Register] Criando auth para:", formData.email);
+      console.log("[Register] ETAPA 2: Criando auth para:", formData.email);
       await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
-      console.log("[Register] Auth criado com sucesso");
+      console.log("[Register] Auth criado com sucesso ✓");
 
       // 3. Criar Partner imediatamente (usuário já está autenticado após register)
+      console.log("[Register] ETAPA 3: Preparando dados do Partner...");
       const partnerData = {
         full_name: formData.full_name,
         birth_date: formData.birth_date,
