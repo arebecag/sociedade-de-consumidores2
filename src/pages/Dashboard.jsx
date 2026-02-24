@@ -49,83 +49,18 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Primeiro trata o cadastro pendente, depois carrega os dados
-    handlePendingRegistration().then(() => loadData());
+    // Limpar qualquer pendingPartnerData residual (criação agora é feita no Register)
+    localStorage.removeItem("pendingPartnerData");
+    loadData();
   }, []);
-
-  const handlePendingRegistration = async () => {
-    const pendingData = localStorage.getItem("pendingPartnerData");
-    if (!pendingData) return;
-
-    try {
-      const partnerData = JSON.parse(pendingData);
-      const user = await base44.auth.me();
-      if (!user) return;
-
-      // Limpar imediatamente para evitar loop em caso de erro
-            localStorage.removeItem("pendingPartnerData");
-
-            // Verificar se parceiro já existe (idempotência)
-            const existingPartners = await base44.entities.Partner.filter({ created_by: user.email });
-            if (existingPartners.length > 0) {
-              console.log("[Dashboard] Partner já existe, pulando criação");
-              return;
-            }
-
-            // Criar parceiro
-            console.log("[Dashboard] Criando partner no Dashboard para:", user.email);
-            const newPartner = await base44.entities.Partner.create(partnerData);
-            console.log("[Dashboard] Partner criado:", newPartner.id);
-
-            // Criar relações de rede se houver indicador
-            if (partnerData.referrer_id) {
-              try {
-                await base44.entities.NetworkRelation.create({
-                  referrer_id: partnerData.referrer_id,
-                  referrer_name: partnerData.referrer_name,
-                  referred_id: newPartner.id,
-                  referred_name: partnerData.full_name,
-                  relation_type: "direct",
-                  is_spillover: false,
-                  level: 1
-                });
-              } catch (e) {
-                console.error("[Dashboard] Erro ao criar relação direta:", e);
-              }
-
-              try {
-                const referrerRelations = await base44.entities.NetworkRelation.filter({
-                  referred_id: partnerData.referrer_id,
-                  relation_type: "direct"
-                });
-                if (referrerRelations.length > 0) {
-                  await base44.entities.NetworkRelation.create({
-                    referrer_id: referrerRelations[0].referrer_id,
-                    referrer_name: referrerRelations[0].referrer_name,
-                    referred_id: newPartner.id,
-                    referred_name: partnerData.full_name,
-                    relation_type: "indirect",
-                    is_spillover: false,
-                    level: 2
-                  });
-                }
-              } catch (e) {
-                console.error("[Dashboard] Erro ao criar relação indireta:", e);
-              }
-            }
-
-            toast.success("Cadastro concluído! Bem-vindo(a) à Sociedade de Consumidores!");
-            loadData();
-    } catch (error) {
-      console.error("Erro ao finalizar cadastro:", error);
-      // Não exibir erro para o usuário — dados já foram salvos no localStorage antes do login
-    }
-  };
 
   const loadData = async () => {
     try {
       const user = await base44.auth.me();
+      console.log("[Dashboard] Usuário autenticado:", user?.email);
+
       const partners = await base44.entities.Partner.filter({ created_by: user.email });
+      console.log("[Dashboard] Partners encontrados:", partners.length, partners.map(p => ({ id: p.id, nome: p.full_name })));
       
       if (partners.length > 0) {
         setPartner(partners[0]);
