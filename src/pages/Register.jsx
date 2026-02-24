@@ -181,69 +181,51 @@ export default function Register() {
 
     const newErrors = {};
 
-    if (!formData.full_name.trim()) {
-      console.log("[Register] Validação falhou: nome vazio");
-      newErrors.full_name = "Nome completo é obrigatório";
-    }
+    if (!formData.full_name.trim()) newErrors.full_name = "Nome completo é obrigatório";
     if (!formData.birth_date) {
-      console.log("[Register] Validação falhou: data de nascimento vazia");
       newErrors.birth_date = "Data de nascimento é obrigatória";
     } else if (!validateAge(formData.birth_date)) {
-      console.log("[Register] Validação falhou: menor de 15 anos");
       newErrors.birth_date = "Você precisa ter pelo menos 15 anos";
     }
-    if (!formData.gender) {
-      console.log("[Register] Validação falhou: gênero não selecionado");
-      newErrors.gender = "Gênero é obrigatório";
-    }
+    if (!formData.gender) newErrors.gender = "Gênero é obrigatório";
     if (!formData.email) {
-      console.log("[Register] Validação falhou: email vazio");
       newErrors.email = "E-mail é obrigatório";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      console.log("[Register] Validação falhou: email inválido");
       newErrors.email = "E-mail inválido";
     }
     if (!formData.phone || formData.phone.replace(/\D/g, "").length < 11) {
-      console.log("[Register] Validação falhou: telefone inválido");
       newErrors.phone = "Telefone com DDD é obrigatório (ex: 11 99999-9999)";
     }
-    if (!passwordStrength.valid) {
-      console.log("[Register] Validação falhou: senha fraca -", passwordStrength.message);
-      newErrors.password = passwordStrength.message || "Senha inválida";
-    }
-    if (!formData.accepted_terms) {
-      console.log("[Register] Validação falhou: termos não aceitos");
-      newErrors.accepted_terms = "Você precisa aceitar o contrato";
-    }
-    if (!formData.accepted_rules) {
-      console.log("[Register] Validação falhou: regimento não aceito");
-      newErrors.accepted_rules = "Você precisa aceitar o regimento";
-    }
-    if (!isFirstUser && !referrerPartnerId) {
-      console.log("[Register] Validação falhou: sem indicador válido");
-      newErrors.referrer = "Indicador inválido ou não encontrado";
-    }
+    if (!passwordStrength.valid) newErrors.password = passwordStrength.message || "Senha inválida";
+    if (!formData.accepted_terms) newErrors.accepted_terms = "Você precisa aceitar o contrato";
+    if (!formData.accepted_rules) newErrors.accepted_rules = "Você precisa aceitar o regimento";
+    if (!isFirstUser && !referrerPartnerId) newErrors.referrer = "Indicador inválido ou não encontrado";
 
     if (Object.keys(newErrors).length > 0) {
-      console.log("[Register] Erros de validação encontrados:", newErrors);
       setErrors(newErrors);
       toast.error("Por favor, corrija os campos destacados em vermelho.");
       return;
     }
 
-    console.log("[Register] Validações passaram, iniciando cadastro...");
     setLoading(true);
     try {
+      // 1. Gerar código único
       const uniqueCode = await generateUniqueCode();
       console.log("[Register] Código único gerado:", uniqueCode);
-      
+
+      // 2. Criar conta de autenticação
+      console.log("[Register] Criando auth para:", formData.email);
+      await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
+      console.log("[Register] Auth criado com sucesso");
+
+      // 3. Criar Partner imediatamente (usuário já está autenticado após register)
       const partnerData = {
         full_name: formData.full_name,
         birth_date: formData.birth_date,
         gender: formData.gender,
         phone: formData.phone,
-        referrer_id: referrerPartnerId,
-        referrer_name: referrerName,
+        referrer_id: referrerPartnerId || null,
+        referrer_name: referrerName || null,
         status: "pendente",
         pending_reasons: ["Falta da primeira compra", "Falta de informações no cadastro"],
         graduation: "cliente_iniciante",
@@ -267,21 +249,53 @@ export default function Register() {
         display_name: formData.full_name.split(" ")[0]
       };
 
-      // Salvar dados do parceiro antes de criar a conta
-      localStorage.setItem("pendingPartnerData", JSON.stringify(partnerData));
-      console.log("[Register] Dados salvos no localStorage");
+      console.log("[Register] Criando Partner...");
+      const newPartner = await base44.entities.Partner.create(partnerData);
+      console.log("[Register] Partner criado com ID:", newPartner.id);
 
-      // Criar conta de autenticação
-      console.log("[Register] Criando conta de autenticação para:", formData.email);
-      await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
-      console.log("[Register] Conta criada com sucesso, redirecionando para o sistema...");
+      // 4. Criar relações de rede se tiver indicador
+      if (referrerPartnerId) {
+        try {
+          await base44.entities.NetworkRelation.create({
+            referrer_id: referrerPartnerId,
+            referrer_name: referrerName,
+            referred_id: newPartner.id,
+            referred_name: formData.full_name,
+            relation_type: "direct",
+            is_spillover: false,
+            level: 1
+          });
+          console.log("[Register] Relação direta criada");
 
-      // Redirecionar para o Dashboard (já logado após register)
+          // Relação indireta (indicador do indicador)
+          const referrerRelations = await base44.entities.NetworkRelation.filter({
+            referred_id: referrerPartnerId,
+            relation_type: "direct"
+          });
+          if (referrerRelations.length > 0) {
+            await base44.entities.NetworkRelation.create({
+              referrer_id: referrerRelations[0].referrer_id,
+              referrer_name: referrerRelations[0].referrer_name,
+              referred_id: newPartner.id,
+              referred_name: formData.full_name,
+              relation_type: "indirect",
+              is_spillover: false,
+              level: 2
+            });
+            console.log("[Register] Relação indireta criada");
+          }
+        } catch (relErr) {
+          console.error("[Register] Erro ao criar relações de rede (não crítico):", relErr);
+        }
+      }
+
+      // 5. Limpar qualquer pendingPartnerData antigo e redirecionar
+      localStorage.removeItem("pendingPartnerData");
+      console.log("[Register] Cadastro completo! Redirecionando para Dashboard...");
       navigate(createPageUrl("Dashboard"));
-      
+
     } catch (error) {
       console.error("[Register] Erro no cadastro:", error);
-      // Se erro for de email já cadastrado
       if (error.message?.includes("already") || error.message?.includes("exists") || error.message?.includes("registered")) {
         toast.error("Este e-mail já está cadastrado. Faça login ou use outro e-mail.");
       } else {
