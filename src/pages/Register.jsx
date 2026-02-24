@@ -175,6 +175,110 @@ export default function Register() {
     return code;
   };
 
+  // Lógica de derramamento: se o indicador já tem 3 diretos, 
+  // o novo cadastro vai para o direto com menos filhos
+  const createNetworkRelationsWithSpillover = async (referrerId, referrerName, newPartnerId, newPartnerName) => {
+    // Verificar quantos diretos o indicador já tem
+    const referrerDirectRelations = await base44.entities.NetworkRelation.filter({
+      referrer_id: referrerId,
+      relation_type: "direct"
+    });
+    const directCount = referrerDirectRelations.length;
+    console.log(`[Spillover] ${referrerName} tem ${directCount} diretos`);
+
+    if (directCount < 3) {
+      // Cadastrar como direto do indicador
+      await base44.entities.NetworkRelation.create({
+        referrer_id: referrerId,
+        referrer_name: referrerName,
+        referred_id: newPartnerId,
+        referred_name: newPartnerName,
+        relation_type: "direct",
+        is_spillover: false,
+        level: 1
+      });
+      console.log(`[Spillover] Cadastrado como DIRETO de ${referrerName}`);
+
+      // Criar relação indireta com o avô (nível 2)
+      const grandpaRelations = await base44.entities.NetworkRelation.filter({
+        referred_id: referrerId,
+        relation_type: "direct"
+      });
+      if (grandpaRelations.length > 0) {
+        await base44.entities.NetworkRelation.create({
+          referrer_id: grandpaRelations[0].referrer_id,
+          referrer_name: grandpaRelations[0].referrer_name,
+          referred_id: newPartnerId,
+          referred_name: newPartnerName,
+          relation_type: "indirect",
+          is_spillover: false,
+          level: 2
+        });
+        console.log(`[Spillover] Relação indireta criada com avô`);
+      }
+    } else {
+      // Derramamento: escolher o direto com menos filhos
+      const directPartnerIds = referrerDirectRelations.map(r => r.referred_id);
+      let minChildren = Infinity;
+      let targetDirectId = null;
+      let targetDirectName = null;
+
+      for (const directId of directPartnerIds) {
+        const childRelations = await base44.entities.NetworkRelation.filter({
+          referrer_id: directId,
+          relation_type: "direct"
+        });
+        const count = childRelations.length;
+        console.log(`[Spillover] Direto ${directId} tem ${count} filhos`);
+        if (count < minChildren) {
+          minChildren = count;
+          targetDirectId = directId;
+          const directRelation = referrerDirectRelations.find(r => r.referred_id === directId);
+          targetDirectName = directRelation?.referred_name || "";
+        }
+      }
+
+      if (!targetDirectId) {
+        // Fallback: usar primeiro direto
+        targetDirectId = directPartnerIds[0];
+        targetDirectName = referrerDirectRelations[0]?.referred_name || "";
+      }
+
+      console.log(`[Spillover] DERRAMANDO para ${targetDirectName} (${targetDirectId})`);
+
+      // Cadastrar como DIRETO do filho escolhido (level 1 para ele, indireto para o pai original)
+      await base44.entities.NetworkRelation.create({
+        referrer_id: targetDirectId,
+        referrer_name: targetDirectName,
+        referred_id: newPartnerId,
+        referred_name: newPartnerName,
+        relation_type: "direct",
+        is_spillover: true,
+        level: 1
+      });
+
+      // Criar relação INDIRETA com o indicador original (avô do novo)
+      await base44.entities.NetworkRelation.create({
+        referrer_id: referrerId,
+        referrer_name: referrerName,
+        referred_id: newPartnerId,
+        referred_name: newPartnerName,
+        relation_type: "indirect",
+        is_spillover: true,
+        level: 2
+      });
+
+      console.log(`[Spillover] Derramamento concluído: direto de ${targetDirectName}, indireto de ${referrerName}`);
+
+      // Atualizar o referrer_id e referrer_name do novo partner para apontar para o pai real (filho escolhido)
+      await base44.entities.Partner.update(newPartnerId, {
+        referrer_id: targetDirectId,
+        referrer_name: targetDirectName
+      });
+      console.log(`[Spillover] Partner atualizado com novo pai: ${targetDirectName}`);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("[Register] Botão cadastrar acionado");
