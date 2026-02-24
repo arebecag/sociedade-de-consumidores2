@@ -319,9 +319,14 @@ export default function Profile() {
   };
 
   const handleSave = async () => {
-    if (!partner) return;
+    if (!partner) {
+      toast.error("Erro: dados do parceiro não carregados. Recarregue a página.");
+      return;
+    }
     setSaving(true);
     try {
+      console.log("[Profile] Salvando partner ID:", partner.id);
+      
       const allComplete = formData.cpf && formData.pix_key && formData.pix_key_type &&
                          formData.address.cep && formData.address.street && formData.address.number &&
                          formData.address.neighborhood && formData.address.city && formData.address.state;
@@ -336,11 +341,14 @@ export default function Profile() {
         }
       }
       
-      await base44.entities.Partner.update(partner.id, updateData);
+      console.log("[Profile] Dados a salvar:", JSON.stringify(updateData));
+      const updated = await base44.entities.Partner.update(partner.id, updateData);
+      console.log("[Profile] Salvo com sucesso:", updated?.id);
       toast.success("Perfil atualizado com sucesso!");
-      loadData();
+      await loadData();
     } catch (error) {
-      toast.error("Erro ao salvar");
+      console.error("[Profile] Erro ao salvar:", error);
+      toast.error("Erro ao salvar: " + (error.message || "Tente novamente"));
     } finally {
       setSaving(false);
     }
