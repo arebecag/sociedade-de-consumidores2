@@ -10,22 +10,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-    // Buscar user_id da sessão autenticada
-    let userId = partnerData.user_id;
+    // Validar user_id enviado do frontend (obrigatório)
+    const userId = partnerData.user_id;
     if (!userId) {
-      try {
-        const me = await base44.auth.me();
-        if (me?.id) {
-          userId = me.id;
-          console.log('[registerPartner] user_id obtido da sessão:', userId);
-        }
-      } catch (e) {
-        console.error('[registerPartner] Erro ao obter sessão:', e.message);
-      }
-    }
-
-    if (!userId) {
-      return Response.json({ error: 'Sessão expirou. Faça login e tente novamente.' }, { status: 401 });
+      return Response.json({ error: 'user_id não fornecido' }, { status: 400 });
     }
 
     // Verificar se já existe Partner para este email (evitar duplicatas)

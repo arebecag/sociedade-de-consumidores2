@@ -347,10 +347,11 @@ export default function Register() {
 
       // ETAPA 2: Criar conta de autenticação
       await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
+      const authenticatedUser = await base44.auth.me();
 
-      // ETAPA 3: Criar Partner via backend function (backend busca user_id pela sessão)
+      // ETAPA 3: Criar Partner via backend function
       const partnerData = {
-        user_id: null,
+        user_id: authenticatedUser.id,
         email: formData.email,
         full_name: formData.full_name,
         birth_date: formData.birth_date,
