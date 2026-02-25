@@ -117,12 +117,41 @@ export default function Store() {
 
       await base44.entities.Partner.update(partner.id, updates);
 
-      // Generate bonus for referrers
-      if (paidWithBoleto === 0 || actualPaymentMethod === "misto") {
+      // Generate bonus for referrers (only if fully paid with bonus)
+      if (paidWithBoleto === 0) {
         await generateBonusForPurchase(purchase.id, productPrice, partner);
       }
 
-      toast.success("Compra realizada com sucesso!");
+      // If boleto payment needed, generate boleto and redirect
+      if (paidWithBoleto > 0) {
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 3);
+        const dueDateStr = dueDate.toISOString().split("T")[0];
+
+        const boletoResp = await base44.functions.invoke('gerarBoletoParaUsuario', {
+          userId: partner.id,
+          valor: paidWithBoleto,
+          descricao: `Compra: ${selectedProduct.name}`,
+          dataVencimento: dueDateStr
+        });
+
+        const boletoData = boletoResp.data;
+        const invoiceUrl = boletoData?.boleto?.invoiceUrl || boletoData?.boleto?.bankSlipUrl;
+
+        if (invoiceUrl) {
+          toast.success("Boleto gerado! Redirecionando para pagamento...");
+          setPurchaseDialogOpen(false);
+          setSelectedProduct(null);
+          loadData();
+          window.open(invoiceUrl, "_blank");
+          return;
+        } else {
+          toast.warning("Compra registrada, mas não foi possível gerar o link do boleto. Verifique 'Minhas Cobranças'.");
+        }
+      } else {
+        toast.success("Compra realizada com sucesso!");
+      }
+
       setPurchaseDialogOpen(false);
       setSelectedProduct(null);
       loadData();
