@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     }
 
     // Criar Partner com service role (não depende de sessão do usuário)
-    const newPartner = await base44.asServiceRole.entities.Partner.create(partnerData);
+    const newPartner = await base44.asServiceRole.entities.Partner.create({ ...partnerData, user_id: userId });
     console.log('[registerPartner] Partner criado:', newPartner.id, newPartner.full_name);
 
     if (!newPartner || !newPartner.id) {
