@@ -96,24 +96,22 @@ export default function Store() {
         download_available: paidWithBoleto === 0
       });
 
-      // Update partner bonus and status
+      // Update partner bonus (deduct used bonus only; status only changes when boleto is paid)
       const updates = {
         bonus_for_purchases: bonusAvailable - paidWithBonus,
         total_spent_purchases: (partner.total_spent_purchases || 0) + paidWithBonus
       };
 
-      if (isFirstPurchase && productPrice >= 125) {
+      // Se pagou 100% com bônus, ativar parceiro (pago imediatamente)
+      if (paidWithBoleto === 0 && isFirstPurchase && productPrice >= 125) {
         updates.first_purchase_done = true;
         updates.pending_reasons = (partner.pending_reasons || []).filter(r => r !== "Falta da primeira compra");
-        
-        if (updates.pending_reasons.length === 0 || (updates.pending_reasons.length === 1 && updates.pending_reasons[0] === "Falta de informações no cadastro")) {
-          // Check if profile is complete
-          if (partner.cpf && partner.address?.cep) {
-            updates.status = "ativo";
-            updates.pending_reasons = [];
-          }
+        if (partner.cpf && partner.address?.cep) {
+          updates.status = "ativo";
+          updates.pending_reasons = [];
         }
       }
+      // Se tem boleto, NÃO ativa ainda — vai ativar quando o boleto for confirmado pelo webhook
 
       await base44.entities.Partner.update(partner.id, updates);
 
