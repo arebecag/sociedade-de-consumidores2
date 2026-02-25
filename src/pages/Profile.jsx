@@ -247,12 +247,10 @@ export default function Profile() {
             relationship: ""
           }
         });
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
-    }
+  };
+
+  const loadData = async () => {
+    await reload();
   };
 
   const handleChange = (field, value) => {
