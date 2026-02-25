@@ -408,7 +408,7 @@ export default function Register() {
       };
 
       const res = await base44.functions.invoke('registerPartner', {
-        partnerData,
+        partnerData: { ...partnerData, _origin: window.location.origin },
         referrerPartnerId: referrerPartnerId || null,
         referrerName: referrerName || null
       });
