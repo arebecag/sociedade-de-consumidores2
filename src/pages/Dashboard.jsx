@@ -44,27 +44,26 @@ const GraduationBadge = ({ graduation }) => {
 };
 
 export default function Dashboard() {
-  const [partner, setPartner] = useState(null);
+  const { partner, loading: partnerLoading } = usePartner();
   const [myReferrer, setMyReferrer] = useState(null);
   const [networkStats, setNetworkStats] = useState({ direct: 0, indirect: 0, active: 0, pending: 0, excluded: 0 });
-  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
-    // Limpar qualquer pendingPartnerData residual (criação agora é feita no Register)
     localStorage.removeItem("pendingPartnerData");
-    loadData();
   }, []);
 
-  const loadData = async () => {
-    try {
-      const user = await base44.auth.me();
-      console.log("[Dashboard] Usuário autenticado:", user?.email);
+  useEffect(() => {
+    if (partner) {
+      loadNetworkStats(partner);
+    } else if (!partnerLoading) {
+      setStatsLoading(false);
+    }
+  }, [partner, partnerLoading]);
 
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      console.log("[Dashboard] Partners encontrados:", partners.length, partners.map(p => ({ id: p.id, nome: p.full_name })));
-      
-      if (partners.length > 0) {
-        setPartner(partners[0]);
+  const loadNetworkStats = async (p) => {
+    try {
+        setStatsLoading(true);
         
         // Get my referrer (quem me indicou)
         const myReferrerRelation = await base44.entities.NetworkRelation.filter({ 
