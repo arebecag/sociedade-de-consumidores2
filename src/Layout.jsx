@@ -31,8 +31,12 @@ export default function Layout({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
+  const publicPages = ["LandingPage", "Register", "PartnerSite", "LojaCursos", "FAQ"];
+
   useEffect(() => {
-    loadUserData();
+    if (!publicPages.includes(currentPageName)) {
+      loadUserData();
+    }
     checkAuth();
   }, []);
 
