@@ -481,7 +481,7 @@ export default function Register() {
   }
 
   // Sem link de indicação e já existem parceiros — precisa de link
-  if (!isFirstUser && !referrerPartnerId && !referrerCode) {
+  if (!isFirstUser && !referrerPartnerId && !referrerCode && referrerName === "") {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-zinc-950 border-orange-500/20">
