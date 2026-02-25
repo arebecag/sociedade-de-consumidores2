@@ -335,7 +335,14 @@ export default function Profile() {
                          formData.address.cep && formData.address.street && formData.address.number &&
                          formData.address.neighborhood && formData.address.city && formData.address.state;
       
-      const updateData = { ...formData };
+      // Preserve required fields from original partner if not set in formData
+      const updateData = {
+        ...formData,
+        gender: formData.gender || partner.gender,
+        phone: formData.phone || partner.phone,
+        full_name: formData.full_name || partner.full_name,
+        birth_date: formData.birth_date || partner.birth_date,
+      };
       
       if (allComplete && partner.pending_reasons?.length > 0) {
         const newReasons = partner.pending_reasons.filter(r => r !== "Falta de informações no cadastro");
