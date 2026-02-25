@@ -362,7 +362,7 @@ export default function Profile() {
       const updated = await base44.entities.Partner.update(partner.id, updateData);
       console.log("[Profile] Salvo com sucesso:", updated?.id);
       toast.success("Perfil atualizado com sucesso!");
-      await loadData();
+      await reload();
     } catch (error) {
       console.error("[Profile] Erro ao salvar:", error);
       toast.error("Erro ao salvar: " + (error.message || "Tente novamente"));
