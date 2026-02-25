@@ -357,21 +357,24 @@ export default function Register() {
       await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
 
       // ETAPA 3: Aguardar sessão propagar e obter user_id
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
       let me = null;
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 10; i++) {
         try {
           me = await base44.auth.me();
           if (me?.id) break;
         } catch (e) {
-          // continuar tentando
+          // continuar tentando — 401 é esperado enquanto sessão propaga
         }
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
 
       if (!me?.id) {
-        throw new Error("Não foi possível confirmar seu cadastro. Tente fazer login.");
+        // Sessão não propagou ainda — redirecionar para login com mensagem
+        toast.success("Cadastro criado! Faça login para continuar.");
+        base44.auth.redirectToLogin(createPageUrl("Dashboard"));
+        return;
       }
 
       // ETAPA 4: Criar Partner via backend function (usa service role — não depende de sessão)
