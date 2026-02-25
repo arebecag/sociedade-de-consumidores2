@@ -235,7 +235,7 @@ export default function Dashboard() {
             value={formatNumber(partner.bonus_for_withdrawal)}
             icon={CreditCard}
             color="text-green-500"
-            subtext="50% do total"
+            subtext="100% do total"
           />
           <StatCard
             title="Total Já Depositado"
