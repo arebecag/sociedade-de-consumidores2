@@ -356,21 +356,9 @@ export default function Register() {
       // ETAPA 2: Criar conta de autenticação
       await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
 
-      // ETAPA 3: Aguardar sessão propagar (necessário para que o cookie de auth esteja disponível)
-      let me = null;
-      for (let i = 0; i < 12; i++) {
-        await new Promise(r => setTimeout(r, 2000));
-        try {
-          me = await base44.auth.me();
-          if (me?.id) break;
-        } catch (e) {
-          // 401 esperado enquanto sessão propaga
-        }
-      }
-
-      // ETAPA 4: Criar Partner via backend function
+      // ETAPA 3: Criar Partner via backend function (backend busca user_id pela sessão)
       const partnerData = {
-        user_id: me?.id || null,
+        user_id: null,
         email: formData.email,
         full_name: formData.full_name,
         birth_date: formData.birth_date,
