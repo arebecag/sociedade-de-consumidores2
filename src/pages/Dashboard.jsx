@@ -285,13 +285,13 @@ export default function Dashboard() {
               color="text-orange-500"
             />
             <StatCard
-              title="Clientes Diretos"
+              title="Desempenho 1"
               value={`${networkStats.direct}/3`}
               icon={Users}
               color="text-blue-400"
             />
             <StatCard
-              title="Clientes Indiretos"
+              title="Desempenho 2"
               value={`${networkStats.indirect}/9`}
               icon={Users}
               color="text-purple-400"
