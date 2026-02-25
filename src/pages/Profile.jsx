@@ -338,11 +338,18 @@ export default function Profile() {
       // Preserve required fields from original partner if not set in formData
       const updateData = {
         ...formData,
-        gender: formData.gender || partner.gender,
-        phone: formData.phone || partner.phone,
-        full_name: formData.full_name || partner.full_name,
-        birth_date: formData.birth_date || partner.birth_date,
+        gender: formData.gender || partner.gender || "prefiro_nao_informar",
+        phone: formData.phone || partner.phone || "",
+        full_name: formData.full_name || partner.full_name || "",
+        birth_date: formData.birth_date || partner.birth_date || "",
       };
+
+      // Remove empty string fields that are not required to avoid validation errors
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === "" && !["full_name", "birth_date", "gender", "phone"].includes(key)) {
+          updateData[key] = null;
+        }
+      });
       
       if (allComplete && partner.pending_reasons?.length > 0) {
         const newReasons = partner.pending_reasons.filter(r => r !== "Falta de informações no cadastro");
