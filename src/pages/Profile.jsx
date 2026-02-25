@@ -145,6 +145,7 @@ function EmailChangeFlow({ partnerId, currentEmail }) {
 }
 
 export default function Profile() {
+  const { partner: loadedPartner, user: loadedUser, loading: partnerLoading, reload } = usePartner();
   const [partner, setPartner] = useState(null);
   const [userEmail, setUserEmail] = useState("");
   const [loading, setLoading] = useState(true);
