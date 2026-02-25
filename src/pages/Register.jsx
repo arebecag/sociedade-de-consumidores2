@@ -319,7 +319,6 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("[Register] Botão cadastrar acionado");
 
     const newErrors = {};
 
@@ -351,37 +350,31 @@ export default function Register() {
 
     setLoading(true);
     try {
-      // ETAPA 1: Gerar código único ANTES do registro
+      // ETAPA 1: Gerar código único
       const uniqueCode = await generateUniqueCode();
-      console.log("[Register] ETAPA 1: Código único gerado:", uniqueCode);
 
       // ETAPA 2: Criar conta de autenticação
-      console.log("[Register] ETAPA 2: Criando auth para:", formData.email);
       await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
-      console.log("[Register] ETAPA 2: Auth criado ✓");
 
-      // ETAPA 3: Aguardar propagação da sessão e confirmar autenticação
-      console.log("[Register] ETAPA 3: Aguardando propagação da sessão...");
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // ETAPA 3: Aguardar sessão propagar e obter user_id
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       let me = null;
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 8; i++) {
         try {
           me = await base44.auth.me();
           if (me?.id) break;
         } catch (e) {
-          console.warn("[Register] ETAPA 3: Tentativa", i + 1, "falhou:", e.message);
+          // continuar tentando
         }
-        await new Promise(resolve => setTimeout(resolve, 800));
-      }
-      console.log("[Register] ETAPA 3: Usuário autenticado:", me?.email, "ID:", me?.id);
-
-      if (!me || !me.id) {
-        throw new Error("BLOQUEADO: Usuário não autenticado após registro. me=" + JSON.stringify(me));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      // ETAPA 4: Criar Partner vinculado ao usuário autenticado
-      console.log("[Register] ETAPA 4: Criando Partner vinculado ao auth user_id:", me.id);
+      if (!me?.id) {
+        throw new Error("Não foi possível confirmar seu cadastro. Tente fazer login.");
+      }
+
+      // ETAPA 4: Criar Partner via backend function (usa service role — não depende de sessão)
       const partnerData = {
         user_id: me.id,
         email: formData.email,
@@ -414,39 +407,21 @@ export default function Register() {
         display_name: formData.full_name.split(" ")[0]
       };
 
-      console.log("[Register] ETAPA 4: Dados do Partner:", JSON.stringify(partnerData));
-      const newPartner = await base44.entities.Partner.create(partnerData);
-      console.log("[Register] ETAPA 4: Partner criado ✓ ID:", newPartner?.id, "Nome:", newPartner?.full_name);
+      const res = await base44.functions.invoke('registerPartner', {
+        partnerData,
+        referrerPartnerId: referrerPartnerId || null,
+        referrerName: referrerName || null
+      });
 
-      if (!newPartner || !newPartner.id) {
-        throw new Error("FALHA CRÍTICA: Partner não foi criado. Resposta: " + JSON.stringify(newPartner));
+      if (!res.data?.partner?.id) {
+        throw new Error("Falha ao criar perfil: " + (res.data?.error || "Tente novamente."));
       }
 
-      // ETAPA 5: Verificar Partner salvo no banco
-      const savedPartner = await base44.entities.Partner.filter({ user_id: me.id });
-      console.log("[Register] ETAPA 5: Verificação banco — Partners encontrados:", savedPartner.length, "ID:", savedPartner[0]?.id);
-
-      // ETAPA 6: Criar relações de rede (derramamento 3x3)
-      if (referrerPartnerId) {
-        console.log("[Register] ETAPA 6: Criando relações de rede para referrer:", referrerPartnerId);
-        await createNetworkRelationsWithSpillover(
-          referrerPartnerId,
-          referrerName,
-          newPartner.id,
-          formData.full_name
-        );
-        console.log("[Register] ETAPA 6: Relações de rede criadas ✓");
-      }
-
-      // ETAPA 7: Finalizar
-      localStorage.removeItem("pendingPartnerData");
-      console.log("[Register] ETAPA 7: Cadastro 100% completo! Redirecionando...");
       toast.success("Cadastro realizado com sucesso! Bem-vindo(a)!");
       navigate(createPageUrl("Dashboard"));
 
     } catch (error) {
-      console.error("[Register] ERRO DETALHADO:", error);
-      console.error("[Register] Stack:", error.stack);
+      console.error("[Register] ERRO:", error.message);
       if (error.message?.includes("already") || error.message?.includes("exists") || error.message?.includes("registered")) {
         toast.error("Este e-mail já está cadastrado. Faça login ou use outro e-mail.");
       } else {
