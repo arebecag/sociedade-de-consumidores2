@@ -208,6 +208,7 @@ export default function Profile() {
     setPartner(p);
     setUserEmail(user?.email || p.email || "");
     setFormData({
+
           full_name: p.full_name || "",
           birth_date: p.birth_date || "",
           gender: p.gender || "",

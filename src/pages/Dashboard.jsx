@@ -62,8 +62,8 @@ export default function Dashboard() {
   }, [partner, partnerLoading]);
 
   const loadNetworkStats = async (p) => {
+    setStatsLoading(true);
     try {
-        setStatsLoading(true);
         
       // Get my referrer (quem me indicou)
       const myReferrerRelation = await base44.entities.NetworkRelation.filter({ 
