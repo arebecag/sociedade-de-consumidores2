@@ -209,6 +209,8 @@ export default function Profile() {
         setFormData({
           full_name: p.full_name || "",
           birth_date: p.birth_date || "",
+          gender: p.gender || "",
+          phone: p.phone || "",
           display_name: p.display_name || "",
           cpf: p.cpf || "",
           address: p.address || {
