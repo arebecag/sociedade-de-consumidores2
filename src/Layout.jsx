@@ -130,7 +130,6 @@ export default function Layout({ children, currentPageName }) {
   };
 
   // Public pages without layout
-  const publicPages = ["LandingPage", "Register", "PartnerSite"];
   if (publicPages.includes(currentPageName)) {
     return <>{children}</>;
   }
