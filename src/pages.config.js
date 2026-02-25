@@ -75,6 +75,7 @@ import Register from './pages/Register';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import Withdrawals from './pages/Withdrawals';
+import VerifyEmail from './pages/VerifyEmail';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +108,7 @@ export const PAGES = {
     "Reports": Reports,
     "Store": Store,
     "Withdrawals": Withdrawals,
+    "VerifyEmail": VerifyEmail,
 }
 
 export const pagesConfig = {
