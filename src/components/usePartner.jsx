@@ -20,7 +20,10 @@ async function createPartnerForUser(me) {
   const partnerData = {
     user_id: me.id,
     email: me.email,
-    full_name: me.full_name || "",
+    full_name: me.full_name || me.email,
+    birth_date: "1900-01-01",
+    gender: "prefiro_nao_informar",
+    phone: "00000000000",
     status: "pendente",
     pending_reasons: ["Falta da primeira compra", "Falta de informações no cadastro"],
     graduation: "cliente_iniciante",
