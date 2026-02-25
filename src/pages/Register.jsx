@@ -331,31 +331,31 @@ export default function Register() {
 
     setLoading(true);
     try {
-      // 1. Gerar código único
+      // ETAPA 1: Gerar código único ANTES do registro
       const uniqueCode = await generateUniqueCode();
-      console.log("[Register] Código único gerado:", uniqueCode);
+      console.log("[Register] ETAPA 1: Código único gerado:", uniqueCode);
 
-      // 2. Criar conta de autenticação - DEVE suceder antes de qualquer outra coisa
+      // ETAPA 2: Criar conta de autenticação
       console.log("[Register] ETAPA 2: Criando auth para:", formData.email);
-      let authResult;
-      try {
-        authResult = await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
-        console.log("[Register] Auth criado com sucesso ✓", authResult);
-      } catch (authError) {
-        console.error("[Register] FALHA na criação do auth:", authError);
-        throw authError; // Re-lança para o catch externo tratar
+      await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
+      console.log("[Register] ETAPA 2: Auth criado ✓");
+
+      // ETAPA 3: Aguardar propagação da sessão e confirmar autenticação
+      console.log("[Register] ETAPA 3: Aguardando propagação da sessão...");
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      const me = await base44.auth.me();
+      console.log("[Register] ETAPA 3: Usuário autenticado:", me?.email, "ID:", me?.id);
+
+      if (!me || !me.id) {
+        throw new Error("BLOQUEADO: Usuário não autenticado após registro. me=" + JSON.stringify(me));
       }
 
-      // Verificar se o usuário realmente está autenticado após o register
-      const meCheck = await base44.auth.me();
-      console.log("[Register] Verificação pós-auth:", meCheck?.email);
-      if (!meCheck) {
-        throw new Error("Autenticação não confirmada após registro");
-      }
-
-      // 3. Criar Partner imediatamente (usuário já está autenticado após register)
-      console.log("[Register] ETAPA 3: Preparando dados do Partner...");
+      // ETAPA 4: Criar Partner vinculado ao usuário autenticado
+      console.log("[Register] ETAPA 4: Criando Partner vinculado ao auth user_id:", me.id);
       const partnerData = {
+        user_id: me.id,
+        email: formData.email,
         full_name: formData.full_name,
         birth_date: formData.birth_date,
         gender: formData.gender,
@@ -385,38 +385,44 @@ export default function Register() {
         display_name: formData.full_name.split(" ")[0]
       };
 
-      console.log("[Register] ETAPA 3: Criando Partner com dados:", JSON.stringify(partnerData));
+      console.log("[Register] ETAPA 4: Dados do Partner:", JSON.stringify(partnerData));
       const newPartner = await base44.entities.Partner.create(partnerData);
-      console.log("[Register] Partner criado com sucesso ✓ ID:", newPartner.id, "Nome:", newPartner.full_name);
+      console.log("[Register] ETAPA 4: Partner criado ✓ ID:", newPartner?.id, "Nome:", newPartner?.full_name);
 
-      // 4. Criar relações de rede com lógica de derramamento automático
-      if (referrerPartnerId) {
-        try {
-          await createNetworkRelationsWithSpillover(
-            referrerPartnerId,
-            referrerName,
-            newPartner.id,
-            formData.full_name
-          );
-        } catch (relErr) {
-          console.error("[Register] Erro ao criar relações de rede (não crítico):", relErr);
-        }
+      if (!newPartner || !newPartner.id) {
+        throw new Error("FALHA CRÍTICA: Partner não foi criado. Resposta: " + JSON.stringify(newPartner));
       }
 
-      // 5. Limpar qualquer pendingPartnerData antigo e redirecionar
+      // ETAPA 5: Verificar Partner salvo no banco
+      const savedPartner = await base44.entities.Partner.filter({ user_id: me.id });
+      console.log("[Register] ETAPA 5: Verificação banco — Partners encontrados:", savedPartner.length, "ID:", savedPartner[0]?.id);
+
+      // ETAPA 6: Criar relações de rede (derramamento 3x3)
+      if (referrerPartnerId) {
+        console.log("[Register] ETAPA 6: Criando relações de rede para referrer:", referrerPartnerId);
+        await createNetworkRelationsWithSpillover(
+          referrerPartnerId,
+          referrerName,
+          newPartner.id,
+          formData.full_name
+        );
+        console.log("[Register] ETAPA 6: Relações de rede criadas ✓");
+      }
+
+      // ETAPA 7: Finalizar
       localStorage.removeItem("pendingPartnerData");
-      console.log("[Register] ETAPA 5: Cadastro 100% completo! Redirecionando para Dashboard...");
+      console.log("[Register] ETAPA 7: Cadastro 100% completo! Redirecionando...");
       toast.success("Cadastro realizado com sucesso! Bem-vindo(a)!");
       navigate(createPageUrl("Dashboard"));
 
     } catch (error) {
-      console.error("[Register] Erro no cadastro:", error);
+      console.error("[Register] ERRO DETALHADO:", error);
+      console.error("[Register] Stack:", error.stack);
       if (error.message?.includes("already") || error.message?.includes("exists") || error.message?.includes("registered")) {
         toast.error("Este e-mail já está cadastrado. Faça login ou use outro e-mail.");
       } else {
         toast.error("Erro ao cadastrar: " + (error.message || "Tente novamente."));
       }
-      localStorage.removeItem("pendingPartnerData");
       setLoading(false);
     }
   };
