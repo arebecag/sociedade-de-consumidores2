@@ -175,20 +175,33 @@ export default function Register() {
     return code;
   };
 
-  // Modelo 3x3=12: cada dono tem exatamente 3 diretos, cada direto recebe até 3 (nível 2)
-  // Distribuição sequencial balanceada: D1→1, D2→1, D3→1, D1→2, D2→2, D3→2, D1→3, D2→3, D3→3
-  // Ao completar 12 → fecha grupo e inicia novo automaticamente
+  // Matriz 3x3: cada parceiro tem 3 diretos, cada direto recebe até 3 (nível 2) = 12 membros por grupo
+  // Distribuição: ROUND-ROBIN SEQUENCIAL pela ordem de criação dos diretos
+  // 4º→D1, 5º→D2, 6º→D3, 7º→D1, 8º→D2, 9º→D3, 10º→D1, 11º→D2, 12º→D3
+  // Ao completar 12 → incrementa groups_formed e inicia novo grupo automaticamente
   const createNetworkRelationsWithSpillover = async (referrerId, referrerName, newPartnerId, newPartnerName) => {
-    // Buscar diretos do indicador (nível 1)
+    // Buscar avô do indicador (para relação indireta nível 2)
+    const grandpaRelations = await base44.entities.NetworkRelation.filter({
+      referred_id: referrerId,
+      relation_type: "direct"
+    });
+    const grandpa = grandpaRelations.length > 0 ? grandpaRelations[0] : null;
+
+    // Buscar diretos do indicador ordenados por criação (round-robin sequencial)
     const directRelations = await base44.entities.NetworkRelation.filter({
       referrer_id: referrerId,
       relation_type: "direct"
     });
-    const directCount = directRelations.length;
+
+    // Ordenar por created_date para garantir ordem determinística
+    const sortedDirects = directRelations.sort((a, b) =>
+      new Date(a.created_date) - new Date(b.created_date)
+    );
+    const directCount = sortedDirects.length;
     console.log(`[3x3] ${referrerName} tem ${directCount} diretos`);
 
+    // ── FASE 1: Menos de 3 diretos → entra como DIRETO ──
     if (directCount < 3) {
-      // FASE 1: cadastrar como direto do indicador
       await base44.entities.NetworkRelation.create({
         referrer_id: referrerId,
         referrer_name: referrerName,
@@ -198,54 +211,44 @@ export default function Register() {
         is_spillover: false,
         level: 1
       });
-      console.log(`[3x3] Cadastrado como DIRETO (${directCount + 1}/3) de ${referrerName}`);
+      console.log(`[3x3] DIRETO ${directCount + 1}/3 de ${referrerName}`);
 
-      // Relação indireta com avô
-      const grandpaRelations = await base44.entities.NetworkRelation.filter({
-        referred_id: referrerId,
-        relation_type: "direct"
-      });
-      if (grandpaRelations.length > 0) {
+      // Relação indireta com avô (sempre que existir)
+      if (grandpa) {
         await base44.entities.NetworkRelation.create({
-          referrer_id: grandpaRelations[0].referrer_id,
-          referrer_name: grandpaRelations[0].referrer_name,
+          referrer_id: grandpa.referrer_id,
+          referrer_name: grandpa.referrer_name,
           referred_id: newPartnerId,
           referred_name: newPartnerName,
           relation_type: "indirect",
           is_spillover: false,
           level: 2
         });
+        console.log(`[3x3] Relação indireta criada com avô: ${grandpa.referrer_name}`);
       }
-      return; // sem spillover, sem atualizar Partner
+      return;
     }
 
-    // FASE 2: 3 diretos já preenchidos — derramar para o direto com MENOS filhos (máx 3)
-    // Distribuição sequencial: prioriza quem tem menos filhos
-    let targetDirectId = null;
-    let targetDirectName = null;
-    let minChildren = Infinity;
+    // ── FASE 2: 3 diretos completos → ROUND-ROBIN para o nível 2 ──
+    // Contar total de indiretos já distribuídos para calcular o índice correto
+    const indirectRelations = await base44.entities.NetworkRelation.filter({
+      referrer_id: referrerId,
+      relation_type: "indirect"
+    });
+    const totalDistribuidos = indirectRelations.length;
+    console.log(`[3x3] Total indiretos já distribuídos: ${totalDistribuidos}`);
 
-    for (const rel of directRelations) {
-      const children = await base44.entities.NetworkRelation.filter({
-        referrer_id: rel.referred_id,
-        relation_type: "direct"
-      });
-      const count = children.length;
-      console.log(`[3x3] Direto ${rel.referred_name} tem ${count}/3 filhos`);
-      if (count < 3 && count < minChildren) {
-        minChildren = count;
-        targetDirectId = rel.referred_id;
-        targetDirectName = rel.referred_name;
-      }
-    }
+    // Verificar se ainda há espaço no grupo atual (máx 9 indiretos = 3×3)
+    if (totalDistribuidos < 9) {
+      // Round-robin: índice baseado no total já distribuído
+      const roundRobinIndex = totalDistribuidos % 3;
+      const targetDirect = sortedDirects[roundRobinIndex];
+      console.log(`[3x3] Round-robin index ${roundRobinIndex} → derramando para ${targetDirect.referred_name}`);
 
-    if (targetDirectId) {
-      // Derramar para o direto escolhido
-      console.log(`[3x3] DERRAMANDO para ${targetDirectName} (${minChildren}/3 filhos)`);
-
+      // Criar como DIRETO do filho escolhido (spillover)
       await base44.entities.NetworkRelation.create({
-        referrer_id: targetDirectId,
-        referrer_name: targetDirectName,
+        referrer_id: targetDirect.referred_id,
+        referrer_name: targetDirect.referred_name,
         referred_id: newPartnerId,
         referred_name: newPartnerName,
         relation_type: "direct",
@@ -253,7 +256,7 @@ export default function Register() {
         level: 1
       });
 
-      // Indireto com o dono do grupo (avô)
+      // Criar como INDIRETO do dono do grupo (referrerId = "avô" desta pessoa)
       await base44.entities.NetworkRelation.create({
         referrer_id: referrerId,
         referrer_name: referrerName,
@@ -264,26 +267,29 @@ export default function Register() {
         level: 2
       });
 
-      // Atualizar Partner com o pai real
+      // Atualizar Partner: pai real é o direto de destino
       await base44.entities.Partner.update(newPartnerId, {
-        referrer_id: targetDirectId,
-        referrer_name: targetDirectName
+        referrer_id: targetDirect.referred_id,
+        referrer_name: targetDirect.referred_name
       });
 
-      // Verificar se o grupo de 12 foi completado (3 diretos + 9 doações = 12)
-      const totalIndiretos = await base44.entities.NetworkRelation.filter({
-        referrer_id: referrerId,
-        relation_type: "indirect"
-      });
-      if (totalIndiretos.length >= 9) {
-        console.log(`[3x3] GRUPO FECHADO! ${referrerName} completou 12 membros. Novo grupo iniciará automaticamente.`);
-        // O próximo cadastro via link do Eder automaticamente inicia um novo grupo (directCount volta a 0)
+      // Verificar fechamento do grupo (3 diretos + 9 indiretos = 12)
+      const newTotal = totalDistribuidos + 1;
+      if (newTotal >= 9) {
+        console.log(`[3x3] GRUPO FECHADO! ${referrerName} completou 12 membros!`);
+        // Incrementar groups_formed no parceiro indicador
+        const referrerPartner = await base44.entities.Partner.filter({ id: referrerId });
+        if (referrerPartner.length > 0) {
+          await base44.entities.Partner.update(referrerId, {
+            groups_formed: (referrerPartner[0].groups_formed || 0) + 1
+          });
+          console.log(`[3x3] groups_formed incrementado para ${referrerPartner[0].full_name}`);
+        }
       }
       return;
     }
 
-    // Grupo completo (todos os 3 diretos já têm 3 filhos = 12 total)
-    // Iniciar NOVO GRUPO: cadastrar como direto direto do indicador original novamente
+    // ── FASE 3: Grupo completo (9 indiretos) → NOVO GRUPO ──
     console.log(`[3x3] Grupo completo! Iniciando NOVO GRUPO para ${referrerName}`);
     await base44.entities.NetworkRelation.create({
       referrer_id: referrerId,
@@ -294,7 +300,21 @@ export default function Register() {
       is_spillover: false,
       level: 1
     });
-    console.log(`[3x3] Novo grupo iniciado — ${newPartnerName} é o 1º direto do novo grupo de ${referrerName}`);
+    console.log(`[3x3] ${newPartnerName} é o 1º direto do novo grupo de ${referrerName}`);
+
+    // Relação indireta com avô mantida no novo grupo também
+    if (grandpa) {
+      await base44.entities.NetworkRelation.create({
+        referrer_id: grandpa.referrer_id,
+        referrer_name: grandpa.referrer_name,
+        referred_id: newPartnerId,
+        referred_name: newPartnerName,
+        relation_type: "indirect",
+        is_spillover: false,
+        level: 2
+      });
+      console.log(`[3x3] Relação indireta com avô mantida no novo grupo: ${grandpa.referrer_name}`);
+    }
   };
 
   const handleSubmit = async (e) => {
