@@ -10,26 +10,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-    // Buscar user_id pelo email (aguarda até 15s para sessão propagar)
+    // user_id deve vir do frontend; se não vier, tenta buscar pelo auth do request
     let userId = partnerData.user_id;
     if (!userId) {
-      for (let i = 0; i < 10; i++) {
-        try {
-          const users = await base44.asServiceRole.entities.User.filter({ email: partnerData.email });
-          if (users.length > 0) {
-            userId = users[0].id;
-            console.log('[registerPartner] user_id encontrado por email:', userId);
-            break;
-          }
-        } catch (e) {
-          console.log('[registerPartner] Aguardando user...', i);
-        }
-        await new Promise(r => setTimeout(r, 1500));
+      try {
+        const me = await base44.auth.me();
+        if (me?.id) userId = me.id;
+      } catch (e) {
+        console.log('[registerPartner] Não foi possível obter user via auth.me:', e.message);
       }
     }
 
     if (!userId) {
-      return Response.json({ error: 'Usuário não encontrado. Tente novamente em alguns segundos.' }, { status: 404 });
+      return Response.json({ error: 'user_id não encontrado. Tente novamente.' }, { status: 400 });
     }
 
     // Verificar se já existe Partner para este email (evitar duplicatas)
@@ -39,7 +32,7 @@ Deno.serve(async (req) => {
       return Response.json({ partner: existingByEmail[0], alreadyExisted: true });
     }
 
-    // Criar Partner com service role (não depende de sessão do usuário)
+    // Criar Partner com service role
     const newPartner = await base44.asServiceRole.entities.Partner.create({ ...partnerData, user_id: userId });
     console.log('[registerPartner] Partner criado:', newPartner.id, newPartner.full_name);
 
