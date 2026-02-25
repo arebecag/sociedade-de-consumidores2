@@ -155,6 +155,8 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     full_name: "",
     birth_date: "",
+    gender: "",
+    phone: "",
     display_name: "",
     cpf: "",
     address: {
