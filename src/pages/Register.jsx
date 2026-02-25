@@ -362,9 +362,18 @@ export default function Register() {
 
       // ETAPA 3: Aguardar propagação da sessão e confirmar autenticação
       console.log("[Register] ETAPA 3: Aguardando propagação da sessão...");
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const me = await base44.auth.me();
+      let me = null;
+      for (let i = 0; i < 5; i++) {
+        try {
+          me = await base44.auth.me();
+          if (me?.id) break;
+        } catch (e) {
+          console.warn("[Register] ETAPA 3: Tentativa", i + 1, "falhou:", e.message);
+        }
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
       console.log("[Register] ETAPA 3: Usuário autenticado:", me?.email, "ID:", me?.id);
 
       if (!me || !me.id) {
