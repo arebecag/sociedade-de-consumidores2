@@ -184,6 +184,7 @@ export default function Store() {
           const existing = await base44.entities.BonusTransaction.filter({ purchase_id: purchaseId, partner_id: directReferrer.id });
           if (existing.length === 0) {
             const totalDirect = amount * 0.15; // 15% para direto
+            const directForPurchases = totalDirect * 0.5;
             await base44.entities.BonusTransaction.create({
               partner_id: directReferrer.id,
               partner_name: directReferrer.full_name,
@@ -194,13 +195,14 @@ export default function Store() {
               percentage: 15,
               total_amount: totalDirect,
               amount_for_withdrawal: totalDirect,
-              amount_for_purchases: 0,
+              amount_for_purchases: directForPurchases,
               status: directReferrer.status === "ativo" ? "credited" : "blocked"
             });
             if (directReferrer.status === "ativo") {
               await base44.entities.Partner.update(directReferrer.id, {
                 total_bonus_generated: (directReferrer.total_bonus_generated || 0) + totalDirect,
-                bonus_for_withdrawal: (directReferrer.bonus_for_withdrawal || 0) + totalDirect
+                bonus_for_withdrawal: (directReferrer.bonus_for_withdrawal || 0) + totalDirect,
+                bonus_for_purchases: (directReferrer.bonus_for_purchases || 0) + directForPurchases
               });
             }
           }
