@@ -35,15 +35,18 @@ export default function Network() {
         const p = partners[0];
         setPartner(p);
         
-        // Get all partners for lookups
-        const all = await base44.entities.Partner.list();
-        setAllPartners(all);
-        
         // Get network relations
         const relations = await base44.entities.NetworkRelation.filter({ referrer_id: p.id });
         
-        const directIds = relations.filter(r => r.relation_type === "direct").map(r => r.referred_id);
-        const indirectIds = relations.filter(r => r.relation_type === "indirect").map(r => r.referred_id);
+        const directRelations = relations.filter(r => r.relation_type === "direct");
+        const indirectRelations = relations.filter(r => r.relation_type === "indirect");
+        
+        const directIds = directRelations.map(r => r.referred_id);
+        const indirectIds = indirectRelations.map(r => r.referred_id);
+        
+        // Fetch all partners with a high limit to avoid pagination issues
+        const all = await base44.entities.Partner.list(null, 500);
+        setAllPartners(all);
         
         const direct = all.filter(partner => directIds.includes(partner.id));
         const indirect = all.filter(partner => indirectIds.includes(partner.id));
