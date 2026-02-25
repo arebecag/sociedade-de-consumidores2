@@ -277,7 +277,7 @@ export default function Network() {
         </TabsList>
 
         <TabsContent value="direct">
-          <Tabs defaultValue="ativos" className="space-y-4">
+          <Tabs defaultValue="pendentes" className="space-y-4">
             <TabsList className="bg-zinc-800">
               <TabsTrigger value="ativos">
                 Ativos ({directClients.filter(c => c.status === 'ativo').length})
