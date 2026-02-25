@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
+import { usePartner } from "@/components/usePartner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, TrendingUp, Users, Award, ShoppingBag, CreditCard, AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
