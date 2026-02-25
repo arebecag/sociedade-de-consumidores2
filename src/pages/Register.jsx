@@ -396,12 +396,6 @@ export default function Register() {
       });
 
       if (!res.data?.partner?.id) {
-        // Se o perfil não foi criado mas o usuário existe, redirecionar para login
-        if (!me?.id) {
-          toast.success("Conta criada! Faça login para continuar.");
-          base44.auth.redirectToLogin(createPageUrl("Dashboard"));
-          return;
-        }
         throw new Error("Falha ao criar perfil: " + (res.data?.error || "Tente novamente."));
       }
 
