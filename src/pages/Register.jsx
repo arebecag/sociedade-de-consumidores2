@@ -52,17 +52,9 @@ export default function Register() {
         setReferrerCode(code);
         loadReferrer(code);
       } else {
-        // Sem código de indicação — verificar se é primeiro usuário
-        try {
-          const existingPartners = await base44.entities.Partner.list();
-          if (existingPartners.length === 0) {
-            setIsFirstUser(true);
-            setReferrerName("Primeiro Cadastro (Administrador)");
-          }
-        } catch (e) {
-          // Se falhar (ex: sem auth para listar), assume que não é primeiro usuário
-          console.warn("Não foi possível verificar primeiro usuário:", e);
-        }
+        // Sem código de indicação — NOT verificar se é primeiro usuário
+        // Pois a página de Register é pública e não deve fazer chamadas autenticadas
+        // Sempre exigir link de indicação exceto se o app disser explicitamente que é o primeiro
         setLoadingReferrer(false);
       }
     } catch (error) {
