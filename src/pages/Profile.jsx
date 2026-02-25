@@ -196,19 +196,18 @@ export default function Profile() {
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (!partnerLoading) {
+      if (loadedPartner) {
+        populateForm(loadedPartner, loadedUser);
+      }
+      setLoading(false);
+    }
+  }, [loadedPartner, loadedUser, partnerLoading]);
 
-  const loadData = async () => {
-    try {
-      const user = await base44.auth.me();
-      setUserEmail(user.email || "");
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      
-      if (partners.length > 0) {
-        const p = partners[0];
-        setPartner(p);
-        setFormData({
+  const populateForm = (p, user) => {
+    setPartner(p);
+    setUserEmail(user?.email || p.email || "");
+    setFormData({
           full_name: p.full_name || "",
           birth_date: p.birth_date || "",
           gender: p.gender || "",
