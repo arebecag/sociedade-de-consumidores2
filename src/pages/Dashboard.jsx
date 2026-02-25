@@ -257,11 +257,10 @@ export default function Dashboard() {
             color="text-pink-500"
           />
           <StatCard
-            title="Grupos Formados"
+            title="Desempenho Total"
             value={partner.groups_formed || 0}
             icon={Award}
             color="text-yellow-500"
-            subtext="Grupos de 12 pessoas"
           />
         </div>
       </div>
