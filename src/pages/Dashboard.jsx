@@ -165,6 +165,39 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Email Verification Banner */}
+      {!partner.email_verified && (
+        <Card className="bg-blue-500/10 border-blue-500/30">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex items-start gap-3 flex-1">
+                <AlertCircle className="w-6 h-6 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-blue-400">Verifique seu email</h3>
+                  <p className="text-gray-300 text-sm mt-0.5">
+                    Enviamos um link de verificação para <strong className="text-white">{partner.email}</strong>. Clique no link para confirmar sua conta.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await base44.functions.invoke('sendVerificationEmail', {});
+                    if (res.data?.success) toast.success('Email de verificação reenviado!');
+                    else toast.error(res.data?.message || res.data?.error || 'Erro ao reenviar');
+                  } catch {
+                    toast.error('Erro ao reenviar email');
+                  }
+                }}
+                className="text-blue-400 hover:text-blue-300 text-sm underline whitespace-nowrap flex-shrink-0"
+              >
+                Reenviar email
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Status Alert */}
       {partner.status === 'pendente' && partner.pending_reasons?.length > 0 && (
         <Card className="bg-yellow-500/10 border-yellow-500/30">
