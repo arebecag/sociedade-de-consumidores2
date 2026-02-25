@@ -17,7 +17,8 @@ const PAGINAS_LIBERADAS = [
   "Profile",
   "MySite",
   "Dashboard",
-  "FAQ"
+  "FAQ",
+  "VerifyEmail"
 ];
 
 export default function FinanceiroGuard({ children, currentPageName }) {
