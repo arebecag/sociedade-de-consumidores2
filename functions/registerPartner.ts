@@ -10,11 +10,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-    // Validar user_id enviado do frontend (obrigatório)
-    const userId = partnerData.user_id;
-    if (!userId) {
-      return Response.json({ error: 'user_id não fornecido' }, { status: 400 });
-    }
+const user = await base44.auth.me();
+
+if (!user?.id) {
+  return Response.json({ error: 'Usuário não autenticado' }, { status: 401 });
+}
+
+const userId = user.id;
 
     // Verificar se já existe Partner para este email (evitar duplicatas)
     const existingByEmail = await base44.asServiceRole.entities.Partner.filter({ email: partnerData.email });
