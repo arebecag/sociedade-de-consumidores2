@@ -353,20 +353,7 @@ await base44.auth.signIn({
   email: formData.email, 
   password: formData.password 
 });
-      // ETAPA 2C: Aguardar sessão propagar e obter usuário autenticado (retry com delay)
-      let authenticatedUser = null;
-      for (let attempt = 0; attempt < 5; attempt++) {
-        await new Promise(resolve => setTimeout(resolve, 600));
-        try {
-          authenticatedUser = await base44.auth.me();
-          if (authenticatedUser?.id) break;
-        } catch (e) {
-          console.warn(`[Register] me() tentativa ${attempt + 1} falhou:`, e.message);
-        }
-      }
-      if (!authenticatedUser?.id) {
-        throw new Error("Sessão não estabelecida após login. Tente fazer login manualmente.");
-      }
+    const authenticatedUser = await base44.auth.me();
 
       // ETAPA 3: Criar Partner via backend function
       const partnerData = {
