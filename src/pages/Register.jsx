@@ -84,23 +84,28 @@ export default function Register() {
     }
   };
 
-  const loadReferrer = async (code) => {
-    try {
-      const partners = await base44.entities.Partner.filter({ unique_code: code });
-      if (partners.length > 0) {
-        setReferrerName(partners[0].display_name || partners[0].full_name);
-        setReferrerPartnerId(partners[0].id);
-        setInvalidReferrer(false);
-      } else {
-        setInvalidReferrer(true);
-      }
-    } catch (error) {
-      console.error("Error loading referrer:", error);
+ const loadReferrer = async (code) => {
+  try {
+    const normalizedCode = code.trim().toUpperCase();
+
+    const partners = await base44.entities.Partner.filter({
+      unique_code: normalizedCode
+    });
+
+    if (partners.length > 0) {
+      setReferrerName(partners[0].display_name || partners[0].full_name);
+      setReferrerPartnerId(partners[0].id);
+      setInvalidReferrer(false);
+    } else {
       setInvalidReferrer(true);
-    } finally {
-      setLoadingReferrer(false);
     }
-  };
+  } catch (error) {
+    console.error("Error loading referrer:", error);
+    setInvalidReferrer(true);
+  } finally {
+    setLoadingReferrer(false);
+  }
+};
 
   const validatePassword = (password) => {
     const hasUpperCase = /[A-Z]/.test(password);
