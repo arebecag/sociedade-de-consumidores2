@@ -349,8 +349,10 @@ export default function Register() {
       await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
 
       // ETAPA 2B: Fazer login para ativar a sessão
-      await base44.auth.login({ email: formData.email, password: formData.password });
-
+await base44.auth.signIn({ 
+  email: formData.email, 
+  password: formData.password 
+});
       // ETAPA 2C: Aguardar sessão propagar e obter usuário autenticado (retry com delay)
       let authenticatedUser = null;
       for (let attempt = 0; attempt < 5; attempt++) {
