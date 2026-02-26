@@ -68,18 +68,28 @@ export function usePartner() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const me = await base44.auth.me();
-      if (!me) {
-        console.log("[usePartner] Usuário não autenticado.");
-        setLoading(false);
-        return;
-      }
-      setUser(me);
-      console.log("[usePartner] Usuário:", me.email, "id:", me.id);
+const load = async () => {
+  setLoading(true);
+  try {
+    if (!base44.auth || !base44.auth.me) {
+      console.warn("[usePartner] Auth não disponível ainda.");
+      setLoading(false);
+      return;
+    }
 
+    let me = null;
+    try {
+      me = await base44.auth.me();
+    } catch {
+      // Usuário não autenticado — isso é normal
+      setLoading(false);
+      return;
+    }
+
+    if (!me?.id) {
+      setLoading(false);
+      return;
+    }
       // 1) Buscar por user_id (campo correto)
       let partners = [];
       try {
