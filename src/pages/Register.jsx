@@ -406,15 +406,15 @@ await base44.auth.loginWithPassword({
       toast.success("Cadastro realizado com sucesso! Bem-vindo(a)!");
       navigate(createPageUrl("Dashboard"));
 
-    } catch (error) {
-      console.error("[Register] ERRO:", error.message);
-      if (error.message?.includes("already") || error.message?.includes("exists") || error.message?.includes("registered")) {
-        toast.error("Este e-mail já está cadastrado. Faça login ou use outro e-mail.");
-      } else {
-        toast.error("Erro ao cadastrar: " + (error.message || "Tente novamente."));
-      }
-      setLoading(false);
-    }
+    } catch (xe) {
+  console.error("[Register] ERRO COMPLETO:", xe);
+  console.error("[Register] MESSAGE:", xe?.message);
+  console.error("[Register] RESPONSE:", xe?.response);
+  console.error("[Register] DATA:", xe?.response?.data);
+
+  toast.error("Erro ao cadastrar: " + (xe.message || "Tente novamente."));
+  setLoading(false);
+}
   };
 
   if (loadingReferrer) {
