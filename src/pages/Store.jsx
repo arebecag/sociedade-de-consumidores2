@@ -165,8 +165,8 @@ export default function Store() {
     try {
       await base44.functions.invoke('distribuirComissoes', {
         purchaseId,
-        buyerPartnerId: buyer.id,
-        amount
+        amount,
+        buyerPartnerId: buyer.id
       });
     } catch (error) {
       console.error("Erro ao distribuir comissões:", error);
@@ -196,7 +196,7 @@ export default function Store() {
         {partner && (
           <div className="flex gap-4">
             <Card className="bg-zinc-950 border-orange-500/20 px-4 py-2">
-              <p className="text-gray-400 text-xs">Bônus para Trocas</p>
+              <p className="text-gray-400 text-xs">Bônus para Compras</p>
               <p className="text-orange-500 font-bold">{formatCurrency(partner.bonus_for_purchases)}</p>
             </Card>
           </div>
@@ -307,7 +307,7 @@ export default function Store() {
             <Card className="bg-zinc-950 border-orange-500/20">
               <CardContent className="p-12 text-center">
                 <ShoppingCart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Você ainda não fez nenhuma troca.</p>
+                <p className="text-gray-400">Você ainda não fez nenhuma compra.</p>
               </CardContent>
             </Card>
           ) : (
@@ -340,7 +340,7 @@ export default function Store() {
                         <div className="text-right">
                           <p className="text-white font-bold">{formatCurrency(purchase.amount)}</p>
                           <p className="text-gray-400 text-xs">
-                            {purchase.paid_with_bonus > 0 && `Troca: ${formatCurrency(purchase.paid_with_bonus)}`}
+                            {purchase.paid_with_bonus > 0 && `Bônus: ${formatCurrency(purchase.paid_with_bonus)}`}
                             {purchase.paid_with_boleto > 0 && ` | Boleto: ${formatCurrency(purchase.paid_with_boleto)}`}
                           </p>
                         </div>
@@ -364,7 +364,7 @@ export default function Store() {
       <Dialog open={purchaseDialogOpen} onOpenChange={setPurchaseDialogOpen}>
         <DialogContent className="bg-zinc-950 border-orange-500/20">
           <DialogHeader>
-            <DialogTitle className="text-white">Finalizar Troca / Compra</DialogTitle>
+            <DialogTitle className="text-white">Finalizar Compra</DialogTitle>
           </DialogHeader>
           
           {selectedProduct && (
@@ -392,7 +392,7 @@ export default function Store() {
                       <div className="flex items-center gap-3">
                         <CreditCard className={paymentMethod === "bonus" ? "text-orange-500" : "text-gray-400"} />
                         <div>
-                          <p className="text-white font-medium">Trocar com Bônus</p>
+                          <p className="text-white font-medium">Pagar com Bônus</p>
                           <p className="text-gray-400 text-sm">
                             Disponível: {formatCurrency(partner?.bonus_for_purchases || 0)}
                           </p>
@@ -449,7 +449,7 @@ export default function Store() {
               ) : (
                 <ShoppingCart className="w-4 h-4 mr-2" />
               )}
-              {processing ? "Processando..." : "Confirmar"}
+              {processing ? "Processando..." : "Confirmar Compra"}
             </Button>
           </DialogFooter>
         </DialogContent>
