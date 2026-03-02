@@ -1,7 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const BONUS_PERCENTUAL = 0.20;
-
 Deno.serve(async (req) => {
   try {
     // Proteção: só aceita chamadas internas via INTERNAL_SECRET
@@ -27,38 +25,28 @@ Deno.serve(async (req) => {
     const updateData = { status };
 
     if (["CONFIRMED", "RECEIVED"].includes(status)) {
-      const agora = new Date().toISOString();
-      updateData.dataPagamento = agora;
+      updateData.dataPagamento = new Date().toISOString();
       updateData.acessoLiberado = true;
 
-      // Liberar bônus apenas uma vez
+      // Distribuir comissões para uplines apenas uma vez
       if (!boleto.bonusLiberado) {
         updateData.bonusLiberado = true;
-        const valorBonus = (boleto.valor || 0) * BONUS_PERCENTUAL;
-        updateData.valorBonus = valorBonus;
 
+        // Marcar first_purchase_done no parceiro
         const parceiros = await base44.asServiceRole.entities.Partner.filter({ id: boleto.userId });
-        if (parceiros.length > 0) {
-          const p = parceiros[0];
+        if (parceiros.length > 0 && !parceiros[0].first_purchase_done) {
           await base44.asServiceRole.entities.Partner.update(boleto.userId, {
-            bonus_for_withdrawal: (p.bonus_for_withdrawal || 0) + valorBonus * 0.5,
-            bonus_for_purchases: (p.bonus_for_purchases || 0) + valorBonus * 0.5,
-            total_bonus_generated: (p.total_bonus_generated || 0) + valorBonus,
-            first_purchase_done: true
-          });
-
-          await base44.asServiceRole.entities.BonusTransaction.create({
-            partner_id: boleto.userId,
-            partner_name: boleto.userName,
-            purchase_id: boleto.id,
-            type: "direct",
-            percentage: BONUS_PERCENTUAL * 100,
-            total_amount: valorBonus,
-            amount_for_withdrawal: valorBonus * 0.5,
-            amount_for_purchases: valorBonus * 0.5,
-            status: "credited"
+            first_purchase_done: true,
+            pending_reasons: (parceiros[0].pending_reasons || []).filter(r => r !== "Falta da primeira compra")
           });
         }
+
+        // Distribuir comissões (15% direto, 30% indireto) para os uplines
+        await base44.asServiceRole.functions.invoke('distribuirComissoes', {
+          purchaseId: boleto.id,
+          amount: boleto.valor,
+          buyerPartnerId: boleto.userId
+        });
       }
 
     } else if (status === "OVERDUE") {
