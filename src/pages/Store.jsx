@@ -307,7 +307,7 @@ export default function Store() {
             <Card className="bg-zinc-950 border-orange-500/20">
               <CardContent className="p-12 text-center">
                 <ShoppingCart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Você ainda não fez nenhuma compra.</p>
+                <p className="text-gray-400">Você ainda não fez nenhuma troca.</p>
               </CardContent>
             </Card>
           ) : (
