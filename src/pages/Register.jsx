@@ -351,13 +351,15 @@ export default function Register() {
       const uniqueCode = await generateUniqueCode();
 
       // ETAPA 2: Criar conta de autenticação
-      await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
+      const registeredUser = await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
 
-    const authenticatedUser = await base44.auth.me();
+      // Aguardar token propagar
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const authenticatedUser = await base44.auth.me();
 
       // ETAPA 3: Criar Partner via backend function
       const partnerData = {
-        user_id: authenticatedUser.id,
+        user_id: authenticatedUser?.id || registeredUser?.id,
         email: formData.email,
         full_name: formData.full_name,
         birth_date: formData.birth_date,
