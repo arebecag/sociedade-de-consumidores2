@@ -1,43 +1,60 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/src/lib/AuthContext";
+import { Toaster } from "@/components/ui/toaster"
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClientInstance } from '@/lib/query-client'
+import NavigationTracker from '@/lib/NavigationTracker'
+import { pagesConfig } from './pages.config'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import PageNotFound from './lib/PageNotFound'
+import { AuthProvider, useAuth } from '@/lib/AuthContext'
+import UserNotRegisteredError from '@/components/UserNotRegisteredError'
 
-import Dashboard from "./pages/Dashboard";
-import Register from "./pages/Register";
-import PartnerSite from "./pages/PartnerSite";
+const { Pages, Layout, mainPage } = pagesConfig
+const mainPageKey = mainPage ?? Object.keys(Pages)[0]
+const MainPage = mainPageKey ? Pages[mainPageKey] : <></>
 
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoadingAuth } = useAuth();
+const LayoutWrapper = ({ children, currentPageName }) => Layout
+  ? <Layout currentPageName={currentPageName}>{children}</Layout>
+  : <>{children}</>
 
-  if (isLoadingAuth) return <div>Carregando...</div>;
+const AuthenticatedApp = () => {
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth()
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
+  if (isLoadingPublicSettings || isLoadingAuth) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      </div>
+    )
   }
 
-  return children;
+  if (authError) {
+    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />
+    if (authError.type === 'auth_required') { navigateToLogin(); return null }
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<LayoutWrapper currentPageName={mainPageKey}><MainPage /></LayoutWrapper>} />
+      {Object.entries(Pages).map(([path, Page]) => (
+        <Route key={path} path={`/${path}`} element={<LayoutWrapper currentPageName={path}><Page /></LayoutWrapper>} />
+      ))}
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
+  )
 }
 
 function App() {
   return (
-    <Routes>
-      {/* Site público */}
-      <Route path="/" element={<PartnerSite />} />
-      <Route path="/register" element={<Register />} />
-
-      {/* Área logada */}
-      <Route
-        path="/app"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* fallback */}
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
-  );
+    <AuthProvider>
+      <QueryClientProvider client={queryClientInstance}>
+        <Router>
+          <NavigationTracker />
+          <AuthenticatedApp />
+        </Router>
+        <Toaster />
+      </QueryClientProvider>
+    </AuthProvider>
+  )
 }
 
-export default App;
+export default App
