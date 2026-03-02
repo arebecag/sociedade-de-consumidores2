@@ -7,6 +7,9 @@ export const base44 = createClient({
   appId,
   token,
   functionsVersion,
-  serverUrl: appBaseUrl, // 👈 MUITO IMPORTANTE
-  requiresAuth: true     // 👈 TEM QUE SER TRUE
+  serverUrl: appBaseUrl,
+
+  // ✅ IMPORTANTE:
+  // permite páginas públicas (landing/login/register)
+  requiresAuth: false
 });
