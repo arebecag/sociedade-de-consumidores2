@@ -145,15 +145,48 @@ async function createNetworkRelations(base44, referrerId, referrerName, newPartn
   }
 
   // FASE 2: 3 diretos completos → ROUND-ROBIN para nível 2
+  // Buscar spillovers por filho para garantir que nenhum receba mais de 3
   const indirectRelations = await base44.asServiceRole.entities.NetworkRelation.filter({
     referrer_id: referrerId,
     relation_type: 'indirect'
   });
   const totalDistribuidos = indirectRelations.length;
+  console.log(`[3x3] Total indiretos já distribuídos: ${totalDistribuidos}`);
 
   if (totalDistribuidos < 9) {
-    const roundRobinIndex = totalDistribuidos % 3;
-    const targetDirect = sortedDirects[roundRobinIndex];
+    // Contar quantos spillovers cada filho já recebeu
+    const spilloverCountPerChild = {};
+    for (const rel of indirectRelations) {
+      // Descobrir para qual filho esse indireto foi → buscar relação direta do newPartnerId com filho
+      const directOfChild = await base44.asServiceRole.entities.NetworkRelation.filter({
+        referred_id: rel.referred_id,
+        relation_type: 'direct',
+        is_spillover: true
+      });
+      for (const d of directOfChild) {
+        spilloverCountPerChild[d.referrer_id] = (spilloverCountPerChild[d.referrer_id] || 0) + 1;
+      }
+    }
+
+    // Escolher filho com menor número de spillovers (respeitando ordem round-robin)
+    // Ordem sequencial: D1 → D2 → D3 → D1...
+    let targetDirect = null;
+    for (let i = 0; i < 3; i++) {
+      const roundRobinIndex = totalDistribuidos % 3;
+      const candidate = sortedDirects[(totalDistribuidos + i) % 3];
+      const count = spilloverCountPerChild[candidate.referred_id] || 0;
+      if (count < 3) {
+        targetDirect = candidate;
+        break;
+      }
+    }
+
+    // Se por algum motivo não achou (não deveria acontecer antes de 9), usa o índice simples
+    if (!targetDirect) {
+      targetDirect = sortedDirects[totalDistribuidos % 3];
+    }
+
+    console.log(`[3x3] Round-robin index ${totalDistribuidos % 3} → derramando para ${targetDirect.referred_name}`);
 
     await base44.asServiceRole.entities.NetworkRelation.create({
       referrer_id: targetDirect.referred_id,
@@ -180,19 +213,23 @@ async function createNetworkRelations(base44, referrerId, referrerName, newPartn
       referrer_name: targetDirect.referred_name
     });
 
+    // Verificar fechamento do grupo (9 indiretos = grupo fechado)
     const newTotal = totalDistribuidos + 1;
     if (newTotal >= 9) {
-      const referrerPartner = await base44.asServiceRole.entities.Partner.filter({ id: referrerId });
-      if (referrerPartner.length > 0) {
+      console.log(`[3x3] GRUPO FECHADO! ${referrerName} completou 12 membros!`);
+      const referrerPartners = await base44.asServiceRole.entities.Partner.filter({ id: referrerId });
+      if (referrerPartners.length > 0) {
         await base44.asServiceRole.entities.Partner.update(referrerId, {
-          groups_formed: (referrerPartner[0].groups_formed || 0) + 1
+          groups_formed: (referrerPartners[0].groups_formed || 0) + 1
         });
+        console.log(`[3x3] groups_formed incrementado para ${referrerPartners[0].full_name}`);
       }
     }
     return;
   }
 
-  // FASE 3: Grupo completo → NOVO GRUPO
+  // FASE 3: Grupo completo (9 indiretos) → NOVO GRUPO (começa novo ciclo de 3 diretos)
+  console.log(`[3x3] Grupo completo! Iniciando NOVO GRUPO para ${referrerName}`);
   await base44.asServiceRole.entities.NetworkRelation.create({
     referrer_id: referrerId,
     referrer_name: referrerName,
@@ -202,6 +239,7 @@ async function createNetworkRelations(base44, referrerId, referrerName, newPartn
     is_spillover: false,
     level: 1
   });
+  console.log(`[3x3] ${newPartnerName} é o 1º direto do novo grupo de ${referrerName}`);
 
   if (grandpa) {
     await base44.asServiceRole.entities.NetworkRelation.create({
@@ -213,5 +251,6 @@ async function createNetworkRelations(base44, referrerId, referrerName, newPartn
       is_spillover: false,
       level: 2
     });
+    console.log(`[3x3] Relação indireta com avô mantida no novo grupo: ${grandpa.referrer_name}`);
   }
 }
