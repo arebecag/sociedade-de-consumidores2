@@ -19,10 +19,6 @@ Deno.serve(async (req) => {
     if (!partner) {
       return Response.json({ error: 'Partner not found' }, { status: 404 });
     }
-    
-    if (!partner) {
-      return Response.json({ error: 'Partner not found' }, { status: 404 });
-    }
 
     const reasons = [];
     const now = new Date();
