@@ -36,6 +36,9 @@ export default function FinanceiroGuard({ children, currentPageName }) {
 
   const verificarAcesso = async () => {
     try {
+      const isAuth = await base44.auth.isAuthenticated();
+      if (!isAuth) { setStatus("liberado"); return; }
+
       const user = await base44.auth.me();
       // Sem usuário autenticado → libera (auth cuida do redirect)
       if (!user) { setStatus("liberado"); return; }
