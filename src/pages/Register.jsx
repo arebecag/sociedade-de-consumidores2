@@ -644,59 +644,33 @@ export default function Register() {
               </div>
 
               {/* Terms */}
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="terms"
-                    checked={formData.accepted_terms}
-                    onCheckedChange={(checked) => handleChange("accepted_terms", checked)}
-                    className="border-orange-500 data-[state=checked]:bg-orange-500"
-                  />
-                  <div className="flex-1 text-gray-300 text-sm">
+              <div className="space-y-2 pt-1">
+                <div className="flex items-start gap-2.5">
+                  <Checkbox id="terms" checked={formData.accepted_terms} onCheckedChange={(checked) => handleChange("accepted_terms", checked)} className="border-zinc-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 mt-0.5" />
+                  <label htmlFor="terms" className="text-gray-400 text-sm cursor-pointer">
                     Li e aceito o{" "}
-                    <button
-                      type="button"
-                      onClick={() => setTermsOpen(true)}
-                      className="text-orange-500 hover:underline font-medium"
-                    >
+                    <button type="button" onClick={() => setTermsOpen(true)} className="text-orange-500 hover:text-orange-400 font-medium">
                       Contrato de Prestação de Serviços
                     </button>
-                  </div>
+                  </label>
                 </div>
-                {errors.accepted_terms && <p className="text-red-500 text-sm">{errors.accepted_terms}</p>}
+                {errors.accepted_terms && <p className="text-red-400 text-xs pl-6">{errors.accepted_terms}</p>}
 
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="rules"
-                    checked={formData.accepted_rules}
-                    onCheckedChange={(checked) => handleChange("accepted_rules", checked)}
-                    className="border-orange-500 data-[state=checked]:bg-orange-500"
-                  />
-                  <div className="flex-1 text-gray-300 text-sm">
+                <div className="flex items-start gap-2.5">
+                  <Checkbox id="rules" checked={formData.accepted_rules} onCheckedChange={(checked) => handleChange("accepted_rules", checked)} className="border-zinc-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 mt-0.5" />
+                  <label htmlFor="rules" className="text-gray-400 text-sm cursor-pointer">
                     Li e aceito o{" "}
-                    <button
-                      type="button"
-                      onClick={() => setRulesOpen(true)}
-                      className="text-orange-500 hover:underline font-medium"
-                    >
+                    <button type="button" onClick={() => setRulesOpen(true)} className="text-orange-500 hover:text-orange-400 font-medium">
                       Regimento Interno
                     </button>
-                  </div>
+                  </label>
                 </div>
-                {errors.accepted_rules && <p className="text-red-500 text-sm">{errors.accepted_rules}</p>}
+                {errors.accepted_rules && <p className="text-red-400 text-xs pl-6">{errors.accepted_rules}</p>}
               </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-6 text-lg"
-              >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                ) : (
-                  <CheckCircle className="w-5 h-5 mr-2" />
-                )}
-                {loading ? "Cadastrando..." : "Cadastrar"}
+              <Button type="submit" disabled={loading} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold h-12 text-base mt-2">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                {loading ? "Cadastrando..." : "Criar Conta"}
               </Button>
 
 
