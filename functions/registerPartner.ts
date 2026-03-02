@@ -10,14 +10,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-const user = await base44.auth.me();
-
-if (!user?.id) {
-  return Response.json({ error: 'Usuário não autenticado' }, { status: 401 });
-}
-
-const userId = user.id;
-
     // Verificar se já existe Partner para este email (evitar duplicatas)
     const existingByEmail = await base44.asServiceRole.entities.Partner.filter({ email: partnerData.email });
     if (existingByEmail.length > 0) {
@@ -25,8 +17,22 @@ const userId = user.id;
       return Response.json({ partner: existingByEmail[0], alreadyExisted: true });
     }
 
+    // Buscar userId via service role pelo email (evita depender do token recém-criado)
+    let userId = partnerData.user_id;
+    if (!userId || userId === 'pending') {
+      try {
+        const users = await base44.asServiceRole.entities.User.filter({ email: partnerData.email });
+        if (users.length > 0) {
+          userId = users[0].id;
+          console.log('[registerPartner] userId encontrado via service role:', userId);
+        }
+      } catch (e) {
+        console.warn('[registerPartner] Não foi possível buscar userId:', e.message);
+      }
+    }
+
     // Criar Partner com service role
-    const newPartner = await base44.asServiceRole.entities.Partner.create({ ...partnerData, user_id: userId });
+    const newPartner = await base44.asServiceRole.entities.Partner.create({ ...partnerData, user_id: userId || 'unknown' });
     console.log('[registerPartner] Partner criado:', newPartner.id, newPartner.full_name);
 
     if (!newPartner || !newPartner.id) {
