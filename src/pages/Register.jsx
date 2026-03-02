@@ -350,28 +350,12 @@ export default function Register() {
       // ETAPA 1: Gerar código único
       const uniqueCode = await generateUniqueCode();
 
-      // ETAPA 2: Criar conta de autenticação
+      // ETAPA 2: Criar conta de autenticação - registerPartner vai pegar o user via auth interno
       await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
 
-      // Retry para aguardar sessão propagar
-      let authenticatedUser = null;
-      for (let i = 0; i < 5; i++) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        try {
-          authenticatedUser = await base44.auth.me();
-          if (authenticatedUser?.id) break;
-        } catch (e) {
-          console.log(`[Register] Tentativa ${i + 1} auth.me falhou, tentando novamente...`);
-        }
-      }
-
-      if (!authenticatedUser?.id) {
-        throw new Error("Não foi possível autenticar após o registro. Tente fazer login manualmente.");
-      }
-
-      // ETAPA 3: Criar Partner via backend function
+      // ETAPA 3: Criar Partner via backend function (usa service role internamente)
       const partnerData = {
-        user_id: authenticatedUser.id,
+        user_id: "pending", // será sobrescrito pelo backend com o ID real via lookup por email
         email: formData.email,
         full_name: formData.full_name,
         birth_date: formData.birth_date,
