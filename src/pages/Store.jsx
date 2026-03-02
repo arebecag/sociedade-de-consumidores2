@@ -331,7 +331,7 @@ export default function Store() {
                           </Badge>
                           {purchase.is_first_purchase && (
                             <Badge className="bg-orange-500/20 text-orange-500">
-                              1ª Compra
+                              1ª Troca
                             </Badge>
                           )}
                         </div>
