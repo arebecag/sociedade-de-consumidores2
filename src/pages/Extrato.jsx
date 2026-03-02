@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, TrendingUp, TrendingDown, ShoppingBag, CreditCard, FileText, DollarSign, GraduationCap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, TrendingUp, TrendingDown, ShoppingBag, CreditCard, FileText, DollarSign, GraduationCap, ExternalLink } from "lucide-react";
 
 export default function Extrato() {
   const [partner, setPartner] = useState(null);
