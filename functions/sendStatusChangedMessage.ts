@@ -21,54 +21,34 @@ Deno.serve(async (req) => {
     let content = '';
 
     if (newStatus === 'pendente') {
-      subject = '⚠️ Sua conta está PENDENTE';
-      content = `
-Olá ${partner.full_name},
+      subject = 'Seu status está PENDENTE - Sociedade de Consumidores';
+      content = `Olá ${partner.full_name}! Seu status está PENDENTE, você NÃO recebe seus BÔNUS e NÃO consegue pagar seus boletos.
 
-Identificamos algumas pendências em sua conta:
+Confira no seu ESCRITÓRIO VIRTUAL as pendências:
+${reasons && reasons.length > 0 ? reasons.map(r => `• ${r}`).join('\n') : ''}
 
-${reasons.map(r => `• ${r}`).join('\n')}
+Regularize as pendências ainda hoje, para que você possa ser beneficiado com TODOS os recursos dentro de nossa plataforma.
 
-⚠️ Consequências:
-- Bônus a receber ficam RETIDOS
-- Pagamento de boletos BLOQUEADO
-
-✅ Resolva as pendências para voltar ao status ATIVO automaticamente.
-
-Acesse seu painel e regularize sua situação.
-
-Equipe Sociedade de Consumidores
-      `.trim();
+Equipe Sociedade de Consumidores`;
     } else if (newStatus === 'ativo' && oldStatus === 'pendente') {
-      subject = '✅ Sua conta está ATIVA novamente!';
-      content = `
-Olá ${partner.full_name},
+      subject = 'Sua conta está ATIVA - Sociedade de Consumidores';
+      content = `Olá ${partner.full_name}! Suas pendências foram resolvidas e sua conta está ATIVA novamente.
 
-Parabéns! Sua conta foi reativada.
-
-Todas as pendências foram resolvidas e você já pode:
+Você já pode usufruir de todos os benefícios da Sociedade de Consumidores:
 • Receber seus bônus normalmente
 • Pagar boletos
 • Fazer compras na loja
 
-Continue crescendo sua rede e gerando renda!
+Bom trabalho e boa divulgação!
 
-Equipe Sociedade de Consumidores
-      `.trim();
+Equipe Sociedade de Consumidores`;
     } else if (newStatus === 'excluido') {
-      subject = '❌ Sua conta foi EXCLUÍDA';
-      content = `
-Olá ${partner.full_name},
+      subject = 'Sua conta foi EXCLUÍDA - Sociedade de Consumidores';
+      content = `Olá ${partner.full_name}! Você foi excluído e não poderá ACESSAR SEU SISTEMA.
 
-Sua conta na Sociedade de Consumidores foi excluída.
+Entre em contato com suporte ainda hoje, regularize seu STATUS para voltar a usufruir dos benefícios da SOCIEDADE DE CONSUMIDORES.
 
-Motivos:
-${reasons.map(r => `• ${r}`).join('\n')}
-
-Para mais informações, entre em contato com o suporte.
-
-Equipe Sociedade de Consumidores
-      `.trim();
+Equipe Sociedade de Consumidores`;
     }
 
     if (!subject) {

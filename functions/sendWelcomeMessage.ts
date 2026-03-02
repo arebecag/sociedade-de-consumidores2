@@ -17,26 +17,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Partner not found' }, { status: 404 });
     }
 
-    const subject = '🎉 Bem-vindo à Sociedade de Consumidores!';
-    const content = `
-Olá ${partner.full_name}!
+    const subject = 'Bem-vindo à Sociedade de Consumidores!';
+    const content = `Olá ${partner.full_name}, meu nome é Eder Mateus, fundador da plataforma. Parabéns pela sua decisão em fazer parte da Sociedade de Consumidores. Somos uma empresa registrada e patenteada. Trabalhamos dentro das normas e regulamentos do país.
 
-Seja muito bem-vindo(a) à Sociedade de Consumidores 3X3 SC!
+Temos algumas informações importantes.
 
-Você agora faz parte de uma comunidade que valoriza o consumo inteligente e a geração de renda através de indicações.
+Você poderá comprar com seus bônus tudo o que você desejar, basta seguir o REGIMENTO INTERNO, pois zelamos por nosso nome, por isto crescemos a cada dia.
 
-📋 Próximos passos:
-1. Complete seu cadastro com todos os dados bancários
-2. Faça sua primeira compra (mínimo R$125) para ativar sua conta
-3. Compartilhe seu link de indicação e comece a formar sua rede
+Os depósitos em sua conta bancária ou PIX serão feitos toda segunda feira.
 
-🔗 Seu link exclusivo: ${partner.unique_code ? `https://seusite.com.br/${partner.unique_code}` : 'Em breve'}
+Atenção:
+Quando você for enviar um boleto para pagarmos em nossa plataforma, confira se este boleto é válido, pois não podemos estornar valores pagos e se o boleto for falso, poderá gerar sua exclusão definitiva de nossa plataforma. Você poderá SIM enviar boletos de terceiros. (boletos em nome de outra pessoa).
 
-Qualquer dúvida, consulte nossa seção de Perguntas Frequentes.
+ATENÇÃO DE NOVO:
+Nunca envie seu contato pessoal para informações ou suporte, divulgue APENAS seu site e deixe todo suporte conosco. Temos uma equipe técnica preparada e qualificada para responder todas as dúvidas de seus futuros clientes.
 
-Sucesso!
-Equipe Sociedade de Consumidores
-    `.trim();
+E por fim, estamos a sua disposição caso necessite de algum suporte ou tirar alguma dúvida.
+
+Faça sua primeira compra de produtos digitais ou serviços no valor mínimo de R$ 125,00 para ficar ativo na SOCIEDADE DE CONSUMIDORES e usufruir de todos os recursos de nossa plataforma.
+
+O futuro, já começou! Bom trabalho, boa divulgação.
+
+Eder Mateus Teixeira.`;
 
     // Enviar email
     const userEntity = await base44.asServiceRole.entities.User.filter({ 
