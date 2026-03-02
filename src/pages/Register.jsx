@@ -453,8 +453,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-black py-8 px-4">
-      {/* Dialogs FORA do form — evita HTML inválido e submissão acidental */}
+    <div className="min-h-screen bg-zinc-950 py-10 px-4">
       <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
         <DialogContent className="bg-zinc-950 border-orange-500/20 max-h-[80vh] overflow-y-auto">
           <DialogHeader>
