@@ -61,9 +61,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Gerar próxima cobrança recorrente (+30 dias)
-      await gerarProximaCobranca(base44, boleto, agora);
-
     } else if (status === "OVERDUE") {
       updateData.acessoLiberado = false;
     }
