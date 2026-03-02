@@ -364,7 +364,7 @@ export default function Store() {
       <Dialog open={purchaseDialogOpen} onOpenChange={setPurchaseDialogOpen}>
         <DialogContent className="bg-zinc-950 border-orange-500/20">
           <DialogHeader>
-            <DialogTitle className="text-white">Finalizar Compra</DialogTitle>
+            <DialogTitle className="text-white">Finalizar Troca</DialogTitle>
           </DialogHeader>
           
           {selectedProduct && (
