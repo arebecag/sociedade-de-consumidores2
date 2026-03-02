@@ -97,7 +97,7 @@ export const PAGES = {
     "Marketing": Marketing,
     "MeusCursos": MeusCursos,
     "MinhaAreaFinanceira": MinhaAreaFinanceira,
-    "MinhasCobranças": minhascobranAs,
+    "MinhasCobranças": MinhasCobranças,
     "MySite": MySite,
     "Network": Network,
     "PagamentoTed": PagamentoTed,
