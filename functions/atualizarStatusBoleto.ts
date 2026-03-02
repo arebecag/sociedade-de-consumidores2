@@ -1,8 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 const BONUS_PERCENTUAL = 0.20;
-const PROXY_URL = "https://arebecag-asaas-proxy.vercel.app";
-const VALOR_PLANO = 97.00;
 
 Deno.serve(async (req) => {
   try {

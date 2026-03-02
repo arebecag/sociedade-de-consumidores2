@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
         billingType: "BOLETO",
         value: valor,
         dueDate: dataVencimento,
-        description: descricao || "Ativação de Plano - Sociedade de Consumidores"
+        description: descricao || "Compra de Produtos - Sociedade de Consumidores"
       })
     });
 
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       asaasCustomerId,
       asaasPaymentId: cobrancaData.id,
       valor,
-      descricao: descricao || "Ativação de Plano",
+      descricao: descricao || "Compra de Produtos",
       invoiceUrl: cobrancaData.invoiceUrl || cobrancaData.bankSlipUrl,
       bankSlipUrl: cobrancaData.bankSlipUrl,
       status: cobrancaData.status || "PENDING",
