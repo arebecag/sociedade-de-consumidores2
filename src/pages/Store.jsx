@@ -392,7 +392,7 @@ export default function Store() {
                       <div className="flex items-center gap-3">
                         <CreditCard className={paymentMethod === "bonus" ? "text-orange-500" : "text-gray-400"} />
                         <div>
-                          <p className="text-white font-medium">Pagar com Bônus</p>
+                          <p className="text-white font-medium">Trocar com Bônus</p>
                           <p className="text-gray-400 text-sm">
                             Disponível: {formatCurrency(partner?.bonus_for_purchases || 0)}
                           </p>
