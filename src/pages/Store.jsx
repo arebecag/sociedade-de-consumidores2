@@ -224,7 +224,7 @@ export default function Store() {
         <Alert className="bg-orange-500/10 border-orange-500/30">
           <ShoppingCart className="w-4 h-4 text-orange-500" />
           <AlertDescription className="text-orange-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <span><strong>Primeira compra obrigatória:</strong> Para ativar sua conta, faça uma compra mínima de R$ 125,00.</span>
+            <span><strong>Primeira troca obrigatória:</strong> Para ativar sua conta, faça uma troca mínima de R$ 125,00.</span>
             <Button
               size="sm"
               className="bg-orange-500 hover:bg-orange-600 shrink-0"
