@@ -112,11 +112,11 @@ export default function Bonus() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-zinc-900 rounded-lg">
-              <p className="text-gray-400 text-sm">Bônus Desempenho 1</p>
+              <p className="text-gray-400 text-sm">Comissão Direta</p>
               <p className="text-white font-bold text-xl">{current.directBonus}%</p>
             </div>
             <div className="p-4 bg-zinc-900 rounded-lg">
-              <p className="text-gray-400 text-sm">Bônus Desempenho 2</p>
+              <p className="text-gray-400 text-sm">Comissão Indireta</p>
               <p className="text-white font-bold text-xl">{current.indirectBonus}%</p>
             </div>
             <div className="p-4 bg-zinc-900 rounded-lg">
@@ -163,8 +163,8 @@ export default function Bonus() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white">Meus Bônus</h1>
-        <p className="text-gray-400">Acompanhe seus ganhos e graduação</p>
+        <h1 className="text-3xl font-bold text-white">Minhas Comissões e Bônus</h1>
+        <p className="text-gray-400">Comissões (saque) e Bônus (trocas)</p>
       </div>
 
       {/* Informações de Pagamento - TOPO */}
@@ -194,7 +194,7 @@ export default function Bonus() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Para Saque</p>
+                <p className="text-gray-400 text-sm">Comissão para Saque</p>
                 <p className="text-2xl font-bold text-green-500">{formatNumber(partner?.bonus_for_withdrawal)}</p>
               </div>
               <ArrowUpRight className="w-8 h-8 text-green-500" />
@@ -206,7 +206,7 @@ export default function Bonus() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Para Compras</p>
+                <p className="text-gray-400 text-sm">Bônus para Trocas</p>
                 <p className="text-2xl font-bold text-purple-500">{formatNumber(partner?.bonus_for_purchases)}</p>
               </div>
               <ArrowDownRight className="w-8 h-8 text-purple-500" />
@@ -281,7 +281,7 @@ function TransactionList({ transactions, formatCurrency, formatNumber }) {
               <div>
                 <div className="flex items-center gap-2">
                   <Badge className={tx.type === 'direct' ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'}>
-                    {tx.type === 'direct' ? 'Bônus Desempenho 1' : 'Bônus Desempenho 2'}
+                    {tx.type === 'direct' ? 'Comissão Direta 15%' : 'Comissão Indireta 30%'}
                   </Badge>
                   <Badge className={
                     tx.status === 'credited' ? 'bg-green-500/20 text-green-500' :
@@ -291,7 +291,7 @@ function TransactionList({ transactions, formatCurrency, formatNumber }) {
                     {tx.status === 'credited' ? 'Creditado' : tx.status === 'blocked' ? 'Retido' : 'Pendente'}
                   </Badge>
                 </div>
-                <p className="text-white mt-2">Compra de: {tx.source_partner_name}</p>
+                <p className="text-white mt-2">Troca/Compra de: {tx.source_partner_name}</p>
                 <p className="text-gray-500 text-sm">
                   {new Date(tx.created_date).toLocaleDateString('pt-BR', { 
                     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -301,7 +301,7 @@ function TransactionList({ transactions, formatCurrency, formatNumber }) {
               <div className="text-right">
                 <p className="text-white font-bold text-lg">{formatNumber(tx.total_amount)}</p>
                 <p className="text-gray-500 text-sm">
-                  Saque: {formatNumber(tx.amount_for_withdrawal)} | Compras: {formatNumber(tx.amount_for_purchases)}
+                  Comissão: {formatNumber(tx.amount_for_withdrawal)} | Bônus/Trocas: {formatNumber(tx.amount_for_purchases)}
                 </p>
                 <p className="text-gray-400 text-xs">{tx.percentage}% da compra</p>
               </div>
