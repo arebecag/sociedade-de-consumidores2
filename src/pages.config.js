@@ -64,7 +64,7 @@ import LojaCursos from './pages/LojaCursos';
 import Marketing from './pages/Marketing';
 import MeusCursos from './pages/MeusCursos';
 import MinhaAreaFinanceira from './pages/MinhaAreaFinanceira';
-import minhascobranAs from './pages/MinhasCobranças';
+import MinhasCobranças from './pages/MinhasCobranças';
 import MySite from './pages/MySite';
 import Network from './pages/Network';
 import PagamentoTed from './pages/PagamentoTed';
