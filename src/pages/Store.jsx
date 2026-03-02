@@ -165,8 +165,8 @@ export default function Store() {
     try {
       await base44.functions.invoke('distribuirComissoes', {
         purchaseId,
-        buyerPartnerId: buyer.id,
-        amount
+        amount,
+        buyerPartnerId: buyer.id
       });
     } catch (error) {
       console.error("Erro ao distribuir comissões:", error);
