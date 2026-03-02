@@ -29,17 +29,19 @@ export default function Extrato() {
         setPartner(p);
         
         // Load all transactions
-        const [bonus, withdrawal, purchase, cursosCompras] = await Promise.all([
+        const [bonus, withdrawal, purchase, cursosCompras, fins] = await Promise.all([
           base44.entities.BonusTransaction.filter({ partner_id: p.id }),
           base44.entities.Withdrawal.filter({ partner_id: p.id }),
           base44.entities.Purchase.filter({ partner_id: p.id }),
-          base44.entities.ComprasCursosEAD.filter({ usuarioId: p.id })
+          base44.entities.ComprasCursosEAD.filter({ usuarioId: p.id }),
+          base44.entities.Financeiro.filter({ userId: p.id })
         ]);
         
         setBonusTransactions(bonus.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
         setWithdrawals(withdrawal.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
         setPurchases(purchase.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
         setCursosLogs(cursosCompras.filter(c => c.status === 'LIBERADO').sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+        setFinanceiros(fins.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
       }
     } catch (error) {
       console.error("Error:", error);
