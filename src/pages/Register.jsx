@@ -400,14 +400,24 @@ export default function Register() {
       navigate(createPageUrl("Dashboard"));
 
     } catch (xe) {
-  console.error("[Register] ERRO COMPLETO:", xe);
-  console.error("[Register] MESSAGE:", xe?.message);
-  console.error("[Register] RESPONSE:", xe?.response);
-  console.error("[Register] DATA:", xe?.response?.data);
+      console.error("[Register] ERRO:", xe?.message, xe?.response?.data);
 
-  toast.error("Erro ao cadastrar: " + (xe.message || "Tente novamente."));
-  setLoading(false);
-}
+      const msg = xe?.response?.data?.message || xe?.response?.data?.error || xe?.message || "";
+      const isEmailDuplicate =
+        msg.toLowerCase().includes("already") ||
+        msg.toLowerCase().includes("exist") ||
+        msg.toLowerCase().includes("email") ||
+        msg.toLowerCase().includes("duplicate") ||
+        xe?.response?.status === 409;
+
+      if (isEmailDuplicate) {
+        toast.error("Este e-mail já está cadastrado. Faça login ou use outro e-mail.");
+        setErrors(prev => ({ ...prev, email: "E-mail já cadastrado" }));
+      } else {
+        toast.error("Erro ao cadastrar: " + (msg || "Tente novamente."));
+      }
+      setLoading(false);
+    }
   };
 
   if (loadingReferrer) {
