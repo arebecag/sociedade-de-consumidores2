@@ -95,6 +95,12 @@ const load = async () => {
       try {
         partners = await base44.entities.Partner.filter({ user_id: me.id });
         console.log("[usePartner] Busca por user_id:", partners.length, "resultado(s)");
+        
+        // Se houver múltiplos Partners, usar o mais recente (created_date DESC)
+        if (partners.length > 1) {
+          partners.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+          console.log("[usePartner] Múltiplos Partners encontrados. Usando o mais recente:", partners[0].full_name);
+        }
       } catch (e) {
         console.warn("[usePartner] Erro ao buscar por user_id:", e);
       }
