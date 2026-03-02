@@ -449,7 +449,7 @@ export default function Store() {
               ) : (
                 <ShoppingCart className="w-4 h-4 mr-2" />
               )}
-              {processing ? "Processando..." : "Confirmar Compra"}
+              {processing ? "Processando..." : "Confirmar Troca"}
             </Button>
           </DialogFooter>
         </DialogContent>
