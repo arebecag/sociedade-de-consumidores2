@@ -90,33 +90,13 @@ const load = async () => {
       setLoading(false);
       return;
     }
-      // 1) Buscar por user_id (campo correto)
+      // Buscar SOMENTE por user_id (identificador único e seguro da sessão)
       let partners = [];
       try {
         partners = await base44.entities.Partner.filter({ user_id: me.id });
         console.log("[usePartner] Busca por user_id:", partners.length, "resultado(s)");
       } catch (e) {
         console.warn("[usePartner] Erro ao buscar por user_id:", e);
-      }
-
-      // 2) Fallback: buscar por email (registros antigos sem user_id)
-      if (partners.length === 0) {
-        try {
-          partners = await base44.entities.Partner.filter({ email: me.email });
-          console.log("[usePartner] Busca por email (fallback):", partners.length, "resultado(s)");
-        } catch (e) {
-          console.warn("[usePartner] Erro ao buscar por email:", e);
-        }
-      }
-
-      // 3) Fallback: buscar por created_by (compatibilidade total com registros antigos)
-      if (partners.length === 0) {
-        try {
-          partners = await base44.entities.Partner.filter({ created_by: me.email });
-          console.log("[usePartner] Busca por created_by (fallback2):", partners.length, "resultado(s)");
-        } catch (e) {
-          console.warn("[usePartner] Erro ao buscar por created_by:", e);
-        }
       }
 
       if (partners.length > 0) {
