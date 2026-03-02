@@ -580,34 +580,22 @@ export default function Register() {
               )}
 
               {/* Full Name */}
-              <div className="space-y-2">
-                <Label htmlFor="full_name" className="text-white">Nome Completo *</Label>
-                <Input
-                  id="full_name"
-                  value={formData.full_name}
-                  onChange={(e) => handleChange("full_name", e.target.value)}
-                  className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500"
-                  placeholder="Seu nome completo"
-                />
-                {errors.full_name && <p className="text-red-500 text-sm">{errors.full_name}</p>}
+              <div className="space-y-1.5">
+                <Label htmlFor="full_name" className="text-gray-300 text-sm">Nome Completo *</Label>
+                <Input id="full_name" value={formData.full_name} onChange={(e) => handleChange("full_name", e.target.value)} className="bg-zinc-800 border-zinc-700 text-white focus:border-orange-500" placeholder="Seu nome completo" />
+                {errors.full_name && <p className="text-red-400 text-xs">{errors.full_name}</p>}
               </div>
 
               {/* Birth Date */}
-              <div className="space-y-2">
-                <Label htmlFor="birth_date" className="text-white">Data de Nascimento *</Label>
-                <Input
-                  id="birth_date"
-                  type="date"
-                  value={formData.birth_date}
-                  onChange={(e) => handleChange("birth_date", e.target.value)}
-                  className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500"
-                />
-                {errors.birth_date && <p className="text-red-500 text-sm">{errors.birth_date}</p>}
+              <div className="space-y-1.5">
+                <Label htmlFor="birth_date" className="text-gray-300 text-sm">Data de Nascimento *</Label>
+                <Input id="birth_date" type="date" value={formData.birth_date} onChange={(e) => handleChange("birth_date", e.target.value)} className="bg-zinc-800 border-zinc-700 text-white focus:border-orange-500" />
+                {errors.birth_date && <p className="text-red-400 text-xs">{errors.birth_date}</p>}
               </div>
 
               {/* Gender */}
-              <div className="space-y-2">
-                <Label className="text-white">Gênero *</Label>
+              <div className="space-y-1.5">
+                <Label className="text-gray-300 text-sm">Gênero *</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { value: "masculino", label: "Masculino" },
@@ -615,75 +603,44 @@ export default function Register() {
                     { value: "outro", label: "Outro" },
                     { value: "prefiro_nao_informar", label: "Prefiro não informar" },
                   ].map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => handleChange("gender", opt.value)}
-                      className={`py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
-                        formData.gender === opt.value
-                          ? "bg-orange-500 border-orange-500 text-white"
-                          : "bg-zinc-900 border-zinc-700 text-gray-300 hover:border-orange-500 hover:text-orange-500"
-                      }`}
-                    >
+                    <button key={opt.value} type="button" onClick={() => handleChange("gender", opt.value)}
+                      className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${formData.gender === opt.value ? "bg-orange-500 border-orange-500 text-white" : "bg-zinc-800 border-zinc-700 text-gray-400 hover:border-zinc-500"}`}>
                       {opt.label}
                     </button>
                   ))}
                 </div>
-                {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
+                {errors.gender && <p className="text-red-400 text-xs">{errors.gender}</p>}
               </div>
 
               {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">E-mail *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500"
-                  placeholder="seu@email.com"
-                />
-                {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-gray-300 text-sm">E-mail *</Label>
+                <Input id="email" type="email" value={formData.email} onChange={(e) => handleChange("email", e.target.value)} className="bg-zinc-800 border-zinc-700 text-white focus:border-orange-500" placeholder="seu@email.com" />
+                {errors.email && <p className="text-red-400 text-xs">{errors.email}</p>}
               </div>
 
               {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-white">Telefone com DDD *</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => handleChange("phone", e.target.value)}
-                  className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500"
-                  placeholder="(11) 99999-9999"
-                  maxLength={15}
-                />
-                {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-gray-300 text-sm">Telefone com DDD *</Label>
+                <Input id="phone" value={formData.phone} onChange={(e) => handleChange("phone", e.target.value)} className="bg-zinc-800 border-zinc-700 text-white focus:border-orange-500" placeholder="(11) 99999-9999" maxLength={15} />
+                {errors.phone && <p className="text-red-400 text-xs">{errors.phone}</p>}
               </div>
 
               {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">Senha *</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-gray-300 text-sm">Senha *</Label>
                 <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) => handleChange("password", e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500 pr-10"
-                    placeholder="Crie uma senha forte"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  <Input id="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={(e) => handleChange("password", e.target.value)} className="bg-zinc-800 border-zinc-700 text-white focus:border-orange-500 pr-10" placeholder="Mín. 8 caracteres, maiúscula e número" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className={`text-sm ${passwordStrength.valid ? "text-green-500" : "text-yellow-500"}`}>
-                  {passwordStrength.message || "Mínimo 8 caracteres, maiúscula, minúscula e número"}
-                </p>
-                {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                {formData.password && (
+                  <p className={`text-xs ${passwordStrength.valid ? "text-green-500" : "text-yellow-500"}`}>
+                    {passwordStrength.message}
+                  </p>
+                )}
+                {errors.password && <p className="text-red-400 text-xs">{errors.password}</p>}
               </div>
 
               {/* Terms */}
