@@ -161,89 +161,15 @@ export default function Store() {
     }
   };
 
-  const generateBonusForPurchase = async (purchaseId, amount, buyer) => {
+  const distribuirComissoes = async (purchaseId, amount, buyer) => {
     try {
-      // Buscar relação DIRETA do comprador (pai direto = 15%)
-      const directRelations = await base44.entities.NetworkRelation.filter({
-        referred_id: buyer.id,
-        relation_type: "direct"
+      await base44.functions.invoke('distribuirComissoes', {
+        purchaseId,
+        buyerPartnerId: buyer.id,
+        amount
       });
-
-      // Buscar relação INDIRETA do comprador (avô = 30%)
-      const indirectRelations = await base44.entities.NetworkRelation.filter({
-        referred_id: buyer.id,
-        relation_type: "indirect"
-      });
-
-      // Pagar bônus DIRETO (15%) para o pai direto
-      if (directRelations.length > 0) {
-        const directReferrerId = directRelations[0].referrer_id;
-        const directReferrers = await base44.entities.Partner.filter({ id: directReferrerId });
-        if (directReferrers.length > 0) {
-          const directReferrer = directReferrers[0];
-          const existing = await base44.entities.BonusTransaction.filter({ purchase_id: purchaseId, partner_id: directReferrer.id });
-          if (existing.length === 0) {
-            const totalDirect = amount * 0.15; // 15% para direto
-            const directForPurchases = totalDirect * 0.5;
-            await base44.entities.BonusTransaction.create({
-              partner_id: directReferrer.id,
-              partner_name: directReferrer.full_name,
-              source_partner_id: buyer.id,
-              source_partner_name: buyer.full_name,
-              purchase_id: purchaseId,
-              type: "direct",
-              percentage: 15,
-              total_amount: totalDirect,
-              amount_for_withdrawal: totalDirect,
-              amount_for_purchases: directForPurchases,
-              status: directReferrer.status === "ativo" ? "credited" : "blocked"
-            });
-            if (directReferrer.status === "ativo") {
-              await base44.entities.Partner.update(directReferrer.id, {
-                total_bonus_generated: (directReferrer.total_bonus_generated || 0) + totalDirect,
-                bonus_for_withdrawal: (directReferrer.bonus_for_withdrawal || 0) + totalDirect,
-                bonus_for_purchases: (directReferrer.bonus_for_purchases || 0) + directForPurchases
-              });
-            }
-          }
-        }
-      }
-
-      // Pagar bônus INDIRETO (30%) para o avô (indicador indireto)
-      if (indirectRelations.length > 0) {
-        const indirectReferrerId = indirectRelations[0].referrer_id;
-        const indirectReferrers = await base44.entities.Partner.filter({ id: indirectReferrerId });
-        if (indirectReferrers.length > 0) {
-          const indirectReferrer = indirectReferrers[0];
-          const existing = await base44.entities.BonusTransaction.filter({ purchase_id: purchaseId, partner_id: indirectReferrer.id });
-          if (existing.length === 0) {
-            const totalIndirect = amount * 0.30; // 30% para indireto
-            const indirectForPurchases = totalIndirect * 0.5;
-            await base44.entities.BonusTransaction.create({
-              partner_id: indirectReferrer.id,
-              partner_name: indirectReferrer.full_name,
-              source_partner_id: buyer.id,
-              source_partner_name: buyer.full_name,
-              purchase_id: purchaseId,
-              type: "indirect",
-              percentage: 30,
-              total_amount: totalIndirect,
-              amount_for_withdrawal: totalIndirect,
-              amount_for_purchases: indirectForPurchases,
-              status: indirectReferrer.status === "ativo" ? "credited" : "blocked"
-            });
-            if (indirectReferrer.status === "ativo") {
-              await base44.entities.Partner.update(indirectReferrer.id, {
-                total_bonus_generated: (indirectReferrer.total_bonus_generated || 0) + totalIndirect,
-                bonus_for_withdrawal: (indirectReferrer.bonus_for_withdrawal || 0) + totalIndirect,
-                bonus_for_purchases: (indirectReferrer.bonus_for_purchases || 0) + indirectForPurchases
-              });
-            }
-          }
-        }
-      }
     } catch (error) {
-      console.error("Error generating bonus:", error);
+      console.error("Erro ao distribuir comissões:", error);
     }
   };
 
