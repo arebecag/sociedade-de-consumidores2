@@ -418,6 +418,26 @@ export default function Register() {
     );
   }
 
+  // Sem link e sem código digitado válido — bloquear acesso
+  if (!isFirstUser && !referrerPartnerId && !referrerCode) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-zinc-950 border-orange-500/20">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-white mb-2">Link de Indicação Necessário</h2>
+            <p className="text-gray-400 mb-4">
+              Para se cadastrar, você precisa acessar pelo link de indicação de um parceiro ativo.
+            </p>
+            <p className="text-gray-500 text-sm">
+              Peça o link personalizado para a pessoa que te indicou.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (invalidReferrer) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
