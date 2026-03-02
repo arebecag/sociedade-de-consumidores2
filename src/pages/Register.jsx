@@ -421,19 +421,17 @@ export default function Register() {
   // Sem link e sem código digitado válido — bloquear acesso
   if (!isFirstUser && !referrerPartnerId && !referrerCode) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-zinc-950 border-orange-500/20">
-          <CardContent className="p-8 text-center">
-            <AlertCircle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">Link de Indicação Necessário</h2>
-            <p className="text-gray-400 mb-4">
-              Para se cadastrar, você precisa acessar pelo link de indicação de um parceiro ativo.
-            </p>
-            <p className="text-gray-500 text-sm">
-              Peça o link personalizado para a pessoa que te indicou.
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm text-center space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-7 h-7 text-orange-500" />
+          </div>
+          <h2 className="text-xl font-bold text-white">Link de Indicação Necessário</h2>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            Para se cadastrar, acesse pelo link de indicação de um parceiro ativo.
+          </p>
+          <p className="text-gray-600 text-xs">Peça o link personalizado para a pessoa que te indicou.</p>
+        </div>
       </div>
     );
   }
