@@ -64,7 +64,7 @@ import LojaCursos from './pages/LojaCursos';
 import Marketing from './pages/Marketing';
 import MeusCursos from './pages/MeusCursos';
 import MinhaAreaFinanceira from './pages/MinhaAreaFinanceira';
-import MinhasCobranças from './pages/MinhasCobranças';
+import minhascobranAs from './pages/MinhasCobranças';
 import MySite from './pages/MySite';
 import Network from './pages/Network';
 import PagamentoTed from './pages/PagamentoTed';
@@ -97,7 +97,7 @@ export const PAGES = {
     "Marketing": Marketing,
     "MeusCursos": MeusCursos,
     "MinhaAreaFinanceira": MinhaAreaFinanceira,
-    "MinhasCobranças": MinhasCobranças,
+    "MinhasCobranças": minhascobranAs,
     "MySite": MySite,
     "Network": Network,
     "PagamentoTed": PagamentoTed,
@@ -112,7 +112,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-   mainPage: "Dashboard",
+    mainPage: "Register",
     Pages: PAGES,
     Layout: __Layout,
 };

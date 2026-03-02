@@ -267,7 +267,7 @@ export default function Extrato() {
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex flex-col items-end gap-2">
                         <p className="text-purple-500 font-bold">{formatCurrency(purchase.amount)}</p>
                         <Badge className={
                           purchase.status === 'paid' ? 'bg-green-500/20 text-green-500' :
@@ -277,6 +277,18 @@ export default function Extrato() {
                           {purchase.status === 'paid' ? 'Pago' :
                            purchase.status === 'cancelled' ? 'Cancelado' : 'Pendente'}
                         </Badge>
+                        {purchase.status === 'pending' && (
+                          <button
+                            onClick={async () => {
+                              if (!window.confirm('Cancelar esta compra pendente?')) return;
+                              await base44.entities.Purchase.update(purchase.id, { status: 'cancelled' });
+                              setPurchases(prev => prev.map(p => p.id === purchase.id ? { ...p, status: 'cancelled' } : p));
+                            }}
+                            className="text-xs text-red-400 hover:text-red-300 underline"
+                          >
+                            Cancelar
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
