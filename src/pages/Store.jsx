@@ -117,7 +117,7 @@ export default function Store() {
 
       // Generate bonus for referrers (only if fully paid with bonus)
       if (paidWithBoleto === 0) {
-        await generateBonusForPurchase(purchase.id, productPrice, partner);
+        await distribuirComissoes(purchase.id, productPrice, partner);
       }
 
       // If boleto payment needed, generate boleto and redirect
