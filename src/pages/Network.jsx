@@ -143,44 +143,32 @@ export default function Network() {
     );
   };
 
-  const ClientCard = ({ client, type }) => {
+  const ClientRow = ({ client, type }) => {
     const graduationPercent = {
       cliente_iniciante: 30, lider: 32, estrela: 34, bronze: 36, prata: 38, ouro: 40
     };
     const bonusPercent = type === "indirect" ? (graduationPercent[partner?.graduation] || 30) : 15;
-    
+
     return (
-      <Card className="bg-zinc-900 border-zinc-800">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-white font-medium">{client.display_name || client.full_name}</p>
-              <p className="text-gray-500 text-sm">
-                Cadastro: {new Date(client.created_date).toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-            <StatusBadge status={client.status} />
+      <div className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-orange-400 text-sm font-bold">
+              {(client.display_name || client.full_name || "?")[0]}
+            </span>
           </div>
-          
-          {client.status === 'pendente' && client.pending_reasons?.length > 0 && (
-            <div className="mb-3 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
-              <p className="text-yellow-500 text-xs font-semibold mb-1">Motivos de pendência:</p>
-              <ul className="text-yellow-200 text-xs space-y-1">
-                {client.pending_reasons.map((reason, idx) => (
-                  <li key={idx}>• {reason}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          
-          <div className="pt-3 border-t border-zinc-800">
-            <p className="text-gray-400 text-xs">
-              {type === "direct" ? "Bônus Direto: 15%" : `Bônus Indireto: ${bonusPercent}%`}
-              {' '}(metade compras / metade saque)
+          <div className="min-w-0">
+            <p className="text-white text-sm font-medium truncate">{client.display_name || client.full_name}</p>
+            <p className="text-gray-600 text-xs">
+              {new Date(client.created_date).toLocaleDateString('pt-BR')} · {type === "direct" ? "Bônus: 15%" : `Bônus: ${bonusPercent}%`}
             </p>
+            {client.status === 'pendente' && client.pending_reasons?.length > 0 && (
+              <p className="text-yellow-500 text-xs truncate">• {client.pending_reasons[0]}</p>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <StatusBadge status={client.status} />
+      </div>
     );
   };
 
