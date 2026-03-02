@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
 
     const { partnerId, oldStatus, newStatus, reasons } = await req.json();
     
-    const partner = await base44.asServiceRole.entities.Partner.get(partnerId);
+    const [partner] = await base44.asServiceRole.entities.Partner.filter({ id: partnerId });
     
     if (!partner) {
       return Response.json({ error: 'Partner not found' }, { status: 404 });

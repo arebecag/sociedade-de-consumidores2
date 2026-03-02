@@ -35,10 +35,11 @@ Deno.serve(async (req) => {
     }
 
     // Buscar dados do parceiro
-    const partner = await base44.asServiceRole.entities.Partner.get(partnerId);
-    if (!partner) {
+    const parceiros = await base44.asServiceRole.entities.Partner.filter({ id: partnerId });
+    if (!parceiros.length) {
       return Response.json({ error: "Parceiro não encontrado" }, { status: 404 });
     }
+    const partner = parceiros[0];
 
     const cpfLimpo = (cpf || partner.cpf || "").replace(/\D/g, "");
     if (!cpfLimpo || cpfLimpo.length !== 11) {
