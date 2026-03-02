@@ -58,17 +58,18 @@ function ProtectedRoute({ children }) {
 // =====================================================
 // ROTAS PUBLICAS (SITE)
 // =====================================================
-const PublicRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Pages.Landing />} />
-      <Route path="/login" element={<Pages.Login />} />
-      <Route path="/register" element={<Pages.Register />} />
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
-  );
-};
+const PublicRoutes = () => (
+  <Routes>
+    {/* Página pública principal */}
+    <Route path="/" element={<Pages.Register />} />
 
+    {/* Cadastro */}
+    <Route path="/register" element={<Pages.Register />} />
+
+    {/* fallback */}
+    <Route path="*" element={<Pages.Register />} />
+  </Routes>
+);
 
 // =====================================================
 // ROTAS PRIVADAS (APP)
