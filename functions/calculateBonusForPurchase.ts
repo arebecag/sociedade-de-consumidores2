@@ -59,8 +59,8 @@ Deno.serve(async (req) => {
       if (totalPercent === 0) continue;
 
       const totalAmount = (purchaseAmount * totalPercent) / 100;
-      // 100% vai para saque + 50% reservado para compras (conforme regras do negócio)
-      const amountForWithdrawal = totalAmount;
+      // 50% para saque + 50% para compras (conforme regimento interno)
+      const amountForWithdrawal = totalAmount * 0.5;
       const amountForPurchases = totalAmount * 0.5;
 
       // Status: se referrer estiver pendente, bônus fica retido
