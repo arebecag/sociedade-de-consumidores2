@@ -219,18 +219,59 @@ export default function MySite() {
           <CardTitle className="text-white">Prévia do Site</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="aspect-video bg-black rounded-lg overflow-hidden border border-zinc-800">
-            {partner?.unique_code ? (
-              <iframe
-                src={`${window.location.origin}/PartnerSite?p=${partner.unique_code}`}
-                className="w-full h-full"
-                title="Preview"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-500">
-                Código único não disponível
+          <div className="bg-black rounded-xl border border-zinc-800 overflow-hidden">
+            {/* Mock browser bar */}
+            <div className="bg-zinc-900 px-4 py-2 flex items-center gap-2 border-b border-zinc-800">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                <div className="w-3 h-3 rounded-full bg-green-500/60" />
               </div>
-            )}
+              <div className="flex-1 bg-zinc-800 rounded px-3 py-1 text-xs text-gray-400 truncate ml-2">
+                {getSiteUrl()}
+              </div>
+            </div>
+
+            {/* Preview content */}
+            <div className="p-6 space-y-6">
+              {/* Header */}
+              <div className="text-center border-b border-orange-500/20 pb-6">
+                <h1 className="text-2xl font-bold text-orange-500">Sociedade de</h1>
+                <h1 className="text-2xl font-bold text-white">Consumidores</h1>
+              </div>
+
+              {/* Partner name + CTA */}
+              <div className="text-center space-y-3">
+                <p className="text-gray-400 text-sm">Indicador</p>
+                <h2 className="text-xl font-bold text-white">{partner?.display_name || partner?.full_name}</h2>
+                <div className="inline-block bg-orange-500 text-white font-bold py-2 px-8 rounded-full text-sm">
+                  CADASTRE-SE JÁ
+                </div>
+              </div>
+
+              {/* Video placeholder */}
+              <div className="aspect-video bg-zinc-900 rounded-xl border border-orange-500/20 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-2">
+                    <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[14px] border-l-orange-500 border-b-[8px] border-b-transparent ml-1" />
+                  </div>
+                  <p className="text-gray-500 text-xs">Vídeo de apresentação</p>
+                </div>
+              </div>
+
+              {/* Content preview */}
+              <div className="bg-zinc-950 rounded-xl p-4 border border-orange-500/10 space-y-2">
+                <p className="text-white text-sm font-semibold">Bem vindo à maior <span className="text-orange-500">SOCIEDADE DE CONSUMIDORES</span> do Brasil.</p>
+                <p className="text-gray-400 text-xs">Gere bônus de até 40% com as compras dos seus clientes...</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-3 flex justify-end">
+            <Button onClick={openSite} variant="outline" size="sm" className="border-orange-500/40 text-orange-500 hover:bg-orange-500/10 text-xs">
+              <ExternalLink className="w-3 h-3 mr-1" />
+              Ver site completo
+            </Button>
           </div>
         </CardContent>
       </Card>
