@@ -281,18 +281,31 @@ export default function Extrato() {
                           {purchase.status === 'paid' ? 'Pago' :
                            purchase.status === 'cancelled' ? 'Cancelado' : 'Pendente'}
                         </Badge>
-                        {purchase.status === 'pending' && (
-                          <button
-                            onClick={async () => {
-                              if (!window.confirm('Cancelar esta compra pendente?')) return;
-                              await base44.entities.Purchase.update(purchase.id, { status: 'cancelled' });
-                              setPurchases(prev => prev.map(p => p.id === purchase.id ? { ...p, status: 'cancelled' } : p));
-                            }}
-                            className="text-xs text-red-400 hover:text-red-300 underline"
-                          >
-                            Cancelar
-                          </button>
-                        )}
+                        {purchase.status === 'pending' && (() => {
+                          // Find matching Financeiro (boleto) for this purchase
+                          const boleto = financeiros.find(f => f.status === 'PENDING' && f.descricao?.includes(purchase.product_name));
+                          return (
+                            <div className="flex flex-col gap-1 items-end">
+                              {boleto?.invoiceUrl && (
+                                <a href={boleto.invoiceUrl} target="_blank" rel="noreferrer">
+                                  <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-xs h-7 px-2">
+                                    <ExternalLink className="w-3 h-3 mr-1" /> Pagar
+                                  </Button>
+                                </a>
+                              )}
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm('Cancelar esta compra pendente?')) return;
+                                  await base44.entities.Purchase.update(purchase.id, { status: 'cancelled' });
+                                  setPurchases(prev => prev.map(p => p.id === purchase.id ? { ...p, status: 'cancelled' } : p));
+                                }}
+                                className="text-xs text-red-400 hover:text-red-300 underline"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   ))}
