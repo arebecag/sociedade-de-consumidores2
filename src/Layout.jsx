@@ -159,7 +159,6 @@ export default function Layout({ children, currentPageName }) {
     menuItems.push({ name: "Admin: EAD", icon: GraduationCap, page: "AdminCursosEAD" });
     menuItems.push({ name: "Admin: Contrato", icon: FileText, page: "AdminContrato" });
     menuItems.push({ name: "Admin: Pagamentos", icon: CreditCard, page: "AdminPagamentos" });
-    menuItems.push({ name: "Admin: Cobranças Cora", icon: Receipt, page: "AdminCora" });
     menuItems.push({ name: "Admin: TED", icon: CreditCard, page: "AdminPagamentosTed" });
     menuItems.push({ name: "Admin: Financeiro", icon: DollarSign, page: "AdminFinanceiro" });
     menuItems.push({ name: "Admin: Saques", icon: ArrowDownCircle, page: "AdminSaques" });
