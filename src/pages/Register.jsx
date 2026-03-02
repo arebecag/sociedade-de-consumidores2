@@ -550,28 +550,32 @@ export default function Register() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Referrer Info */}
               {isFirstUser ? (
-                <div className="p-4 bg-orange-500/20 rounded-lg border border-orange-500/40">
-                  <Label className="text-orange-400 text-sm">Primeiro Cadastro</Label>
-                  <p className="text-white font-semibold text-lg">Cadastro Administrador (sem indicador)</p>
+                <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
+                  <p className="text-orange-400 text-sm font-medium">Primeiro cadastro — sem indicador</p>
                 </div>
               ) : referrerPartnerId ? (
-                <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
-                  <Label className="text-gray-400 text-sm">Indicador</Label>
-                  <p className="text-white font-semibold text-lg">{referrerName}</p>
+                <div className="p-3 bg-zinc-800 rounded-lg border border-zinc-700 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-orange-400 text-xs font-bold">{referrerName[0]}</span>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-xs">Indicado por</p>
+                    <p className="text-white font-semibold text-sm">{referrerName}</p>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Label className="text-white">Código do Indicador *</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-gray-300 text-sm">Código do Indicador *</Label>
                   <Input
-                    placeholder="Digite o código do seu indicador"
-                    className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500 uppercase"
+                    placeholder="Ex: ABC12345"
+                    className="bg-zinc-800 border-zinc-700 text-white focus:border-orange-500 uppercase"
                     onChange={(e) => handleManualReferrerCode(e.target.value)}
                   />
-                  {referrerPartnerId === null && referrerName && (
-                    <p className="text-green-500 text-sm">Indicador: {referrerName} ✓</p>
+                  {referrerPartnerId && referrerName && (
+                    <p className="text-green-500 text-xs">✓ Indicador: {referrerName}</p>
                   )}
-                  {errors.referrer && <p className="text-red-500 text-sm">{errors.referrer}</p>}
-                  <p className="text-gray-500 text-xs">Peça o código para a pessoa que te indicou</p>
+                  {errors.referrer && <p className="text-red-500 text-xs">{errors.referrer}</p>}
                 </div>
               )}
 
