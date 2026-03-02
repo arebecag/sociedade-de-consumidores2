@@ -290,9 +290,9 @@ export default function Network() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
                   {directClients.filter(c => c.status === 'ativo').map((client) => (
-                    <ClientCard key={client.id} client={client} type="direct" />
+                    <ClientRow key={client.id} client={client} type="direct" />
                   ))}
                 </div>
               )}
@@ -307,9 +307,9 @@ export default function Network() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
                   {directClients.filter(c => c.status === 'pendente').map((client) => (
-                    <ClientCard key={client.id} client={client} type="direct" />
+                    <ClientRow key={client.id} client={client} type="direct" />
                   ))}
                 </div>
               )}
@@ -324,9 +324,9 @@ export default function Network() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
                   {directClients.filter(c => c.status === 'excluido').map((client) => (
-                    <ClientCard key={client.id} client={client} type="direct" />
+                    <ClientRow key={client.id} client={client} type="direct" />
                   ))}
                 </div>
               )}
@@ -357,9 +357,9 @@ export default function Network() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
                   {indirectClients.filter(c => c.status === 'ativo').map((client) => (
-                    <ClientCard key={client.id} client={client} type="indirect" />
+                    <ClientRow key={client.id} client={client} type="indirect" />
                   ))}
                 </div>
               )}
@@ -374,9 +374,9 @@ export default function Network() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
                   {indirectClients.filter(c => c.status === 'pendente').map((client) => (
-                    <ClientCard key={client.id} client={client} type="indirect" />
+                    <ClientRow key={client.id} client={client} type="indirect" />
                   ))}
                 </div>
               )}
@@ -391,9 +391,9 @@ export default function Network() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
                   {indirectClients.filter(c => c.status === 'excluido').map((client) => (
-                    <ClientCard key={client.id} client={client} type="indirect" />
+                    <ClientRow key={client.id} client={client} type="indirect" />
                   ))}
                 </div>
               )}
