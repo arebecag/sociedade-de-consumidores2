@@ -45,9 +45,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Token inválido ou adulterado' }, { status: 400 });
     }
 
-    // Mark partner as verified using service role
+    // Mark partner as verified using service role (não precisa de auth do usuário)
     const base44 = createClientFromRequest(req);
     await base44.asServiceRole.entities.Partner.update(partnerId, { email_verified: true });
+    console.log('[verifyEmail] Partner verificado:', partnerId);
 
     return Response.json({ success: true, message: 'Email verificado com sucesso!' });
   } catch (error) {
