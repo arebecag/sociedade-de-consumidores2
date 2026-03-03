@@ -105,6 +105,33 @@ const load = async () => {
         console.warn("[usePartner] Erro ao buscar por user_id:", e);
       }
 
+      // Se encontrou por user_id mas o email não bate, é um Partner de outro usuário (bug de cadastro)
+      // Filtrar apenas Partners cujo email bate com o usuário logado
+      if (partners.length > 0) {
+        const emailMatch = partners.filter(p => p.email === me.email);
+        if (emailMatch.length > 0) {
+          partners = emailMatch;
+        } else {
+          // Nenhum Partner com email correto — ignorar os encontrados e buscar por email
+          console.warn("[usePartner] Partner(s) encontrado(s) por user_id mas com email diferente. Buscando por email...");
+          partners = [];
+          try {
+            const byEmail = await base44.entities.Partner.filter({ email: me.email });
+            if (byEmail.length > 0) {
+              partners = byEmail.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+              // Corrigir user_id no registro encontrado
+              if (partners[0].user_id !== me.id) {
+                await base44.entities.Partner.update(partners[0].id, { user_id: me.id });
+                partners[0].user_id = me.id;
+                console.log("[usePartner] user_id corrigido para Partner:", partners[0].full_name);
+              }
+            }
+          } catch (e) {
+            console.warn("[usePartner] Erro ao buscar por email:", e);
+          }
+        }
+      }
+
       if (partners.length > 0) {
         const found = partners[0];
         // Se encontrou mas não tem user_id, preencher automaticamente
