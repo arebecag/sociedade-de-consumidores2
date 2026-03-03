@@ -22,7 +22,7 @@ const categories = {
 };
 
 export default function Store() {
-  const [partner, setPartner] = useState(null);
+  const { partner, loading: partnerLoading } = usePartner();
   const [products, setProducts] = useState([]);
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,22 +33,17 @@ export default function Store() {
   const [activeTab, setActiveTab] = useState("products");
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (partner) loadData(partner);
+    else if (!partnerLoading) setLoading(false);
+  }, [partner, partnerLoading]);
 
-  const loadData = async () => {
+  const loadData = async (p) => {
     try {
-      const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      
-      if (partners.length > 0) {
-        setPartner(partners[0]);
-        
-        const userPurchases = await base44.entities.Purchase.filter({ partner_id: partners[0].id });
-        setPurchases(userPurchases);
-      }
-      
-      const allProducts = await base44.entities.Product.filter({ active: true });
+      const [userPurchases, allProducts] = await Promise.all([
+        base44.entities.Purchase.filter({ partner_id: p.id }),
+        base44.entities.Product.filter({ active: true })
+      ]);
+      setPurchases(userPurchases);
       setProducts(allProducts);
     } catch (error) {
       console.error("Error:", error);
