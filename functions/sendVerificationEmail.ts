@@ -6,8 +6,13 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Find partner
-    const partners = await base44.entities.Partner.filter({ created_by: user.email });
+    // Find partner by user_id (primary) or email (fallback)
+    let partners = await base44.entities.Partner.filter({ user_id: user.id });
+    // Garantir que o email bate (evitar cruzamento de contas)
+    partners = partners.filter(p => p.email === user.email);
+    if (!partners.length) {
+      partners = await base44.entities.Partner.filter({ email: user.email });
+    }
     if (!partners.length) return Response.json({ error: 'Partner not found' }, { status: 404 });
     const partner = partners[0];
 
