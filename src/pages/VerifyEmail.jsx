@@ -59,11 +59,12 @@ export default function VerifyEmail() {
             <CheckCircle className="w-16 h-16 text-green-500" />
             <h2 className="text-xl font-bold text-white">Email verificado!</h2>
             <p className="text-gray-300">{message}</p>
+            <p className="text-gray-500 text-sm">Clique abaixo para entrar na sua conta.</p>
             <Button
-              onClick={() => window.location.href = createPageUrl("Dashboard")}
+              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
               className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-8"
             >
-              Acessar minha conta
+              Entrar na minha conta
             </Button>
           </div>
         )}
