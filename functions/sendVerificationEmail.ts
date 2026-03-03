@@ -6,12 +6,11 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Find partner by user_id (primary) or email (fallback)
-    let partners = await base44.entities.Partner.filter({ user_id: user.id });
-    // Garantir que o email bate (evitar cruzamento de contas)
+    // Find partner by user_id (primary) or email (fallback) — using service role to avoid permission issues
+    let partners = await base44.asServiceRole.entities.Partner.filter({ user_id: user.id });
     partners = partners.filter(p => p.email === user.email);
     if (!partners.length) {
-      partners = await base44.entities.Partner.filter({ email: user.email });
+      partners = await base44.asServiceRole.entities.Partner.filter({ email: user.email });
     }
     if (!partners.length) return Response.json({ error: 'Partner not found' }, { status: 404 });
     const partner = partners[0];
@@ -34,11 +33,9 @@ Deno.serve(async (req) => {
     const token = btoa(payload) + '.' + btoa(String.fromCharCode(...new Uint8Array(signature)));
     const safeToken = token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
-    // Build verification link — use app URL
     const link = `https://3x3sc.com.br?page=VerifyEmail&token=${safeToken}`;
 
-    // Send email
-    await base44.integrations.Core.SendEmail({
+    await base44.asServiceRole.integrations.Core.SendEmail({
       to: user.email,
       subject: 'Verifique seu email - Sociedade de Consumidores',
       body: `
