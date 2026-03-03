@@ -148,7 +148,7 @@ export default function Store() {
 
       setPurchaseDialogOpen(false);
       setSelectedProduct(null);
-      loadData();
+      loadData(partner);
     } catch (error) {
       console.error("Error:", error);
       toast.error("Erro ao processar compra");
