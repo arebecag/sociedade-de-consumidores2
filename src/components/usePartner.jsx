@@ -90,6 +90,19 @@ const load = async () => {
       setLoading(false);
       return;
     }
+
+    setUser(me);
+
+    // Admins não precisam de Partner — retorna sem criar
+    if (me.role === 'admin') {
+      const byEmail = await base44.entities.Partner.filter({ email: me.email });
+      if (byEmail.length > 0) {
+        setPartner(byEmail[0]);
+      }
+      setLoading(false);
+      return;
+    }
+
       // Buscar SOMENTE por user_id (identificador único e seguro da sessão)
       let partners = [];
       try {
