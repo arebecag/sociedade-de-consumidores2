@@ -53,7 +53,7 @@ export default function PartnerSite() {
     );
   }
 
-  const registerUrl = window.location.origin + createPageUrl("Register") + "?ref=" + partner.unique_code;
+  const registerUrl = `https://3x3sc.com.br/Register?ref=${partner.unique_code}`;
 
   return (
     <div className="min-h-screen bg-black">

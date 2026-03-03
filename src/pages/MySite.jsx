@@ -54,7 +54,7 @@ export default function MySite() {
       return;
     }
     
-    const baseUrl = window.location.origin;
+    const baseUrl = "https://3x3sc.com.br";
     const link = type === 'site' 
       ? `${baseUrl}/PartnerSite?p=${partner.unique_code}`
       : `${baseUrl}/Register?ref=${partner.unique_code}`;
@@ -79,7 +79,7 @@ export default function MySite() {
       toast.error("Código único não disponível");
       return;
     }
-    const baseUrl = window.location.origin;
+    const baseUrl = "https://3x3sc.com.br";
     window.open(`${baseUrl}/PartnerSite?p=${partner.unique_code}`, '_blank');
   };
 
@@ -88,19 +88,19 @@ export default function MySite() {
       toast.error("Código único não disponível");
       return;
     }
-    const link = `${window.location.origin}/PartnerSite?p=${partner.unique_code}`;
+    const link = `https://3x3sc.com.br/PartnerSite?p=${partner.unique_code}`;
     const text = `Olá! Conheça a Sociedade de Consumidores e comece a gerar bônus: ${link}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const getSiteUrl = () => {
     if (!partner?.unique_code) return "";
-    return `${window.location.origin}/PartnerSite?p=${partner.unique_code}`;
+    return `https://3x3sc.com.br/PartnerSite?p=${partner.unique_code}`;
   };
 
   const getRegisterUrl = () => {
     if (!partner?.unique_code) return "";
-    return `${window.location.origin}/Register?ref=${partner.unique_code}`;
+    return `https://3x3sc.com.br/Register?ref=${partner.unique_code}`;
   };
 
   if (loading) {
