@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePartner } from "@/components/usePartner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,30 +9,15 @@ import { Loader2, Globe, Copy, ExternalLink, Save, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function MySite() {
-  const [partner, setPartner] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { partner, loading, reload } = usePartner();
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      
-      if (partners.length > 0) {
-        setPartner(partners[0]);
-        setDisplayName(partners[0].display_name || partners[0].full_name?.split(" ")[0] || "");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
+    if (partner) {
+      setDisplayName(partner.display_name || partner.full_name?.split(" ")[0] || "");
     }
-  };
+  }, [partner]);
 
   const handleSave = async () => {
     if (!partner || !displayName.trim()) return;
