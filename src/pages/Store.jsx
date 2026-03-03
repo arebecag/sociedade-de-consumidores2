@@ -136,7 +136,7 @@ export default function Store() {
           toast.success("Boleto gerado! Redirecionando para pagamento...");
           setPurchaseDialogOpen(false);
           setSelectedProduct(null);
-          loadData();
+          loadData(partner);
           window.open(invoiceUrl, "_blank");
           return;
         } else {
