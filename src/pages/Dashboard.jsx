@@ -8,6 +8,7 @@ import {
   AlertCircle, CheckCircle, ArrowUpRight, Wallet, BarChart2, Star
 } from "lucide-react";
 import { toast } from "sonner";
+import EmailVerificationBanner from "@/components/EmailVerificationBanner";
 
 const gradConfig = {
   cliente_iniciante: { label: "Cliente Iniciante", className: "bg-zinc-700 text-zinc-100" },
