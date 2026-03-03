@@ -25,8 +25,7 @@ Deno.serve(async (req) => {
     const token = btoa(payload) + '.' + btoa(String.fromCharCode(...new Uint8Array(signature)));
     const safeToken = token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
-    const appUrl = origin || req.headers.get('origin') || 'https://app.base44.com';
-    const link = `${appUrl}?page=VerifyEmail&token=${safeToken}`;
+    const link = `https://3x3sc.com.br?page=VerifyEmail&token=${safeToken}`;
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: partnerEmail,

@@ -35,8 +35,7 @@ Deno.serve(async (req) => {
     const safeToken = token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
     // Build verification link — use app URL
-    const appUrl = req.headers.get('origin') || 'https://app.base44.com';
-    const link = `${appUrl}?page=VerifyEmail&token=${safeToken}`;
+    const link = `https://3x3sc.com.br?page=VerifyEmail&token=${safeToken}`;
 
     // Send email
     await base44.integrations.Core.SendEmail({
