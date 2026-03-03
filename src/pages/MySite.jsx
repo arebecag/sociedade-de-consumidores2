@@ -26,7 +26,7 @@ export default function MySite() {
     try {
       await base44.entities.Partner.update(partner.id, { display_name: displayName.trim() });
       toast.success("Nome atualizado com sucesso!");
-      loadData();
+      reload();
     } catch (error) {
       toast.error("Erro ao salvar");
     } finally {
