@@ -93,11 +93,22 @@ const load = async () => {
 
     setUser(me);
 
-    // Admins não precisam de Partner — retorna sem criar
+    // Admins: busca Partner existente por email ou user_id, mas NUNCA cria automaticamente
     if (me.role === 'admin') {
-      const byEmail = await base44.entities.Partner.filter({ email: me.email });
-      if (byEmail.length > 0) {
-        setPartner(byEmail[0]);
+      try {
+        let adminPartners = await base44.entities.Partner.filter({ user_id: me.id });
+        adminPartners = adminPartners.filter(p => p.email === me.email);
+        if (!adminPartners.length) {
+          adminPartners = await base44.entities.Partner.filter({ email: me.email });
+        }
+        if (adminPartners.length > 0) {
+          setPartner(adminPartners[0]);
+          console.log("[usePartner] Admin: Partner carregado:", adminPartners[0].full_name);
+        } else {
+          console.log("[usePartner] Admin sem Partner — OK, não cria automaticamente.");
+        }
+      } catch (e) {
+        console.warn("[usePartner] Admin: erro ao buscar Partner:", e);
       }
       setLoading(false);
       return;
