@@ -34,8 +34,9 @@ Deno.serve(async (req) => {
       const comprasMes = purchases.filter(p => new Date(p.created_date) >= firstDayOfMonth);
       const totalBonusUsado = comprasMes.reduce((sum, p) => sum + (p.paid_with_bonus || 0), 0);
 
-      // Deve usar pelo menos 50% do saldo de bonus_for_purchases
-      const minimoObrigatorio = (partner.bonus_for_purchases || 0) * 0.50;
+      // Deve usar pelo menos 50% do saldo de bonus_for_purchases, com mínimo de R$125,00
+      const MINIMO_FIXO = 125.00;
+      const minimoObrigatorio = Math.max(MINIMO_FIXO, (partner.bonus_for_purchases || 0) * 0.50);
 
       if (totalBonusUsado < minimoObrigatorio) {
         // Colocar em pendente
