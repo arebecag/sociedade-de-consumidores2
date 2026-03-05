@@ -345,11 +345,24 @@ export default function Profile() {
       };
 
       // Remove empty string fields that are not required to avoid validation errors
+      // Also remove nested objects with empty fields to avoid crashes on mobile
       Object.keys(updateData).forEach(key => {
         if (updateData[key] === "" && !["full_name", "birth_date", "gender", "phone"].includes(key)) {
           updateData[key] = null;
         }
       });
+      // Sanitize successor: replace empty strings inside with null
+      if (updateData.successor) {
+        const s = { ...updateData.successor };
+        Object.keys(s).forEach(k => { if (s[k] === "") s[k] = null; });
+        updateData.successor = s;
+      }
+      // Sanitize address: replace empty strings inside with null
+      if (updateData.address) {
+        const a = { ...updateData.address };
+        Object.keys(a).forEach(k => { if (a[k] === "") a[k] = null; });
+        updateData.address = a;
+      }
       
       if (allComplete && partner.pending_reasons?.length > 0) {
         const newReasons = partner.pending_reasons.filter(r => r !== "Falta de informações no cadastro");

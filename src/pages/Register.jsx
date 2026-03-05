@@ -396,7 +396,7 @@ export default function Register() {
         throw new Error("Falha ao criar perfil: " + (res.data?.error || "Tente novamente."));
       }
 
-      toast.success("Cadastro realizado com sucesso! Bem-vindo(a)!");
+      toast.success("✅ Cadastro realizado! Consulte seu e-mail para entrar no seu Escritório Virtual.", { duration: 8000 });
       navigate(createPageUrl("Dashboard"));
 
     } catch (xe) {
