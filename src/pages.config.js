@@ -75,6 +75,7 @@ import Reports from './pages/Reports';
 import Store from './pages/Store';
 import VerifyEmail from './pages/VerifyEmail';
 import Withdrawals from './pages/Withdrawals';
+import AdminCadastrados from './pages/AdminCadastrados';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +108,7 @@ export const PAGES = {
     "Store": Store,
     "VerifyEmail": VerifyEmail,
     "Withdrawals": Withdrawals,
+    "AdminCadastrados": AdminCadastrados,
 }
 
 export const pagesConfig = {
