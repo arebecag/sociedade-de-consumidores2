@@ -227,13 +227,13 @@ export default function Network() {
         <Card className="bg-zinc-950 border-orange-500/20">
           <CardContent className="p-4 text-center">
             <p className="text-gray-400 text-sm">Desempenho 1</p>
-            <p className="text-2xl font-bold text-white">{directClients.length}/3</p>
+            <p className="text-2xl font-bold text-white">{(directClients.length % 3)}/3</p>
           </CardContent>
         </Card>
         <Card className="bg-zinc-950 border-orange-500/20">
           <CardContent className="p-4 text-center">
             <p className="text-gray-400 text-sm">Desempenho 2</p>
-            <p className="text-2xl font-bold text-white">{indirectClients.length}/9</p>
+            <p className="text-2xl font-bold text-white">{(indirectClients.length % 9)}/9</p>
           </CardContent>
         </Card>
         <Card className="bg-zinc-950 border-orange-500/20">
