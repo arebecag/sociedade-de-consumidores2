@@ -162,6 +162,7 @@ export default function Layout({ children, currentPageName }) {
     menuItems.push({ name: "Admin: TED", icon: CreditCard, page: "AdminPagamentosTed" });
     menuItems.push({ name: "Admin: Financeiro", icon: DollarSign, page: "AdminFinanceiro" });
     menuItems.push({ name: "Admin: Saques", icon: ArrowDownCircle, page: "AdminSaques" });
+    menuItems.push({ name: "Admin: Cadastrados", icon: Users, page: "AdminCadastrados" });
   }
 
   const NavContent = () => (
