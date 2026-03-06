@@ -73,6 +73,26 @@ export default function PartnerSite() {
         <h1 className="text-4xl md:text-5xl font-bold text-white">Consumidores</h1>
       </header>
 
+      {/* Contact Buttons - visible at top */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-center items-center py-4 px-4 bg-zinc-950/80 border-b border-orange-500/10">
+        <a
+          href="https://wa.me/5511951453200"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors text-sm"
+        >
+          <Phone className="w-4 h-4 text-white" />
+          <span className="text-white font-semibold">(11) 95145-3200 – WhatsApp</span>
+        </a>
+        <a
+          href="mailto:suporte@sociedadedeconsumidores.com.br"
+          className="flex items-center gap-2 px-5 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors text-sm"
+        >
+          <Mail className="w-4 h-4 text-white" />
+          <span className="text-white font-semibold">suporte@sociedadedeconsumidores.com.br</span>
+        </a>
+      </div>
+
       {/* Partner Name */}
       <section className="py-12 px-4 text-center">
         <div className="max-w-4xl mx-auto">
