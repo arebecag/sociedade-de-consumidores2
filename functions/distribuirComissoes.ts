@@ -57,8 +57,9 @@ Deno.serve(async (req) => {
         });
 
         if (existing.length === 0) {
-          const comissao = amount * 0.15;    // 15% = comissão para saque
-          const bonus = comissao * 0.50;     // 50% da comissão = bônus para trocas
+          const total = amount * 0.15;         // 15% do valor = total do bônus
+          const forWithdrawal = total * 0.50;  // 50% para saque
+          const forPurchases = total * 0.50;   // 50% para compras (fictício)
           const status = pai.status === 'ativo' ? 'credited' : 'blocked';
 
           await base44.asServiceRole.entities.BonusTransaction.create({
@@ -69,21 +70,21 @@ Deno.serve(async (req) => {
             purchase_id: purchaseId,
             type: 'direct',
             percentage: 15,
-            total_amount: comissao + bonus,
-            amount_for_withdrawal: comissao,
-            amount_for_purchases: bonus,
+            total_amount: total,
+            amount_for_withdrawal: forWithdrawal,
+            amount_for_purchases: forPurchases,
             status
           });
 
           if (status === 'credited') {
             await base44.asServiceRole.entities.Partner.update(pai.id, {
-              total_bonus_generated: (pai.total_bonus_generated || 0) + comissao + bonus,
-              bonus_for_withdrawal: (pai.bonus_for_withdrawal || 0) + comissao,
-              bonus_for_purchases: (pai.bonus_for_purchases || 0) + bonus
+              total_bonus_generated: (pai.total_bonus_generated || 0) + total,
+              bonus_for_withdrawal: (pai.bonus_for_withdrawal || 0) + forWithdrawal,
+              bonus_for_purchases: (pai.bonus_for_purchases || 0) + forPurchases
             });
           }
 
-          results.push({ type: 'direct', partner: pai.full_name, comissao, bonus, status });
+          results.push({ type: 'direct', partner: pai.full_name, total, forWithdrawal, forPurchases, status });
         }
       }
     }
