@@ -66,22 +66,27 @@ Deno.serve(async (req) => {
 
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: partnerData.email,
-        subject: 'Verifique seu email - Sociedade de Consumidores',
+        subject: 'Bem-vindo(a) à Sociedade de Consumidores - Acesse seu Escritório Virtual',
         body: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #09090b; color: #fff; border-radius: 12px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <h1 style="color: #f97316; margin: 0; font-size: 26px;">Sociedade de Consumidores</h1>
+            </div>
             <h2 style="color: #f97316;">Bem-vindo(a), ${partnerData.full_name}!</h2>
-            <p>Obrigado por se cadastrar na <strong>Sociedade de Consumidores</strong>.</p>
-            <p>Para confirmar seu email e garantir a segurança da sua conta, clique no botão abaixo:</p>
+            <p style="color: #d1d5db;">Obrigado por se cadastrar na <strong>Sociedade de Consumidores</strong>.</p>
+            <p style="color: #d1d5db;">Para confirmar seu cadastro e acessar seu <strong>Escritório Virtual</strong>, clique no botão abaixo:</p>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${link}" 
-                 style="background-color: #f97316; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold;">
-                ✅ Verificar meu email
+                 style="background-color: #f97316; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold; display: inline-block;">
+                ✅ Confirmar Cadastro e Entrar
               </a>
             </div>
-            <p style="color: #666; font-size: 14px;">Este link expira em 24 horas.</p>
-            <p style="color: #666; font-size: 14px;">Se você não se cadastrou, ignore este email.</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="color: #999; font-size: 12px;">Sociedade de Consumidores</p>
+            <p style="color: #9ca3af; font-size: 14px;">Este link expira em 24 horas.</p>
+            <p style="color: #9ca3af; font-size: 14px;">Se você não se cadastrou, ignore este email.</p>
+            <hr style="border: none; border-top: 1px solid #374151; margin: 20px 0;">
+            <p style="color: #6b7280; font-size: 12px; text-align: center;">
+              Dúvidas? WhatsApp (11) 95145-3200 | suporte@sociedadedeconsumidores.com.br
+            </p>
           </div>
         `
       });
