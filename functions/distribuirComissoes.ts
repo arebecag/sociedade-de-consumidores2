@@ -16,8 +16,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Aceita chamadas de usuário autenticado OU via service role (webhook/automation)
-    // Não requer autenticação de usuário para ser chamado internamente
+
+    // Validar secret interno para chamadas via webhook/automation
+    const internalSecret = Deno.env.get("INTERNAL_SECRET");
+    const receivedSecret = req.headers.get("x-internal-secret");
+    const isInternalCall = internalSecret && receivedSecret === internalSecret;
+
+    // Aceita chamadas internas (via INTERNAL_SECRET) ou usuários autenticados
+    if (!isInternalCall) {
+      const isAuth = await base44.auth.isAuthenticated();
+      if (!isAuth) {
+        return Response.json({ error: 'Não autorizado' }, { status: 401 });
+      }
+    }
 
     const body = await req.json();
     const { purchaseId, buyerPartnerId, amount } = body;
