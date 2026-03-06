@@ -60,12 +60,21 @@ Deno.serve(async (req) => {
 
         // Distribuir comissões (15% direto, 30% indireto)
         try {
-          await base44.asServiceRole.functions.invoke('distribuirComissoes', {
-            purchaseId: boleto.id,
-            amount: boleto.valor,
-            buyerPartnerId: boleto.userId
+          const internalSecret = Deno.env.get("INTERNAL_SECRET");
+          const comissoesRes = await fetch(`${req.url.replace('/asaasWebhook', '/distribuirComissoes')}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-internal-secret': internalSecret || ''
+            },
+            body: JSON.stringify({
+              purchaseId: boleto.id,
+              amount: boleto.valor,
+              buyerPartnerId: boleto.userId
+            })
           });
-          console.log(`[asaasWebhook] Comissões distribuídas para compra ${boleto.id}`);
+          const comissoesData = await comissoesRes.json();
+          console.log(`[asaasWebhook] Comissões distribuídas para compra ${boleto.id}:`, JSON.stringify(comissoesData));
         } catch (e) {
           console.error(`[asaasWebhook] Erro ao distribuir comissões: ${e.message}`);
         }
