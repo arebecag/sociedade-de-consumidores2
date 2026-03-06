@@ -4,13 +4,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
  * Distribui comissões para os uplines após uma troca/compra.
  * 
  * Regras:
- * - Direto (nível 1): 15% → 100% vai para saque (comissão) + 50% vai para bônus/trocas
- * - Indireto (nível 2): 30% → 100% vai para saque (comissão) + 50% vai para bônus/trocas
- * - Eder não recebe nada do neto (só do filho direto e do neto via indireto = 2 níveis)
+ * - Direto (nível 1): 15% do valor vai 100% para saque + 50% extra para bônus/trocas
+ * - Indireto (nível 2): 30% do valor vai 100% para saque + 50% extra para bônus/trocas
  * 
  * Exemplo: valor = R$125
- *   Pai direto recebe: R$18,75 saque + R$9,375 bônus
- *   Avô indireto recebe: R$37,50 saque + R$18,75 bônus
+ *   Pai direto:    15% = R$18,75 saque + R$9,375 bônus  (total_bonus_generated = 18,75)
+ *   Avô indireto:  30% = R$37,50 saque + R$18,75 bônus  (total_bonus_generated = 37,50)
  */
 
 Deno.serve(async (req) => {
