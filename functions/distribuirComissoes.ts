@@ -106,9 +106,9 @@ Deno.serve(async (req) => {
         });
 
         if (existing.length === 0) {
-          const total = amount * 0.30;         // 30% do valor = total do bônus
-          const forWithdrawal = total * 0.50;  // 50% para saque
-          const forPurchases = total * 0.50;   // 50% para compras (fictício)
+          const forWithdrawal = amount * 0.30;       // 30% do valor = 100% para saque
+          const forPurchases = forWithdrawal * 0.50; // 50% extra para bônus/trocas (fictício)
+          const total = forWithdrawal;               // total_bonus_generated = valor para saque
           const status = avo.status === 'ativo' ? 'credited' : 'blocked';
 
           await base44.asServiceRole.entities.BonusTransaction.create({
