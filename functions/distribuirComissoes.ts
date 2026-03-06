@@ -19,7 +19,8 @@ Deno.serve(async (req) => {
     // Aceita chamadas de usuário autenticado OU via service role (webhook/automation)
     // Não requer autenticação de usuário para ser chamado internamente
 
-    const { purchaseId, buyerPartnerId, amount } = await req.json();
+    const body = await req.json();
+    const { purchaseId, buyerPartnerId, amount } = body;
     if (!purchaseId || !buyerPartnerId || !amount) {
       return Response.json({ error: 'purchaseId, buyerPartnerId e amount são obrigatórios' }, { status: 400 });
     }
