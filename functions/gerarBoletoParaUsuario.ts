@@ -13,10 +13,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: "userId, valor e dataVencimento são obrigatórios" }, { status: 400 });
     }
 
-    // 1. Verificar se já existe boleto PENDING para este usuário
+    // 1. Verificar se já existe boleto PENDING para esta descrição específica (não reutilizar para compras diferentes)
     const existentes = await base44.asServiceRole.entities.Financeiro.filter({ userId, status: "PENDING" });
-    if (existentes.length > 0) {
-      return Response.json({ success: true, reutilizado: true, boleto: existentes[0] });
+    const mesmaDescricao = existentes.find(e => e.descricao === (descricao || "Compra de Produtos"));
+    if (mesmaDescricao) {
+      return Response.json({ success: true, reutilizado: true, boleto: mesmaDescricao });
     }
 
     // 2. Buscar dados do parceiro

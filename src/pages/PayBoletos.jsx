@@ -218,7 +218,7 @@ export default function PayBoletos() {
     );
   }
 
-  // Check if partner is blocked
+  // Apenas bloqueia o ENVIO para pendentes, não o acesso à página
   const isBlocked = partner?.status === 'pendente';
 
   const pendingBoletos = boletos.filter(b => b.status === 'pending');
@@ -239,8 +239,13 @@ export default function PayBoletos() {
           </Card>
           
           <Button
-            onClick={() => setUploadDialogOpen(true)}
-            disabled={isBlocked}
+            onClick={() => {
+              if (isBlocked) {
+                toast.error("Para usar todos os recursos, é necessário que você esteja ativo.");
+              } else {
+                setUploadDialogOpen(true);
+              }
+            }}
             className="bg-orange-500 hover:bg-orange-600"
           >
             <Upload className="w-4 h-4 mr-2" />
@@ -263,7 +268,7 @@ export default function PayBoletos() {
         <Alert className="bg-yellow-500/10 border-yellow-500/30">
           <AlertTriangle className="w-4 h-4 text-yellow-500" />
           <AlertDescription className="text-yellow-200">
-            <strong>Envio de boletos bloqueado.</strong> Resolva as pendências do seu cadastro para desbloquear.
+            <strong>Envio de boletos temporariamente bloqueado.</strong> Para usar todos os recursos, é necessário que você esteja ativo. Você pode navegar e visualizar os dados normalmente.
           </AlertDescription>
         </Alert>
       )}

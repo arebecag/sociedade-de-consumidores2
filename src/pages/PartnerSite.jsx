@@ -224,12 +224,12 @@ export default function PartnerSite() {
             </a>
             
             <a
-              href="mailto:suporte@3x3sc.com.br"
+              href="mailto:suporte@sociedadedeconsumidores.com.br"
               className="flex items-center gap-3 px-6 py-4 bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors"
             >
               <Mail className="w-6 h-6 text-white" />
               <div className="text-left">
-                <p className="text-white font-semibold">suporte@3x3sc.com.br</p>
+                <p className="text-white font-semibold">suporte@sociedadedeconsumidores.com.br</p>
                 <p className="text-orange-200 text-sm">E-mail</p>
               </div>
             </a>

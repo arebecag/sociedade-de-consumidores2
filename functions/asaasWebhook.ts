@@ -69,6 +69,61 @@ Deno.serve(async (req) => {
         } catch (e) {
           console.error(`[asaasWebhook] Erro ao distribuir comissões: ${e.message}`);
         }
+
+        // Enviar email de boas-vindas / ativação
+        try {
+          const parceirosEmail = await base44.asServiceRole.entities.Partner.filter({ id: boleto.userId });
+          if (parceirosEmail.length > 0) {
+            const p = parceirosEmail[0];
+            // Buscar produto comprado para obter link de download
+            let downloadLink = '';
+            const purchases = await base44.asServiceRole.entities.Purchase.filter({ partner_id: boleto.userId, status: 'paid' });
+            if (purchases.length > 0) {
+              const lastPurchase = purchases[purchases.length - 1];
+              const products = await base44.asServiceRole.entities.Product.filter({ id: lastPurchase.product_id });
+              if (products.length > 0 && products[0].download_url) {
+                downloadLink = products[0].download_url;
+              }
+            }
+
+            await base44.asServiceRole.integrations.Core.SendEmail({
+              to: p.email,
+              subject: '🎉 Parabéns! Você está ATIVO na Sociedade de Consumidores!',
+              body: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #09090b; color: #fff; border-radius: 12px;">
+                  <div style="text-align: center; margin-bottom: 24px;">
+                    <h1 style="color: #f97316; font-size: 28px; margin: 0;">Sociedade de Consumidores</h1>
+                  </div>
+                  <h2 style="color: #22c55e; text-align: center;">🎉 Parabéns, ${p.full_name}!</h2>
+                  <p style="color: #d1d5db; font-size: 16px; line-height: 1.6;">
+                    Seu pagamento foi confirmado e você já está <strong style="color: #22c55e;">ATIVO</strong> na <strong style="color: #f97316;">Sociedade de Consumidores</strong>!
+                  </p>
+                  <p style="color: #d1d5db; font-size: 16px; line-height: 1.6;">
+                    Agora você pode aproveitar todos os benefícios da plataforma: receber bônus das compras de seus clientes, pagar seus boletos com bônus e muito mais.
+                  </p>
+                  ${downloadLink ? `
+                  <div style="background: #1c1917; border: 1px solid #f97316; border-radius: 8px; padding: 16px; margin: 20px 0;">
+                    <p style="color: #f97316; font-weight: bold; margin: 0 0 8px;">📥 Seu produto está disponível:</p>
+                    <a href="${downloadLink}" style="background: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                      Baixar agora
+                    </a>
+                  </div>
+                  ` : ''}
+                  <div style="background: #1c1917; border: 1px solid #374151; border-radius: 8px; padding: 16px; margin: 20px 0;">
+                    <p style="color: #9ca3af; margin: 0 0 8px; font-size: 14px;">Acesse seu Escritório Virtual:</p>
+                    <a href="https://3x3sc.com.br" style="color: #f97316; font-weight: bold; font-size: 16px;">3x3sc.com.br</a>
+                  </div>
+                  <p style="color: #6b7280; font-size: 12px; text-align: center;">
+                    Dúvidas? Contate-nos pelo WhatsApp (11) 95145-3200 ou suporte@sociedadedeconsumidores.com.br
+                  </p>
+                </div>
+              `
+            });
+            console.log(`[asaasWebhook] Email de ativação enviado para: ${p.email}`);
+          }
+        } catch (emailErr) {
+          console.error(`[asaasWebhook] Erro ao enviar email de ativação: ${emailErr.message}`);
+        }
       }
 
     } else if (status === "OVERDUE") {
