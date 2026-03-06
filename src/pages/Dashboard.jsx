@@ -135,8 +135,8 @@ export default function Dashboard() {
 
   const networkValues = {
     total: networkStats.direct + networkStats.indirect,
-    direct: `${networkStats.direct}/3`,
-    indirect: `${networkStats.indirect}/9`,
+    direct: `${networkStats.direct % 3}/3`,
+    indirect: `${networkStats.indirect % 9}/9`,
     active: networkStats.active,
   };
 
