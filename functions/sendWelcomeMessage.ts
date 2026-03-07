@@ -40,21 +40,15 @@ O futuro, já começou! Bom trabalho, boa divulgação.
 
 Eder Mateus Teixeira.`;
 
-    // Enviar email
-    const userEntity = await base44.asServiceRole.entities.User.filter({ 
-      email: partner.created_by 
-    });
-    
-    if (userEntity.length > 0) {
-      try {
-        await base44.integrations.Core.SendEmail({
-          to: partner.created_by,
-          subject,
-          body: content
-        });
-      } catch (emailError) {
-        console.error('Failed to send email:', emailError);
-      }
+    // Enviar email para o email do próprio parceiro (não created_by)
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: partner.email,
+        subject,
+        body: `<div style="font-family: Arial, sans-serif; white-space: pre-line; max-width: 600px; margin: 0 auto; padding: 20px;">${content}</div>`
+      });
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
     }
 
     // Registrar no MessageLog
