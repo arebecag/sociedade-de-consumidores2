@@ -48,41 +48,34 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Enviar email de verificação automaticamente
+    // Gerar código de verificação de 6 dígitos e salvar no Partner
     try {
-      const secret = Deno.env.get('INTERNAL_SECRET') || 'default_secret';
-      const expiry = Date.now() + 24 * 60 * 60 * 1000;
-      const payload = `${newPartner.id}:${expiry}`;
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(secret);
-      const cryptoKey = await crypto.subtle.importKey(
-        'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-      );
-      const signature = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(payload));
-      const token = btoa(payload) + '.' + btoa(String.fromCharCode(...new Uint8Array(signature)));
-      const safeToken = token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+      const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
+      const codeExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-      const link = `https://3x3sc.com.br?page=VerifyEmail&token=${safeToken}`;
+      await base44.asServiceRole.entities.Partner.update(newPartner.id, {
+        email_change_code: verificationCode,
+        email_change_expiry: codeExpiry
+      });
 
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: partnerData.email,
-        subject: 'Bem-vindo(a) à Sociedade de Consumidores - Acesse seu Escritório Virtual',
+        subject: 'Seu código de verificação - Sociedade de Consumidores',
         body: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #09090b; color: #fff; border-radius: 12px;">
             <div style="text-align: center; margin-bottom: 24px;">
               <h1 style="color: #f97316; margin: 0; font-size: 26px;">Sociedade de Consumidores</h1>
             </div>
             <h2 style="color: #f97316;">Bem-vindo(a), ${partnerData.full_name}!</h2>
-            <p style="color: #d1d5db;">Obrigado por se cadastrar na <strong>Sociedade de Consumidores</strong>.</p>
-            <p style="color: #d1d5db;">Para confirmar seu cadastro e acessar seu <strong>Escritório Virtual</strong>, clique no botão abaixo:</p>
+            <p style="color: #d1d5db;">Obrigado por se cadastrar. Para confirmar seu e-mail, use o código abaixo no seu Escritório Virtual:</p>
             <div style="text-align: center; margin: 30px 0;">
-              <a href="${link}" 
-                 style="background-color: #f97316; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: bold; display: inline-block;">
-                ✅ Confirmar Cadastro e Entrar
-              </a>
+              <div style="display: inline-block; background: #1c1917; border: 2px solid #f97316; border-radius: 12px; padding: 20px 40px;">
+                <p style="color: #9ca3af; font-size: 13px; margin: 0 0 8px;">Seu código de verificação:</p>
+                <p style="color: #f97316; font-size: 40px; font-weight: bold; letter-spacing: 8px; margin: 0;">${verificationCode}</p>
+              </div>
             </div>
-            <p style="color: #9ca3af; font-size: 14px;">Este link expira em 24 horas.</p>
-            <p style="color: #9ca3af; font-size: 14px;">Se você não se cadastrou, ignore este email.</p>
+            <p style="color: #9ca3af; font-size: 14px; text-align: center;">Este código expira em 24 horas.</p>
+            <p style="color: #9ca3af; font-size: 14px; text-align: center;">Se você não se cadastrou, ignore este email.</p>
             <hr style="border: none; border-top: 1px solid #374151; margin: 20px 0;">
             <p style="color: #6b7280; font-size: 12px; text-align: center;">
               Dúvidas? WhatsApp (11) 95145-3200 | suporte@sociedadedeconsumidores.com.br
@@ -90,7 +83,7 @@ Deno.serve(async (req) => {
           </div>
         `
       });
-      console.log('[registerPartner] Email de verificação enviado para:', partnerData.email);
+      console.log('[registerPartner] Email de verificação (código) enviado para:', partnerData.email);
     } catch (emailErr) {
       console.error('[registerPartner] Erro ao enviar email de verificação (não crítico):', emailErr.message);
     }
