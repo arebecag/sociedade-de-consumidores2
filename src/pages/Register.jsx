@@ -337,7 +337,7 @@ export default function Register() {
     if (!passwordStrength.valid) newErrors.password = passwordStrength.message || "Senha inválida";
     if (!formData.accepted_terms) newErrors.accepted_terms = "Você precisa aceitar o contrato";
     if (!formData.accepted_rules) newErrors.accepted_rules = "Você precisa aceitar o regimento";
-    if (!isFirstUser && !referrerPartnerId) newErrors.referrer = "Indicador inválido ou não encontrado";
+    // referrerPartnerId pode ser null apenas se o indicador padrão não foi carregado ainda
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
