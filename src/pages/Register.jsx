@@ -43,6 +43,8 @@ export default function Register() {
     checkFirstUser();
   }, []);
 
+  const DEFAULT_REFERRER_CODE = "WKK321P5"; // Código do administrador padrão
+
   const checkFirstUser = async () => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -52,10 +54,8 @@ export default function Register() {
         setReferrerCode(code);
         loadReferrer(code);
       } else {
-        // Sem código de indicação — NOT verificar se é primeiro usuário
-        // Pois a página de Register é pública e não deve fazer chamadas autenticadas
-        // Sempre exigir link de indicação exceto se o app disser explicitamente que é o primeiro
-        setLoadingReferrer(false);
+        // Sem código de indicação → usar indicador padrão (admin)
+        loadReferrer(DEFAULT_REFERRER_CODE);
       }
     } catch (error) {
       console.error("Error checking first user:", error);
