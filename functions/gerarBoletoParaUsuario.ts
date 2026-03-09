@@ -39,7 +39,14 @@ Deno.serve(async (req) => {
         name: partner.full_name,
         cpfCnpj: cpfLimpo,
         email: user.email,
-        mobilePhone: (partner.phone || "").replace(/\D/g, "")
+        mobilePhone: (partner.phone || "").replace(/\D/g, ""),
+        address: partner.address?.street || undefined,
+        addressNumber: partner.address?.number || undefined,
+        complement: partner.address?.complement || undefined,
+        province: partner.address?.neighborhood || undefined,
+        postalCode: (partner.address?.cep || "").replace(/\D/g, "") || undefined,
+        city: partner.address?.city || undefined,
+        state: partner.address?.state || undefined
       })
     });
 
