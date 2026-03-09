@@ -382,7 +382,7 @@ export default function MinhaAreaFinanceira() {
           <Card className="bg-zinc-950 border-orange-500/20">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <ArrowDownCircle className="w-5 h-5 text-green-400" /> Seus Saques
+                <ArrowDownCircle className="w-5 h-5 text-green-400" /> Solicitar Saque
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -390,10 +390,50 @@ export default function MinhaAreaFinanceira() {
                 <p className="text-gray-400 text-sm mb-1">Saldo disponível para saque</p>
                 <p className="text-3xl font-bold text-white">{formatCurrency(saldoSaque)}</p>
               </div>
-              <div className="flex items-center gap-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <Calendar className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                <p className="text-blue-300 text-sm">Os saques são processados automaticamente toda segunda-feira. Nenhuma ação é necessária.</p>
-              </div>
+
+              {temSaquePendente ? (
+                <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <Clock className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                  <p className="text-yellow-300 text-sm">Você já tem um saque pendente aguardando processamento pelo admin.</p>
+                </div>
+              ) : saldoSaque > 0 ? (
+                <div className="space-y-3 pt-2 border-t border-zinc-800">
+                  <div className="space-y-1">
+                    <label className="text-gray-300 text-sm">Valor a sacar (R$)</label>
+                    <Input
+                      type="number"
+                      value={valorSaque}
+                      onChange={(e) => setValorSaque(e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-white"
+                      placeholder={`Máx: ${formatCurrency(saldoSaque)}`}
+                      max={saldoSaque}
+                      min={0.01}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-gray-300 text-sm">Chave PIX para recebimento</label>
+                    <Input
+                      value={pixKeySaque}
+                      onChange={(e) => setPixKeySaque(e.target.value)}
+                      className="bg-zinc-900 border-zinc-700 text-white"
+                      placeholder="CPF, email, telefone ou chave aleatória"
+                    />
+                  </div>
+                  <Button
+                    onClick={solicitarSaque}
+                    disabled={solicitandoSaque || !valorSaque || !pixKeySaque}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {solicitandoSaque ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ArrowDownCircle className="w-4 h-4 mr-2" />}
+                    Solicitar Saque
+                  </Button>
+                  <p className="text-gray-500 text-xs text-center">O admin irá processar sua solicitação em breve.</p>
+                </div>
+              ) : (
+                <div className="p-3 bg-zinc-900 rounded-lg text-center">
+                  <p className="text-gray-500 text-sm">Nenhum saldo disponível para saque no momento.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
