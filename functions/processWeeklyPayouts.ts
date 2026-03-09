@@ -1,97 +1,83 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+
+// Cria automaticamente solicitações de saque na entidade Saques para todos os parceiros ativos com saldo >= R$50
+// O admin depois aprova em AdminSaques e faz o PIX manualmente
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Admin only
     if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Buscar todos os parceiros ativos com saldo para saque
-    const partners = await base44.asServiceRole.entities.Partner.filter({
-      status: 'ativo'
-    });
+    const partners = await base44.asServiceRole.entities.Partner.filter({ status: 'ativo' });
 
-    const eligiblePartners = partners.filter(p => 
-      (p.bonus_for_withdrawal || 0) >= 50 // Mínimo R$50 para saque
+    const elegíveis = partners.filter(p =>
+      (p.bonus_for_withdrawal || 0) >= 50 &&
+      p.pix_key
     );
 
-    const results = [];
-    const coraAvailable = false; // Simular enquanto API retorna 403
+    const resultados = [];
 
-    for (const partner of eligiblePartners) {
-      const amount = partner.bonus_for_withdrawal;
+    for (const partner of elegíveis) {
+      const valor = partner.bonus_for_withdrawal;
 
-      if (coraAvailable) {
-        // TODO: Quando Cora liberar, implementar pagamento real
-        // const paymentResult = await base44.functions.invoke('coraPayCommission', {
-        //   pixKey: partner.pix_key,
-        //   amount: amount
-        // });
+      // Verificar se já tem saque pendente para não criar duplicado
+      const pendentes = await base44.asServiceRole.entities.Saques.filter({
+        userId: partner.id,
+        status: 'PENDENTE'
+      });
+
+      if (pendentes.length > 0) {
+        resultados.push({ parceiro: partner.full_name, status: 'já tem saque pendente', valor });
+        continue;
       }
 
-      // Criar registro de saque
-      const withdrawal = await base44.asServiceRole.entities.Withdrawal.create({
-        partner_id: partner.id,
-        partner_name: partner.full_name,
-        amount: amount,
-        pix_key: partner.pix_key,
-        status: coraAvailable ? 'completed' : 'pending',
-        completed_date: coraAvailable ? new Date().toISOString() : null
+      // Criar solicitação de saque
+      await base44.asServiceRole.entities.Saques.create({
+        userId: partner.id,
+        userEmail: partner.email || partner.created_by,
+        userName: partner.full_name,
+        valor,
+        status: 'PENDENTE',
+        dataSolicitacao: new Date().toISOString(),
+        pixKey: partner.pix_key
       });
 
-      // Atualizar Partner
-      await base44.asServiceRole.entities.Partner.update(partner.id, {
-        bonus_for_withdrawal: 0,
-        total_withdrawn: (partner.total_withdrawn || 0) + amount
+      // Log financeiro
+      await base44.asServiceRole.entities.LogsFinanceiro.create({
+        tipo: 'SAQUE',
+        userId: partner.id,
+        userEmail: partner.email || partner.created_by,
+        userName: partner.full_name,
+        valor,
+        descricao: `Saque semanal automático. PIX: ${partner.pix_key}`
       });
 
-      // Enviar notificação
+      // Notificar parceiro
       try {
-        await base44.integrations.Core.SendEmail({
-          to: partner.created_by,
-          subject: '💰 Pagamento Semanal Processado',
-          body: `
-Olá ${partner.full_name},
-
-Seu pagamento semanal foi processado!
-
-Valor: R$ ${amount.toFixed(2)}
-Chave PIX: ${partner.pix_key}
-Status: ${coraAvailable ? 'Pago' : 'Pendente (aguardando liberação Cora)'}
-
-${coraAvailable ? 'O valor já foi transferido para sua conta.' : 'Assim que a integração Cora for liberada, o pagamento será realizado automaticamente.'}
-
-Equipe Sociedade de Consumidores
-          `.trim()
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: partner.email || partner.created_by,
+          subject: '💰 Saque Semanal Criado',
+          body: `Olá ${partner.full_name},\n\nSeu saque semanal de R$ ${valor.toFixed(2)} foi gerado e está aguardando processamento.\n\nChave PIX: ${partner.pix_key}\n\nVocê receberá a confirmação quando for processado.\n\nEquipe Sociedade de Consumidores`
         });
-      } catch (emailError) {
-        console.error('Failed to send email:', emailError);
+      } catch (e) {
+        console.error('Erro ao enviar email:', e.message);
       }
 
-      results.push({
-        partnerId: partner.id,
-        partnerName: partner.full_name,
-        amount: amount,
-        status: withdrawal.status
-      });
+      resultados.push({ parceiro: partner.full_name, status: 'saque criado', valor });
     }
 
     return Response.json({
       ok: true,
-      processed: results.length,
-      totalAmount: results.reduce((sum, r) => sum + r.amount, 0),
-      results,
-      note: coraAvailable ? 'Payments completed' : 'Payments pending - Cora API awaiting authorization'
+      processados: resultados.length,
+      totalElegíveis: elegíveis.length,
+      resultados
     });
 
   } catch (error) {
-    return Response.json({ 
-      ok: false,
-      error: error.message 
-    }, { status: 500 });
+    return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
 });
