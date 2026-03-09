@@ -40,6 +40,10 @@ export default function Register() {
   const [passwordStrength, setPasswordStrength] = useState({ valid: false, message: "" });
 
   useEffect(() => {
+    // Se já está logado, redirecionar para Dashboard
+    base44.auth.isAuthenticated().then((isAuth) => {
+      if (isAuth) navigate(createPageUrl("Dashboard"));
+    });
     checkFirstUser();
   }, []);
 
