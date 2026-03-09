@@ -102,8 +102,20 @@ const load = async () => {
           adminPartners = await base44.entities.Partner.filter({ email: me.email });
         }
         if (adminPartners.length > 0) {
-          setPartner(adminPartners[0]);
-          console.log("[usePartner] Admin: Partner carregado:", adminPartners[0].full_name);
+          const found = adminPartners[0];
+          // Gerar unique_code se estiver faltando (mesmo para admin)
+          if (!found.unique_code) {
+            try {
+              const code = await generateUniqueCode();
+              await base44.entities.Partner.update(found.id, { unique_code: code });
+              found.unique_code = code;
+              console.log("[usePartner] Admin: unique_code gerado:", code);
+            } catch (e) {
+              console.warn("[usePartner] Admin: Não foi possível gerar unique_code:", e);
+            }
+          }
+          setPartner(found);
+          console.log("[usePartner] Admin: Partner carregado:", found.full_name);
         } else {
           console.log("[usePartner] Admin sem Partner — OK, não cria automaticamente.");
         }
