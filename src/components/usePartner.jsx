@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuthCustom } from "./AuthContextCustom";
 
 // Gera código único aleatório garantindo unicidade no banco
 async function generateUniqueCode() {
@@ -64,6 +65,7 @@ async function createPartnerForUser(me) {
  * Retorna: { partner, user, loading, reload }
  */
 export function usePartner() {
+  const { user: authUser, loading: authLoading } = useAuthCustom();
   const [partner, setPartner] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -71,21 +73,14 @@ export function usePartner() {
 const load = async () => {
   setLoading(true);
   try {
-    if (!base44.auth || !base44.auth.me) {
-      console.warn("[usePartner] Auth não disponível ainda.");
-      setLoading(false);
+    // Aguardar o auth customizado carregar
+    if (authLoading) {
       return;
     }
 
-    let me = null;
-    try {
-      me = await base44.auth.me();
-    } catch {
-      // Usuário não autenticado — isso é normal
-      setLoading(false);
-      return;
-    }
-
+    // Usar o usuário do auth customizado
+    const me = authUser;
+    
     if (!me?.id) {
       setLoading(false);
       return;
@@ -207,8 +202,10 @@ const load = async () => {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    if (!authLoading) {
+      load();
+    }
+  }, [authUser, authLoading]);
 
   return { partner, user, loading, reload: load };
 }

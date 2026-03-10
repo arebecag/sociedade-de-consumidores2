@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
+import { useAuthCustom } from "@/components/AuthContextCustom";
+import { AuthProviderCustom } from "@/components/AuthContextCustom";
 import FinanceiroGuard from "@/components/FinanceiroGuard";
 import {
   LayoutDashboard,
@@ -25,107 +27,34 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-export default function Layout({ children, currentPageName }) {
-  const [user, setUser] = useState(null);
-  const [partner, setPartner] = useState(null);
+function LayoutContent({ children, currentPageName }) {
+  const { user: authUser, partner: authPartner, logout: authLogout, isAuthenticated } = useAuthCustom();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  const publicPages = ["LandingPage", "Register", "PartnerSite", "VerifyEmail"];
+  const publicPages = ["LandingPage", "Register", "PartnerSite", "VerifyEmail", "RegisterCustom"];
 
   useEffect(() => {
-    if (!publicPages.includes(currentPageName)) {
-      loadUserData();
-    }
     checkAuth();
-  }, []);
+  }, [currentPageName, isAuthenticated]);
 
-  const checkAuth = async () => {
+  const checkAuth = () => {
     if (publicPages.includes(currentPageName)) {
       return;
     }
     
+    if (!isAuthenticated()) {
+      navigate(createPageUrl("Register"));
+    }
+  };
+
+  const handleLogout = async () => {
     try {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) {
-        base44.auth.redirectToLogin(createPageUrl("Dashboard"));
-      }
+      await authLogout();
+      navigate(createPageUrl("Register"));
     } catch (error) {
-      console.error("Auth check error:", error);
+      console.error("Erro ao fazer logout:", error);
     }
-  };
-
-  const createNetworkRelations = async (newPartnerId, newPartnerName, referrerId, referrerName) => {
-    try {
-      await base44.entities.NetworkRelation.create({
-        referrer_id: referrerId,
-        referrer_name: referrerName,
-        referred_id: newPartnerId,
-        referred_name: newPartnerName,
-        relation_type: "direct",
-        is_spillover: false,
-        level: 1
-      });
-      console.log("[Partner] Relação direta criada com sucesso");
-    } catch (e) {
-      console.error("[Partner] Erro ao criar relação direta:", e);
-    }
-
-    try {
-      const referrerRelations = await base44.entities.NetworkRelation.filter({
-        referred_id: referrerId,
-        relation_type: "direct"
-      });
-      if (referrerRelations.length > 0) {
-        await base44.entities.NetworkRelation.create({
-          referrer_id: referrerRelations[0].referrer_id,
-          referrer_name: referrerRelations[0].referrer_name,
-          referred_id: newPartnerId,
-          referred_name: newPartnerName,
-          relation_type: "indirect",
-          is_spillover: false,
-          level: 2
-        });
-        console.log("[Partner] Relação indireta criada com sucesso");
-      }
-    } catch (e) {
-      console.error("[Partner] Erro ao criar relação indireta:", e);
-    }
-  };
-
-  const loadUserData = async () => {
-    try {
-      const userData = await base44.auth.me();
-      setUser(userData);
-
-      // Verificar Partner existente primeiro
-      let existingPartners = [];
-      try {
-        existingPartners = await base44.entities.Partner.filter({ created_by: userData.email });
-      } catch (e) {
-        console.error("[Partner] Erro ao buscar partner existente:", e);
-      }
-
-      // Limpar qualquer pendingPartnerData residual (a criação agora é feita no Register)
-      const pendingData = localStorage.getItem("pendingPartnerData");
-      if (pendingData) {
-        localStorage.removeItem("pendingPartnerData");
-        console.log("[Layout] pendingPartnerData residual removido");
-      }
-
-      // Self-healing: se não tem Partner mas tem dados no localStorage de sessão anterior
-      if (existingPartners.length > 0) {
-        setPartner(existingPartners[0]);
-      } else {
-        console.warn("[Partner] Usuário logado sem Partner:", userData.email);
-      }
-    } catch (error) {
-      // User not logged in — silencioso
-    }
-  };
-
-  const handleLogout = () => {
-    base44.auth.logout();
   };
 
   // Public pages without layout
@@ -191,25 +120,25 @@ export default function Layout({ children, currentPageName }) {
       </nav>
 
       <div className="p-4 border-t border-orange-500/20">
-        {partner && (
+        {authPartner && (
           <div className="mb-4 p-3 bg-orange-500/10 rounded-lg">
             <p className="text-xs text-gray-400 mb-1">Conta</p>
-            <p className="text-white text-sm font-medium truncate">{partner.display_name || partner.full_name}</p>
+            <p className="text-white text-sm font-medium truncate">{authPartner.display_name || authPartner.full_name}</p>
             <div className="flex items-center gap-2 mt-1">
               <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
-                partner.status === 'ativo' ? 'bg-green-500' :
-                partner.status === 'pendente' ? 'bg-yellow-500' : 'bg-red-500'
+                authPartner.status === 'ativo' ? 'bg-green-500' :
+                authPartner.status === 'pendente' ? 'bg-yellow-500' : 'bg-red-500'
               }`} />
               <p className={`text-sm font-semibold ${
-                partner.status === 'ativo' ? 'text-green-500' :
-                partner.status === 'pendente' ? 'text-yellow-500' : 'text-red-500'
+                authPartner.status === 'ativo' ? 'text-green-500' :
+                authPartner.status === 'pendente' ? 'text-yellow-500' : 'text-red-500'
               }`}>
-                {partner.status?.toUpperCase()}
+                {authPartner.status?.toUpperCase()}
               </p>
             </div>
-            {partner.status === 'pendente' && partner.pending_reasons?.length > 0 && (
+            {authPartner.status === 'pendente' && authPartner.pending_reasons?.length > 0 && (
               <p className="text-yellow-600 text-xs mt-1 leading-tight">
-                {partner.pending_reasons[0]}
+                {authPartner.pending_reasons[0]}
               </p>
             )}
           </div>
@@ -254,13 +183,21 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-          <main className="lg:pl-64 pt-20 lg:pt-0 min-h-screen">
-            <div className="p-4 lg:p-8">
-              <FinanceiroGuard currentPageName={currentPageName}>
-                {children}
-              </FinanceiroGuard>
-            </div>
-          </main>
+      <main className="lg:pl-64 pt-20 lg:pt-0 min-h-screen">
+        <div className="p-4 lg:p-8">
+          <FinanceiroGuard currentPageName={currentPageName}>
+            {children}
+          </FinanceiroGuard>
+        </div>
+      </main>
     </div>
+  );
+}
+
+export default function Layout({ children, currentPageName }) {
+  return (
+    <AuthProviderCustom>
+      <LayoutContent children={children} currentPageName={currentPageName} />
+    </AuthProviderCustom>
   );
 }
