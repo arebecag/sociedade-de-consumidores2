@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
+import { useAuthCustom } from "@/components/AuthContextCustom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register: authRegister, isAuthenticated } = useAuthCustom();
   const [referrerCode, setReferrerCode] = useState("");
   const [referrerName, setReferrerName] = useState("");
   const [referrerPartnerId, setReferrerPartnerId] = useState(null);
@@ -41,11 +43,11 @@ export default function Register() {
 
   useEffect(() => {
     // Se já está logado, redirecionar para Dashboard
-    base44.auth.isAuthenticated().then((isAuth) => {
-      if (isAuth) navigate(createPageUrl("Dashboard"));
-    });
+    if (isAuthenticated()) {
+      navigate(createPageUrl("Dashboard"));
+    }
     checkFirstUser();
-  }, []);
+  }, [isAuthenticated]);
 
   const DEFAULT_REFERRER_CODE = "WKK321P5"; // Código do administrador padrão
 
@@ -354,12 +356,18 @@ export default function Register() {
       // ETAPA 1: Gerar código único
       const uniqueCode = await generateUniqueCode();
 
-      // ETAPA 2: Criar conta de autenticação - registerPartner vai pegar o user via auth interno
-      await base44.auth.register({ email: formData.email, password: formData.password, full_name: formData.full_name });
+      // ETAPA 2: Criar conta via auth customizado
+      await authRegister(
+        formData.full_name,
+        formData.email,
+        formData.password,
+        referrerPartnerId,
+        referrerName
+      );
 
       // ETAPA 3: Criar Partner via backend function (usa service role internamente)
       const partnerData = {
-        user_id: "pending", // será sobrescrito pelo backend com o ID real via lookup por email
+        user_id: "pending", // será vinculado depois
         email: formData.email,
         full_name: formData.full_name,
         birth_date: formData.birth_date,
@@ -400,7 +408,8 @@ export default function Register() {
         throw new Error("Falha ao criar perfil: " + (res.data?.error || "Tente novamente."));
       }
 
-      toast.success("✅ Cadastro realizado! Consulte seu e-mail para entrar no seu Escritório Virtual.", { duration: 8000 });
+      toast.success("✅ Cadastro realizado! Verifique seu e-mail e faça login.", { duration: 8000 });
+      // Redirecionar para uma página de "email enviado" ou login
       navigate(createPageUrl("Dashboard"));
 
     } catch (xe) {
@@ -533,13 +542,12 @@ export default function Register() {
           <CardHeader className="pb-2">
             <CardTitle className="text-white text-lg">Criar conta</CardTitle>
             <div>
-              <button
-                type="button"
-                onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
-                className="text-orange-500 hover:text-orange-400 text-sm font-medium hover:underline transition-colors"
-              >
-                Já tem uma conta? Faça login →
-              </button>
+              <p className="text-gray-400 text-sm">
+                Já tem uma conta?{" "}
+                <span className="text-orange-500 cursor-pointer hover:text-orange-400 font-medium hover:underline">
+                  Faça login →
+                </span>
+              </p>
             </div>
           </CardHeader>
           <CardContent>
