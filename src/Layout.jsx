@@ -32,7 +32,7 @@ function LayoutContent({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  const publicPages = ["LandingPage", "Register", "PartnerSite", "VerifyEmail", "RegisterCustom", "LoginPage", "ForgotPassword"];
+  const publicPages = ["LandingPage", "Register", "PartnerSite", "VerifyEmail", "RegisterCustom", "ForgotPassword"];
 
   useEffect(() => {
     checkAuth();
@@ -44,17 +44,17 @@ function LayoutContent({ children, currentPageName }) {
     }
     
     if (!isAuthenticated()) {
-      navigate(createPageUrl("LoginPage"));
+      navigate(createPageUrl("Register"));
     }
   };
 
   const handleLogout = async () => {
     try {
       await authLogout();
-      navigate(createPageUrl("LoginPage"));
+      navigate(createPageUrl("Register"));
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
-      navigate(createPageUrl("LoginPage"));
+      navigate(createPageUrl("Register"));
     }
   };
 

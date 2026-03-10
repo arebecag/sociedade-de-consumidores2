@@ -16,6 +16,7 @@ import { toast } from "sonner";
 export default function Register() {
   const navigate = useNavigate();
   const { register: authRegister, isAuthenticated } = useAuthCustom();
+  const [activeTab, setActiveTab] = useState("register");
   const [referrerCode, setReferrerCode] = useState("");
   const [referrerName, setReferrerName] = useState("");
   const [referrerPartnerId, setReferrerPartnerId] = useState(null);

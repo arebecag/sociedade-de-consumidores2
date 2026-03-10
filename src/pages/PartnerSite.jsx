@@ -61,7 +61,7 @@ export default function PartnerSite() {
       {/* Header */}
       <header className="py-8 px-4 text-center border-b border-orange-500/20 relative">
         <div className="absolute top-4 right-4">
-          <Link to={createPageUrl("LoginPage")}>
+          <Link to={createPageUrl("Register")}>
             <Button
               variant="outline"
               className="border-orange-500/50 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors"

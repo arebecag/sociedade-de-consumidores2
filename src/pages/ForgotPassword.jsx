@@ -123,7 +123,7 @@ export default function ForgotPassword() {
               </Button>
 
               <Link
-                to={createPageUrl("LoginPage")}
+                to={createPageUrl("Register")}
                 className="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-orange-500 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -222,7 +222,7 @@ export default function ForgotPassword() {
                 Sua senha foi redefinida com sucesso. Você já pode fazer login com a nova senha.
               </p>
 
-              <Link to={createPageUrl("LoginPage")}>
+              <Link to={createPageUrl("Register")}>
                 <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold">
                   Ir para Login
                 </Button>
