@@ -545,7 +545,7 @@ export default function Register() {
               <p className="text-gray-400 text-sm">
                 Já tem uma conta?{" "}
                 <Link
-                  to={createPageUrl("Login")}
+                  to={createPageUrl("LoginPage")}
                   className="text-orange-500 hover:text-orange-400 font-medium hover:underline"
                 >
                   Faça login →

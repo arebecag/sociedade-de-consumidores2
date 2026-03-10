@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -60,14 +61,15 @@ export default function PartnerSite() {
       {/* Header */}
       <header className="py-8 px-4 text-center border-b border-orange-500/20 relative">
         <div className="absolute top-4 right-4">
-          <Button
-            onClick={() => window.location.href = createPageUrl("Register")}
-            variant="outline"
-            className="border-orange-500/50 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors"
-          >
-            <LogIn className="w-4 h-4 mr-2" />
-            Entrar
-          </Button>
+          <Link to={createPageUrl("LoginPage")}>
+            <Button
+              variant="outline"
+              className="border-orange-500/50 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Entrar
+            </Button>
+          </Link>
         </div>
         <h1 className="text-4xl md:text-5xl font-bold text-orange-500">Sociedade de</h1>
         <h1 className="text-4xl md:text-5xl font-bold text-white">Consumidores</h1>

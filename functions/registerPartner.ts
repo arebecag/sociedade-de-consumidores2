@@ -17,43 +17,45 @@ Deno.serve(async (req) => {
       return Response.json({ partner: existingByEmail[0], alreadyExisted: true });
     }
 
-    // Buscar LoginUser via service role pelo email para vincular
-    let userId = partnerData.user_id;
-    if (!userId || userId === 'pending') {
+    // Buscar LoginUser pelo email (email é lowercase)
+    let loginUserId = partnerData.user_id;
+    if (!loginUserId || loginUserId === 'pending') {
       try {
-        const loginUsers = await base44.asServiceRole.entities.LoginUser.filter({ email: partnerData.email });
+        const loginUsers = await base44.asServiceRole.entities.LoginUser.filter({ 
+          email: partnerData.email.toLowerCase() 
+        });
         if (loginUsers.length > 0) {
-          userId = loginUsers[0].id;
-          console.log('[registerPartner] LoginUser ID encontrado:', userId);
-          
-          // Atualizar partner_id no LoginUser
-          await base44.asServiceRole.entities.LoginUser.update(loginUsers[0].id, {
-            partner_id: null // será atualizado depois que criar o Partner
-          });
+          loginUserId = loginUsers[0].id;
+          console.log('[registerPartner] LoginUser encontrado:', loginUserId);
+        } else {
+          console.warn('[registerPartner] LoginUser não encontrado para:', partnerData.email);
+          return Response.json({ error: 'LoginUser não encontrado. Registre-se primeiro.' }, { status: 404 });
         }
       } catch (e) {
-        console.warn('[registerPartner] Erro ao buscar LoginUser:', e.message);
+        console.error('[registerPartner] Erro ao buscar LoginUser:', e.message);
+        return Response.json({ error: 'Erro ao validar usuário' }, { status: 500 });
       }
     }
 
     // Criar Partner com service role
-    const newPartner = await base44.asServiceRole.entities.Partner.create({ ...partnerData, user_id: userId || 'unknown' });
+    const newPartner = await base44.asServiceRole.entities.Partner.create({ 
+      ...partnerData, 
+      user_id: loginUserId 
+    });
     console.log('[registerPartner] Partner criado:', newPartner.id, newPartner.full_name);
 
     if (!newPartner || !newPartner.id) {
       return Response.json({ error: 'Falha ao criar Partner' }, { status: 500 });
     }
 
-    // Vincular Partner ao LoginUser
-    if (userId && userId !== 'unknown') {
-      try {
-        await base44.asServiceRole.entities.LoginUser.update(userId, {
-          partner_id: newPartner.id
-        });
-        console.log('[registerPartner] LoginUser vinculado ao Partner');
-      } catch (e) {
-        console.error('[registerPartner] Erro ao vincular LoginUser:', e.message);
-      }
+    // Vincular Partner ao LoginUser (vínculo bidirecional)
+    try {
+      await base44.asServiceRole.entities.LoginUser.update(loginUserId, {
+        partner_id: newPartner.id
+      });
+      console.log('[registerPartner] Vínculo bidirecional LoginUser ↔ Partner estabelecido');
+    } catch (e) {
+      console.error('[registerPartner] Erro ao vincular LoginUser:', e.message);
     }
 
     // Criar relações de rede se tiver indicador
