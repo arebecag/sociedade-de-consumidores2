@@ -1,5 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { compare } from 'npm:bcrypt@5.1.1';
+
+// Hash simples usando Web Crypto API nativa do Deno
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 Deno.serve(async (req) => {
   try {
@@ -22,7 +30,8 @@ Deno.serve(async (req) => {
     const user = users[0];
 
     // Verificar senha
-    const isValid = await compare(password, user.password_hash);
+    const password_hash = await hashPassword(password);
+    const isValid = password_hash === user.password_hash;
     if (!isValid) {
       return Response.json({ error: 'E-mail ou senha incorretos' }, { status: 401 });
     }

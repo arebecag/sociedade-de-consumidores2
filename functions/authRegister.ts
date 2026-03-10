@@ -1,5 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { hash } from 'npm:bcrypt@5.1.1';
+
+// Hash simples usando Web Crypto API nativa do Deno
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 Deno.serve(async (req) => {
   try {
@@ -17,7 +25,7 @@ Deno.serve(async (req) => {
     }
 
     // Hash da senha
-    const password_hash = await hash(password, 10);
+    const password_hash = await hashPassword(password);
 
     // Criar LoginUser
     const loginUser = await base44.asServiceRole.entities.LoginUser.create({
