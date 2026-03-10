@@ -1,30 +1,31 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuthCustom } from "@/components/AuthContextCustom";
 import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function EmailVerificationBanner({ email }) {
+  const { verifyEmail, sendVerificationCode, reloadUser } = useAuthCustom();
   const [code, setCode] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
   const [verified, setVerified] = useState(false);
 
   const handleVerify = async () => {
-    if (!code.trim()) return;
+    if (!code.trim() || code.length !== 6) return;
     setVerifying(true);
     try {
-      const res = await base44.functions.invoke('verifyEmail', { token: code.trim() });
-      if (res.data?.success) {
-        setVerified(true);
-        toast.success("Parabéns, seu e-mail foi verificado!");
-        setTimeout(() => window.location.reload(), 2000);
-      } else {
-        toast.error(res.data?.error || res.data?.message || "Código inválido ou expirado.");
-      }
-    } catch {
-      toast.error("Erro ao verificar código.");
+      await verifyEmail(email, code.trim());
+      setVerified(true);
+      toast.success("Parabéns, seu e-mail foi verificado!");
+      setTimeout(() => {
+        reloadUser();
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      toast.error(error.message || "Código inválido ou expirado.");
     } finally {
       setVerifying(false);
     }
@@ -33,11 +34,10 @@ export default function EmailVerificationBanner({ email }) {
   const handleResend = async () => {
     setResending(true);
     try {
-      const res = await base44.functions.invoke('sendVerificationEmail', {});
-      if (res.data?.success) toast.success("Código reenviado para o seu e-mail!");
-      else toast.error(res.data?.message || "Erro ao reenviar");
-    } catch {
-      toast.error("Erro ao reenviar código");
+      await sendVerificationCode(email);
+      toast.success("Código reenviado para o seu e-mail!");
+    } catch (error) {
+      toast.error(error.message || "Erro ao reenviar");
     } finally {
       setResending(false);
     }

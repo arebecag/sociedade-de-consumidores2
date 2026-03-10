@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePartner } from "@/components/usePartner";
+import { useAuthCustom } from "@/components/AuthContextCustom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ import { Loader2, Save, User, MapPin, CreditCard, Bell, UserX, Shield, AlertTria
 import { toast } from "sonner";
 
 function EmailChangeFlow({ partnerId, currentEmail }) {
+  const { logout } = useAuthCustom();
   const [step, setStep] = useState('input');
   const [newEmail, setNewEmail] = useState('');
   const [code, setCode] = useState('');
@@ -61,7 +63,7 @@ function EmailChangeFlow({ partnerId, currentEmail }) {
       if (data.ok) {
         toast.success('Email alterado! Faça login novamente.');
         setTimeout(() => {
-          base44.auth.logout();
+          logout();
         }, 2000);
       } else {
         toast.error(data.error || 'Código inválido ou expirado');

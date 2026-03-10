@@ -61,7 +61,7 @@ export default function PartnerSite() {
       <header className="py-8 px-4 text-center border-b border-orange-500/20 relative">
         <div className="absolute top-4 right-4">
           <Button
-            onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+            onClick={() => window.location.href = createPageUrl("Register")}
             variant="outline"
             className="border-orange-500/50 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors"
           >
