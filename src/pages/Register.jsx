@@ -3,14 +3,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { useAuthCustom } from "@/components/AuthContextCustom";
+import LoginForm from "@/components/LoginForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle, UserPlus, LogIn } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Register() {
@@ -540,22 +541,29 @@ export default function Register() {
         </div>
 
         <Card className="bg-zinc-900 border-zinc-800 shadow-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-white text-lg">Criar conta</CardTitle>
-            <div>
-              <p className="text-gray-400 text-sm">
-                Já tem uma conta?{" "}
-                <Link
-                  to={createPageUrl("LoginPage")}
-                  className="text-orange-500 hover:text-orange-400 font-medium hover:underline"
-                >
-                  Faça login →
-                </Link>
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="pt-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2 bg-zinc-800">
+                <TabsTrigger value="register" className="data-[state=active]:bg-orange-500">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Cadastrar
+                </TabsTrigger>
+                <TabsTrigger value="login" className="data-[state=active]:bg-orange-500">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Entrar
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="login" className="space-y-4">
+                <div className="text-center mb-4">
+                  <h2 className="text-xl font-semibold text-white">Acesse seu Escritório Virtual</h2>
+                  <p className="text-gray-400 text-sm mt-1">Digite seu e-mail e senha</p>
+                </div>
+                <LoginForm onLoginSuccess={() => navigate(createPageUrl("Dashboard"))} />
+              </TabsContent>
+
+              <TabsContent value="register">
+                <form onSubmit={handleSubmit} className="space-y-6">
               {/* Referrer Info */}
               {isFirstUser ? (
                 <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20 flex items-center gap-2">
@@ -680,9 +688,9 @@ export default function Register() {
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                 {loading ? "Cadastrando..." : "Criar Conta"}
               </Button>
-
-
             </form>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
