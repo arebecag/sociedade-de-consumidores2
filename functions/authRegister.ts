@@ -27,11 +27,12 @@ Deno.serve(async (req) => {
     // Hash da senha
     const password_hash = await hashPassword(password);
 
-    // Criar LoginUser
+    // Criar LoginUser (sem partner_id ainda - será definido depois)
     const loginUser = await base44.asServiceRole.entities.LoginUser.create({
       email: email.toLowerCase(),
       password_hash,
       full_name,
+      partner_id: null, // Será vinculado depois que o Partner for criado
       status: 'pending',
       is_email_verified: false
     });

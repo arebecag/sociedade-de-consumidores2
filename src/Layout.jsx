@@ -32,7 +32,7 @@ function LayoutContent({ children, currentPageName }) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  const publicPages = ["LandingPage", "Register", "PartnerSite", "VerifyEmail", "RegisterCustom"];
+  const publicPages = ["LandingPage", "Register", "PartnerSite", "VerifyEmail", "RegisterCustom", "Login", "ForgotPassword"];
 
   useEffect(() => {
     checkAuth();
@@ -44,7 +44,7 @@ function LayoutContent({ children, currentPageName }) {
     }
     
     if (!isAuthenticated()) {
-      navigate(createPageUrl("Register"));
+      navigate(createPageUrl("Login"));
     }
   };
 

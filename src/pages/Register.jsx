@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { useAuthCustom } from "@/components/AuthContextCustom";
@@ -544,9 +544,12 @@ export default function Register() {
             <div>
               <p className="text-gray-400 text-sm">
                 Já tem uma conta?{" "}
-                <span className="text-orange-500 cursor-pointer hover:text-orange-400 font-medium hover:underline">
+                <Link
+                  to={createPageUrl("Login")}
+                  className="text-orange-500 hover:text-orange-400 font-medium hover:underline"
+                >
                   Faça login →
-                </span>
+                </Link>
               </p>
             </div>
           </CardHeader>

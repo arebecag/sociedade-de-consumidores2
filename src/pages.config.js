@@ -72,11 +72,12 @@ import PartnerSite from './pages/PartnerSite';
 import PayBoletos from './pages/PayBoletos';
 import Profile from './pages/Profile';
 import Register from './pages/Register';
+import RegisterCustom from './pages/RegisterCustom';
 import Reports from './pages/Reports';
 import Store from './pages/Store';
 import VerifyEmail from './pages/VerifyEmail';
 import Withdrawals from './pages/Withdrawals';
-import RegisterCustom from './pages/RegisterCustom';
+import ForgotPassword from './pages/ForgotPassword';
 import __Layout from './Layout.jsx';
 
 
@@ -106,11 +107,12 @@ export const PAGES = {
     "PayBoletos": PayBoletos,
     "Profile": Profile,
     "Register": Register,
+    "RegisterCustom": RegisterCustom,
     "Reports": Reports,
     "Store": Store,
     "VerifyEmail": VerifyEmail,
     "Withdrawals": Withdrawals,
-    "RegisterCustom": RegisterCustom,
+    "ForgotPassword": ForgotPassword,
 }
 
 export const pagesConfig = {
