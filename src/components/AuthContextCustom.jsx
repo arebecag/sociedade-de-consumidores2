@@ -31,7 +31,18 @@ export const AuthProviderCustom = ({ children }) => {
       const res = await base44.functions.invoke('authMe', { token });
       if (res.data?.user) {
         setUser(res.data.user);
-        setPartner(res.data.partner || null);
+        
+        // Buscar Partner vinculado
+        if (res.data.user.partner_id) {
+          try {
+            const partners = await base44.entities.Partner.filter({ id: res.data.user.partner_id });
+            if (partners.length > 0) {
+              setPartner(partners[0]);
+            }
+          } catch (e) {
+            console.warn('[AuthContext] Erro ao buscar Partner:', e);
+          }
+        }
       } else {
         removeToken();
       }
@@ -52,7 +63,19 @@ export const AuthProviderCustom = ({ children }) => {
     if (res.data?.success) {
       setToken(res.data.token);
       setUser(res.data.user);
-      setPartner(res.data.partner || null);
+      
+      // Buscar Partner vinculado
+      if (res.data.user.partner_id) {
+        try {
+          const partners = await base44.entities.Partner.filter({ id: res.data.user.partner_id });
+          if (partners.length > 0) {
+            setPartner(partners[0]);
+          }
+        } catch (e) {
+          console.warn('[AuthContext] Erro ao buscar Partner no login:', e);
+        }
+      }
+      
       return res.data;
     }
     throw new Error(res.data?.error || 'Erro ao fazer login');

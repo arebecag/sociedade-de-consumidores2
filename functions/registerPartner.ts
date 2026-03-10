@@ -17,17 +17,22 @@ Deno.serve(async (req) => {
       return Response.json({ partner: existingByEmail[0], alreadyExisted: true });
     }
 
-    // Buscar userId via service role pelo email (evita depender do token recém-criado)
+    // Buscar LoginUser via service role pelo email para vincular
     let userId = partnerData.user_id;
     if (!userId || userId === 'pending') {
       try {
-        const users = await base44.asServiceRole.entities.User.filter({ email: partnerData.email });
-        if (users.length > 0) {
-          userId = users[0].id;
-          console.log('[registerPartner] userId encontrado via service role:', userId);
+        const loginUsers = await base44.asServiceRole.entities.LoginUser.filter({ email: partnerData.email });
+        if (loginUsers.length > 0) {
+          userId = loginUsers[0].id;
+          console.log('[registerPartner] LoginUser ID encontrado:', userId);
+          
+          // Atualizar partner_id no LoginUser
+          await base44.asServiceRole.entities.LoginUser.update(loginUsers[0].id, {
+            partner_id: null // será atualizado depois que criar o Partner
+          });
         }
       } catch (e) {
-        console.warn('[registerPartner] Não foi possível buscar userId:', e.message);
+        console.warn('[registerPartner] Erro ao buscar LoginUser:', e.message);
       }
     }
 
@@ -37,6 +42,18 @@ Deno.serve(async (req) => {
 
     if (!newPartner || !newPartner.id) {
       return Response.json({ error: 'Falha ao criar Partner' }, { status: 500 });
+    }
+
+    // Vincular Partner ao LoginUser
+    if (userId && userId !== 'unknown') {
+      try {
+        await base44.asServiceRole.entities.LoginUser.update(userId, {
+          partner_id: newPartner.id
+        });
+        console.log('[registerPartner] LoginUser vinculado ao Partner');
+      } catch (e) {
+        console.error('[registerPartner] Erro ao vincular LoginUser:', e.message);
+      }
     }
 
     // Criar relações de rede se tiver indicador
