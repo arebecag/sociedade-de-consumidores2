@@ -15,9 +15,9 @@ export default function EmailVerificationBanner({ email }) {
 
   const handleVerify = async () => {
     console.log('[EmailVerificationBanner] Iniciando verificação', { email, code: code.trim(), length: code.trim().length });
-    if (!code.trim() || code.length < 6) {
+    if (!code.trim() || code.trim().length < 4) {
       console.log('[EmailVerificationBanner] Código muito curto');
-      toast.error("Digite um código válido (mínimo 6 caracteres)");
+      toast.error("Digite um código válido");
       return;
     }
     setVerifying(true);
@@ -84,7 +84,7 @@ export default function EmailVerificationBanner({ email }) {
         />
         <Button
           onClick={handleVerify}
-          disabled={verifying || code.trim().length < 6}
+          disabled={verifying || !code.trim() || code.trim().length < 4}
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 h-10 flex-shrink-0 px-4"
         >
