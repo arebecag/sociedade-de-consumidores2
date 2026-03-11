@@ -114,6 +114,13 @@ export default function Store() {
       // Generate bonus for referrers (only if fully paid with bonus)
       if (paidWithBoleto === 0) {
         await distribuirComissoes(purchase.id, productPrice, partner);
+        
+        // Liberar acesso ao produto imediatamente
+        if (selectedProduct.download_url) {
+          await base44.entities.Purchase.update(purchase.id, {
+            download_available: true
+          });
+        }
       }
 
       // If boleto payment needed, generate boleto and redirect
@@ -340,8 +347,19 @@ export default function Store() {
                             {purchase.paid_with_boleto > 0 && ` | Boleto: ${formatCurrency(purchase.paid_with_boleto)}`}
                           </p>
                         </div>
-                        {purchase.download_available && (
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        {purchase.download_available && purchase.product_id && (
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={async () => {
+                              const prods = await base44.entities.Product.filter({ id: purchase.product_id });
+                              if (prods.length > 0 && prods[0].download_url) {
+                                window.open(prods[0].download_url, '_blank');
+                              } else {
+                                toast.error('Link de download não encontrado');
+                              }
+                            }}
+                          >
                             <Download className="w-4 h-4 mr-2" />
                             Download
                           </Button>
