@@ -79,6 +79,25 @@ Deno.serve(async (req) => {
           console.error(`[asaasWebhook] Erro ao distribuir comissões: ${e.message}`);
         }
 
+        // Processar compra pendente (ativa, distribui comissões, libera acesso)
+        try {
+          const internalSecret = Deno.env.get("INTERNAL_SECRET");
+          await fetch(`${req.url.replace('/asaasWebhook', '/processPurchasePayment')}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-internal-secret': internalSecret || ''
+            },
+            body: JSON.stringify({
+              financeiroId: boleto.id,
+              partnerId: boleto.userId
+            })
+          });
+          console.log(`[asaasWebhook] processPurchasePayment acionado para partner ${boleto.userId}`);
+        } catch (e) {
+          console.error(`[asaasWebhook] Erro ao processar purchase: ${e.message}`);
+        }
+
         // Enviar email de boas-vindas / ativação
         try {
           const parceirosEmail = await base44.asServiceRole.entities.Partner.filter({ id: boleto.userId });
