@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { usePartner } from "@/components/usePartner";
+import { useAuthCustom } from "@/components/AuthContextCustom";
 import {
   Loader2, TrendingUp, Users, Award, ShoppingBag, CreditCard,
   AlertCircle, CheckCircle, ArrowUpRight, Wallet, BarChart2, Star
@@ -44,6 +45,7 @@ const quickActions = [
 
 export default function Dashboard() {
   const { partner, loading: partnerLoading } = usePartner();
+  const { user: authUser } = useAuthCustom();
   const [myReferrer, setMyReferrer] = useState(null);
   const [networkStats, setNetworkStats] = useState({ direct: 0, indirect: 0, active: 0, pending: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
