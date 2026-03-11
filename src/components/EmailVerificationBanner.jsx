@@ -14,10 +14,17 @@ export default function EmailVerificationBanner({ email }) {
   const [verified, setVerified] = useState(false);
 
   const handleVerify = async () => {
-    if (!code.trim() || code.length < 6) return;
+    console.log('[EmailVerificationBanner] Iniciando verificação', { email, code: code.trim(), length: code.trim().length });
+    if (!code.trim() || code.length < 6) {
+      console.log('[EmailVerificationBanner] Código muito curto');
+      toast.error("Digite um código válido (mínimo 6 caracteres)");
+      return;
+    }
     setVerifying(true);
     try {
-      await verifyEmail(email, code.trim());
+      console.log('[EmailVerificationBanner] Chamando verifyEmail...');
+      const result = await verifyEmail(email, code.trim());
+      console.log('[EmailVerificationBanner] Resultado:', result);
       setVerified(true);
       toast.success("Parabéns, seu e-mail foi verificado!");
       setTimeout(() => {
@@ -25,6 +32,7 @@ export default function EmailVerificationBanner({ email }) {
         window.location.reload();
       }, 2000);
     } catch (error) {
+      console.error('[EmailVerificationBanner] Erro ao verificar:', error);
       toast.error(error.message || "Código inválido ou expirado.");
     } finally {
       setVerifying(false);
