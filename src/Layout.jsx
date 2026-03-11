@@ -84,7 +84,7 @@ function LayoutContent({ children, currentPageName }) {
   ];
 
   // Admin-only menu items
-  if (user?.role === 'admin') {
+  if (authUser?.role === 'admin') {
     menuItems.push({ name: "Admin: Auditoria", icon: Users, page: "AdminNetwork" });
     menuItems.push({ name: "Admin: EAD", icon: GraduationCap, page: "AdminCursosEAD" });
     menuItems.push({ name: "Admin: Contrato", icon: FileText, page: "AdminContrato" });

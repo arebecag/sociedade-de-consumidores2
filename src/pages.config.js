@@ -59,6 +59,7 @@ import Bonus from './pages/Bonus';
 import Dashboard from './pages/Dashboard';
 import Extrato from './pages/Extrato';
 import FAQ from './pages/FAQ';
+import ForgotPassword from './pages/ForgotPassword';
 import IncomeReport from './pages/IncomeReport';
 import LojaCursos from './pages/LojaCursos';
 import Marketing from './pages/Marketing';
@@ -77,7 +78,6 @@ import Reports from './pages/Reports';
 import Store from './pages/Store';
 import VerifyEmail from './pages/VerifyEmail';
 import Withdrawals from './pages/Withdrawals';
-import ForgotPassword from './pages/ForgotPassword';
 import __Layout from './Layout.jsx';
 
 
@@ -94,6 +94,7 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "Extrato": Extrato,
     "FAQ": FAQ,
+    "ForgotPassword": ForgotPassword,
     "IncomeReport": IncomeReport,
     "LojaCursos": LojaCursos,
     "Marketing": Marketing,
@@ -112,7 +113,6 @@ export const PAGES = {
     "Store": Store,
     "VerifyEmail": VerifyEmail,
     "Withdrawals": Withdrawals,
-    "ForgotPassword": ForgotPassword,
 }
 
 export const pagesConfig = {
