@@ -34,9 +34,9 @@ Deno.serve(async (req) => {
       used: false
     });
 
-    // Enviar email
+    // Enviar email (não aguarda para evitar timeout)
     const resetCode = token.split('-')[0]; // Usar apenas primeira parte do UUID como código
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    base44.asServiceRole.integrations.Core.SendEmail({
       to: email,
       subject: 'Redefinição de Senha - Sociedade de Consumidores',
       body: `
@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
         <p>Este código expira em 2 horas.</p>
         <p>Se você não solicitou esta redefinição, ignore este e-mail.</p>
       `
-    });
+    }).catch(err => console.error('[requestPasswordReset] Erro ao enviar email (não crítico):', err));
 
     return Response.json({ success: true, message: 'Instruções enviadas para o e-mail' });
 
