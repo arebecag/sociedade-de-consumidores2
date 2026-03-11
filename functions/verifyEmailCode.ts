@@ -33,13 +33,10 @@ Deno.serve(async (req) => {
     });
 
     // Atualizar LoginUser
-    const users = await base44.asServiceRole.entities.LoginUser.filter({ id: verificationCode.user_id });
-    if (users.length > 0) {
-      await base44.asServiceRole.entities.LoginUser.update(users[0].id, {
-        is_email_verified: true,
-        status: 'active'
-      });
-    }
+    await base44.asServiceRole.entities.LoginUser.update(verificationCode.user_id, {
+      is_email_verified: true,
+      status: 'active'
+    });
 
     return Response.json({ success: true, message: 'E-mail verificado com sucesso!' });
 
