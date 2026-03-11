@@ -14,7 +14,7 @@ export default function EmailVerificationBanner({ email }) {
   const [verified, setVerified] = useState(false);
 
   const handleVerify = async () => {
-    if (!code.trim() || code.length !== 6) return;
+    if (!code.trim() || code.length < 6) return;
     setVerifying(true);
     try {
       await verifyEmail(email, code.trim());
@@ -59,7 +59,7 @@ export default function EmailVerificationBanner({ email }) {
         <div className="flex-1 min-w-0">
           <p className="text-blue-400 font-medium text-sm">Verifique seu e-mail</p>
           <p className="text-gray-400 text-xs mt-0.5">
-            Enviamos um código de 6 dígitos para <strong className="text-white">{email}</strong>.
+            Enviamos um código para <strong className="text-white">{email}</strong>.
             Digite abaixo para verificar.
           </p>
         </div>
@@ -67,16 +67,16 @@ export default function EmailVerificationBanner({ email }) {
 
       <div className="flex gap-2">
         <Input
-          placeholder="Digite o código de 6 dígitos"
+          placeholder="Digite o código (6 caracteres)"
           value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-          className="bg-zinc-900 border-zinc-700 text-white text-sm h-10 tracking-widest font-mono text-center"
+          onChange={(e) => setCode(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toLowerCase())}
+          className="bg-zinc-900 border-zinc-700 text-white text-sm h-10 tracking-widest font-mono text-center uppercase"
           onKeyDown={(e) => e.key === "Enter" && handleVerify()}
-          maxLength={6}
+          maxLength={8}
         />
         <Button
           onClick={handleVerify}
-          disabled={verifying || code.trim().length !== 6}
+          disabled={verifying || code.trim().length < 6}
           size="sm"
           className="bg-blue-600 hover:bg-blue-700 h-10 flex-shrink-0 px-4"
         >
