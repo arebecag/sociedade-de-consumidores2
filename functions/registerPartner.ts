@@ -77,14 +77,7 @@ Deno.serve(async (req) => {
         email_change_expiry: codeExpiry
       });
 
-      // Convidar usuário para poder enviar emails
-      try {
-        await base44.asServiceRole.users.invite({ email: partnerData.email.toLowerCase(), role: "user" });
-        console.log('[registerPartner] Usuário convidado:', partnerData.email);
-      } catch (inviteError) {
-        console.log('[registerPartner] Erro ao convidar (pode já existir):', inviteError.message);
-      }
-
+      // NOTA: Para receber emails, o usuário precisa estar convidado no Base44 via dashboard
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: partnerData.email,
         subject: 'Seu código de verificação - Sociedade de Consumidores',

@@ -20,15 +20,8 @@ Deno.serve(async (req) => {
 
     const user = users[0];
 
-    // Convidar usuário para poder enviar emails
-    try {
-      await base44.asServiceRole.users.invite({ email: email.toLowerCase(), role: "user" });
-      console.log('[sendEmailVerificationCode] Usuário convidado:', email);
-    } catch (inviteError) {
-      console.log('[sendEmailVerificationCode] Erro ao convidar (pode já existir):', inviteError.message);
-    }
-
     // Gerar novo código
+    // NOTA: Para receber emails, o usuário precisa estar convidado no Base44 via dashboard
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
