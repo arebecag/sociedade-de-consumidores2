@@ -20,6 +20,14 @@ Deno.serve(async (req) => {
 
     const user = users[0];
 
+    // Convidar usuário para poder enviar emails
+    try {
+      await base44.asServiceRole.users.inviteUser(email.toLowerCase(), "user");
+      console.log('[sendEmailVerificationCode] Usuário convidado:', email);
+    } catch (inviteError) {
+      console.log('[sendEmailVerificationCode] Erro ao convidar (pode já existir):', inviteError.message);
+    }
+
     // Gerar novo código
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date();

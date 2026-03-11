@@ -50,6 +50,14 @@ Deno.serve(async (req) => {
       used: false
     });
 
+    // Convidar usuário para poder enviar emails
+    try {
+      await base44.asServiceRole.users.inviteUser(email.toLowerCase(), "user");
+      console.log('[authRegister] Usuário convidado:', email);
+    } catch (inviteError) {
+      console.log('[authRegister] Erro ao convidar (pode já existir):', inviteError.message);
+    }
+
     // Enviar email de verificação
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({

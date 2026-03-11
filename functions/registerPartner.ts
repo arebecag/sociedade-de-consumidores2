@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
@@ -76,6 +76,14 @@ Deno.serve(async (req) => {
         email_change_code: verificationCode,
         email_change_expiry: codeExpiry
       });
+
+      // Convidar usuário para poder enviar emails
+      try {
+        await base44.asServiceRole.users.inviteUser(partnerData.email.toLowerCase(), "user");
+        console.log('[registerPartner] Usuário convidado:', partnerData.email);
+      } catch (inviteError) {
+        console.log('[registerPartner] Erro ao convidar (pode já existir):', inviteError.message);
+      }
 
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: partnerData.email,
