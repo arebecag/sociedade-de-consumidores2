@@ -168,7 +168,7 @@ export default function Dashboard() {
       </div>
 
       {/* Banners */}
-      {!partner.email_verified && (
+      {!authUser?.is_email_verified && (
         <EmailVerificationBanner email={partner.email} />
       )}
 
