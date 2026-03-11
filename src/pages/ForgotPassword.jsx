@@ -139,11 +139,11 @@ export default function ForgotPassword() {
                 <Input
                   id="token"
                   type="text"
-                  placeholder="Digite o código de 6 dígitos"
+                  placeholder="Digite o código"
                   value={token}
-                  onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="bg-zinc-900 border-zinc-700 text-white text-center text-xl tracking-widest font-mono"
-                  maxLength={6}
+                  onChange={(e) => setToken(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toLowerCase())}
+                  className="bg-zinc-900 border-zinc-700 text-white text-center text-xl tracking-widest font-mono uppercase"
+                  maxLength={8}
                   disabled={loading}
                 />
               </div>
