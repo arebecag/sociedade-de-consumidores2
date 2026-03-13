@@ -65,6 +65,7 @@ function LayoutContent({ children, currentPageName }) {
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
+    { name: "🏆 Desafio 12+12+12", icon: Trophy, page: "CampanhaDesafio" },
     { name: "Meu Site", icon: Globe, page: "MySite" },
     { name: "Meu Perfil", icon: User, page: "Profile" },
     { name: "Loja 3x3", icon: ShoppingBag, page: "Store" },
@@ -85,6 +86,7 @@ function LayoutContent({ children, currentPageName }) {
 
   // Admin-only menu items
   if (authUser?.role === 'admin') {
+    menuItems.push({ name: "Admin: Campanhas", icon: Trophy, page: "AdminCampanhas" });
     menuItems.push({ name: "Admin: Auditoria", icon: Users, page: "AdminNetwork" });
     menuItems.push({ name: "Admin: EAD", icon: GraduationCap, page: "AdminCursosEAD" });
     menuItems.push({ name: "Admin: Contrato", icon: FileText, page: "AdminContrato" });
