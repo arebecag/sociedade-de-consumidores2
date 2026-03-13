@@ -16,11 +16,11 @@ export default function PartnerSite() {
   const loadPartner = async () => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      let code = urlParams.get("p");
+      const code = urlParams.get("p");
       
-      // Se não tem código, usar o do primeiro parceiro (Eder Mateus - WKK321P5)
       if (!code) {
-        code = "WKK321P5";
+        setLoading(false);
+        return;
       }
 
       // Usa backend function com service role — funciona sem autenticação
