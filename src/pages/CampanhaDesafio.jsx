@@ -102,22 +102,28 @@ export default function CampanhaDesafio() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Banner da Campanha */}
-      <div 
-        className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 p-8 text-white"
-        style={{
-          backgroundImage: campanha.imagemUrl ? `url(${campanha.imagemUrl})` : undefined,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      >
-        <div className="relative z-10 bg-black/40 backdrop-blur-sm rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Trophy className="w-12 h-12 text-yellow-400" />
-            <div>
-              <h1 className="text-4xl font-bold">Desafio 12+12+12</h1>
-              <p className="text-xl">A cada 12 clientes ativos, ganha na hora PIX de R$ 800,00</p>
+      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 p-8 text-white">
+        <div className="flex flex-col md:flex-row gap-6 items-center">
+          {/* Imagem da campanha */}
+          {campanha.imagemUrl && (
+            <div className="flex-shrink-0">
+              <img 
+                src={campanha.imagemUrl} 
+                alt="Desafio 12+12+12" 
+                className="w-48 h-48 object-cover rounded-xl shadow-2xl border-4 border-white/30"
+              />
             </div>
-          </div>
+          )}
+          
+          {/* Conteúdo */}
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-4">
+              <Trophy className="w-12 h-12 text-yellow-400" />
+              <div>
+                <h1 className="text-4xl font-bold">Desafio 12+12+12</h1>
+                <p className="text-xl">A cada 12 clientes ativos, ganha na hora PIX de R$ 800,00</p>
+              </div>
+            </div>
 
           {timeLeft && (
             <div className="grid grid-cols-4 gap-4 mt-6">
@@ -135,9 +141,10 @@ export default function CampanhaDesafio() {
             </div>
           )}
 
-          <div className="mt-4 flex items-center gap-2 text-yellow-200">
-            <Calendar className="w-5 h-5" />
-            <span className="font-semibold">Esta campanha termina no dia 30/04/2026</span>
+            <div className="mt-4 flex items-center gap-2 text-yellow-200">
+              <Calendar className="w-5 h-5" />
+              <span className="font-semibold">Esta campanha termina no dia 30/04/2026</span>
+            </div>
           </div>
         </div>
       </div>
