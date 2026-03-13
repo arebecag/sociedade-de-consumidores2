@@ -110,7 +110,7 @@ export default function CampanhaDesafio() {
               <img 
                 src={campanha.imagemUrl} 
                 alt="Desafio 12+12+12" 
-                className="w-48 h-48 object-cover rounded-xl shadow-2xl border-4 border-white/30"
+                className="w-auto h-auto max-w-md rounded-xl shadow-2xl border-4 border-white/30"
               />
             </div>
           )}
