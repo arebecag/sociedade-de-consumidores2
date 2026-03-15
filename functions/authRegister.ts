@@ -14,12 +14,24 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const { full_name, email, password, referrer_id, referrer_name } = await req.json();
 
+    // Validar campos obrigatórios
     if (!full_name || !email || !password) {
       return Response.json({ error: 'Campos obrigatórios faltando' }, { status: 400 });
     }
 
+    // Validar formato de email
+    const emailNormalized = email.toLowerCase().trim();
+    if (!/\S+@\S+\.\S+/.test(emailNormalized)) {
+      return Response.json({ error: 'Formato de e-mail inválido' }, { status: 400 });
+    }
+
+    // Validar força da senha
+    if (password.length < 8) {
+      return Response.json({ error: 'Senha deve ter no mínimo 8 caracteres' }, { status: 400 });
+    }
+
     // Validar email único
-    const existingUsers = await base44.asServiceRole.entities.LoginUser.filter({ email: email.toLowerCase() });
+    const existingUsers = await base44.asServiceRole.entities.LoginUser.filter({ email: emailNormalized });
     if (existingUsers.length > 0) {
       return Response.json({ error: 'E-mail já cadastrado' }, { status: 409 });
     }
@@ -29,9 +41,9 @@ Deno.serve(async (req) => {
 
     // Criar LoginUser (sem partner_id ainda - será definido depois)
     const loginUser = await base44.asServiceRole.entities.LoginUser.create({
-      email: email.toLowerCase(),
+      email: emailNormalized,
       password_hash,
-      full_name,
+      full_name: full_name.trim(),
       partner_id: null, // Será vinculado depois que o Partner for criado
       status: 'pending',
       is_email_verified: false
@@ -44,7 +56,7 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.EmailVerificationCode.create({
       user_id: loginUser.id,
-      email: email.toLowerCase(),
+      email: emailNormalized,
       code: verificationCode,
       expires_at: expiresAt.toISOString(),
       used: false
@@ -54,7 +66,7 @@ Deno.serve(async (req) => {
     // NOTA: Para receber emails, o usuário precisa estar convidado no Base44 via dashboard
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
-        to: email,
+        to: emailNormalized,
         subject: 'Verificação de E-mail - Sociedade de Consumidores',
         body: `
           <h2>Bem-vindo à Sociedade de Consumidores!</h2>

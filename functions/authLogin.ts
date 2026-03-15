@@ -18,9 +18,14 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'E-mail e senha são obrigatórios' }, { status: 400 });
     }
 
-    // Buscar usuário
+    // Buscar usuário e validar entrada
+    const emailNormalized = email.toLowerCase().trim();
+    if (!emailNormalized || !/\S+@\S+\.\S+/.test(emailNormalized)) {
+      return Response.json({ error: 'E-mail inválido' }, { status: 400 });
+    }
+
     const users = await base44.asServiceRole.entities.LoginUser.filter({ 
-      email: email.toLowerCase() 
+      email: emailNormalized
     });
 
     if (users.length === 0) {

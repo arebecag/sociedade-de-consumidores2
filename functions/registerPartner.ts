@@ -10,10 +10,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
+    // Validar e normalizar email
+    const emailNormalized = partnerData.email.toLowerCase().trim();
+    
     // Verificar se já existe Partner para este email (evitar duplicatas)
-    const existingByEmail = await base44.asServiceRole.entities.Partner.filter({ email: partnerData.email });
+    const existingByEmail = await base44.asServiceRole.entities.Partner.filter({ email: emailNormalized });
     if (existingByEmail.length > 0) {
-      console.log('[registerPartner] Partner já existe para email:', partnerData.email);
+      console.log('[registerPartner] Partner já existe para email:', emailNormalized);
       return Response.json({ partner: existingByEmail[0], alreadyExisted: true });
     }
 
@@ -22,13 +25,13 @@ Deno.serve(async (req) => {
     if (!loginUserId || loginUserId === 'pending') {
       try {
         const loginUsers = await base44.asServiceRole.entities.LoginUser.filter({ 
-          email: partnerData.email.toLowerCase() 
+          email: emailNormalized
         });
         if (loginUsers.length > 0) {
           loginUserId = loginUsers[0].id;
           console.log('[registerPartner] LoginUser encontrado:', loginUserId);
         } else {
-          console.warn('[registerPartner] LoginUser não encontrado para:', partnerData.email);
+          console.warn('[registerPartner] LoginUser não encontrado para:', emailNormalized);
           return Response.json({ error: 'LoginUser não encontrado. Registre-se primeiro.' }, { status: 404 });
         }
       } catch (e) {
@@ -37,9 +40,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Criar Partner com service role
+    // Criar Partner com service role (garantir email normalizado)
     const newPartner = await base44.asServiceRole.entities.Partner.create({ 
-      ...partnerData, 
+      ...partnerData,
+      email: emailNormalized,
       user_id: loginUserId 
     });
     console.log('[registerPartner] Partner criado:', newPartner.id, newPartner.full_name);
@@ -79,7 +83,7 @@ Deno.serve(async (req) => {
 
       // NOTA: Para receber emails, o usuário precisa estar convidado no Base44 via dashboard
       await base44.asServiceRole.integrations.Core.SendEmail({
-        to: partnerData.email,
+        to: emailNormalized,
         subject: 'Seu código de verificação - Sociedade de Consumidores',
         body: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #09090b; color: #fff; border-radius: 12px;">
@@ -103,7 +107,7 @@ Deno.serve(async (req) => {
           </div>
         `
       });
-      console.log('[registerPartner] Email de verificação (código) enviado para:', partnerData.email);
+      console.log('[registerPartner] Email de verificação (código) enviado para:', emailNormalized);
     } catch (emailErr) {
       console.error('[registerPartner] Erro ao enviar email de verificação (não crítico):', emailErr.message);
     }

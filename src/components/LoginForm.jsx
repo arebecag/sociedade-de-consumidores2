@@ -31,10 +31,11 @@ export default function LoginForm({ onLoginSuccess }) {
 
     setLoading(true);
     try {
-      await login(formData.email.toLowerCase(), formData.password);
+      await login(formData.email.toLowerCase().trim(), formData.password);
       toast.success("Login realizado com sucesso!");
       if (onLoginSuccess) onLoginSuccess();
     } catch (error) {
+      console.error('[LoginForm] Erro:', error);
       toast.error(error.message || "E-mail ou senha incorretos");
     } finally {
       setLoading(false);
