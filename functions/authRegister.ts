@@ -39,6 +39,15 @@ Deno.serve(async (req) => {
     // Hash da senha
     const password_hash = await hashPassword(password);
 
+    // Convidar usuário no Base44 para permitir envio de emails
+    try {
+      await base44.asServiceRole.users.inviteUser(emailNormalized, 'user');
+      console.log('[authRegister] Usuário convidado no Base44:', emailNormalized);
+    } catch (inviteError) {
+      console.error('[authRegister] Erro ao convidar usuário:', inviteError);
+      // Continua mesmo se falhar o convite
+    }
+
     // Criar LoginUser (sem partner_id ainda - será definido depois)
     const loginUser = await base44.asServiceRole.entities.LoginUser.create({
       email: emailNormalized,
@@ -62,37 +71,28 @@ Deno.serve(async (req) => {
       used: false
     });
 
-    // Se não tiver indicador (será vinculado ao Eder), ativar automaticamente
-    if (!referrer_id) {
+    // Enviar email de verificação
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: emailNormalized,
+        subject: 'Verificação de E-mail - Sociedade de Consumidores',
+        body: `
+          <h2>Bem-vindo à Sociedade de Consumidores!</h2>
+          <p>Seu código de verificação é:</p>
+          <h1 style="color: #f97316; font-size: 32px; letter-spacing: 4px;">${verificationCode}</h1>
+          <p>Este código expira em 24 horas.</p>
+          <p>Se você não se cadastrou, ignore este e-mail.</p>
+        `
+      });
+      console.log('[authRegister] Email de verificação enviado com sucesso');
+    } catch (emailError) {
+      console.error('Erro ao enviar email:', emailError);
+      // Se falhar ao enviar, ativar automaticamente
       await base44.asServiceRole.entities.LoginUser.update(loginUser.id, {
         is_email_verified: true,
         status: 'active'
       });
-      console.log('[authRegister] Usuário sem indicador, conta ativada automaticamente');
-    } else {
-      // Enviar email de verificação apenas se tiver indicador
-      // NOTA: Para receber emails, o usuário precisa estar convidado no Base44 via dashboard
-      try {
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: emailNormalized,
-          subject: 'Verificação de E-mail - Sociedade de Consumidores',
-          body: `
-            <h2>Bem-vindo à Sociedade de Consumidores!</h2>
-            <p>Seu código de verificação é:</p>
-            <h1 style="color: #f97316; font-size: 32px; letter-spacing: 4px;">${verificationCode}</h1>
-            <p>Este código expira em 24 horas.</p>
-            <p>Se você não se cadastrou, ignore este e-mail.</p>
-          `
-        });
-      } catch (emailError) {
-        console.error('Erro ao enviar email:', emailError);
-        // Se falhar ao enviar, ativar mesmo assim
-        await base44.asServiceRole.entities.LoginUser.update(loginUser.id, {
-          is_email_verified: true,
-          status: 'active'
-        });
-        console.log('[authRegister] Falha ao enviar email, conta ativada automaticamente');
-      }
+      console.log('[authRegister] Falha ao enviar email, conta ativada automaticamente');
     }
 
     return Response.json({
