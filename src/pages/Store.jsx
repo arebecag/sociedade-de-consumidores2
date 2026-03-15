@@ -136,17 +136,26 @@ export default function Store() {
           dataVencimento: dueDateStr
         });
 
+        console.log('[Store] Resposta do boleto:', boletoResp);
         const boletoData = boletoResp.data;
+        console.log('[Store] Dados do boleto:', boletoData);
+        
         const invoiceUrl = boletoData?.boleto?.invoiceUrl || boletoData?.boleto?.bankSlipUrl;
+        console.log('[Store] Invoice URL:', invoiceUrl);
 
         if (invoiceUrl) {
-          toast.success("Boleto gerado! Redirecionando para pagamento...");
-          setPurchaseDialogOpen(false);
-          setSelectedProduct(null);
-          loadData(partner);
+          toast.success("Boleto gerado! Abrindo link de pagamento...", { duration: 5000 });
           window.open(invoiceUrl, "_blank");
+          
+          // Aguardar um pouco antes de fechar o dialog
+          setTimeout(() => {
+            setPurchaseDialogOpen(false);
+            setSelectedProduct(null);
+            loadData(partner);
+          }, 1000);
           return;
         } else {
+          console.error('[Store] Link do boleto não encontrado na resposta');
           toast.warning("Compra registrada, mas não foi possível gerar o link do boleto. Verifique 'Minhas Cobranças'.");
         }
       } else {
