@@ -20,10 +20,12 @@ export default function RegisterCustom() {
   const [invalidReferrer, setInvalidReferrer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [passwordStrength, setPasswordStrength] = useState({ valid: false, message: '' });
@@ -107,6 +109,9 @@ export default function RegisterCustom() {
       newErrors.email = 'E-mail inválido';
     }
     if (!passwordStrength.valid) newErrors.password = passwordStrength.message || 'Senha inválida';
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'As senhas não coincidem';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -167,8 +172,8 @@ export default function RegisterCustom() {
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-8">
           <div className="inline-block mb-4">
-            <span className="text-4xl font-black text-orange-500 tracking-tight">SC</span>
-            <span className="text-4xl font-black text-white tracking-tight"> 3X3</span>
+            <span className="text-4xl font-black text-white tracking-tight">3X3</span>
+            <span className="text-4xl font-black text-orange-500 tracking-tight"> SC</span>
           </div>
           <p className="text-gray-400 text-sm">Sociedade de Consumidores</p>
         </div>
@@ -251,6 +256,32 @@ export default function RegisterCustom() {
                   </p>
                 )}
                 {errors.password && <p className="text-red-400 text-xs">{errors.password}</p>}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword" className="text-gray-300 text-sm">Repetir Senha *</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                    className="bg-zinc-800 border-zinc-700 text-white focus:border-orange-500 pr-10"
+                    placeholder="Digite a senha novamente"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                  <p className="text-green-500 text-xs">✓ Senhas coincidem</p>
+                )}
+                {errors.confirmPassword && <p className="text-red-400 text-xs">{errors.confirmPassword}</p>}
               </div>
 
               <Button

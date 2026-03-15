@@ -21,13 +21,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Parceiro não encontrado' }, { status: 404 });
     }
 
-    const apiKey = Deno.env.get('BLING_API_KEY');
-    if (!apiKey) {
+    // Obter token válido do OAuth
+    const tokenRes = await base44.functions.invoke('blingObterTokenValido', {});
+    
+    if (!tokenRes.data?.success || !tokenRes.data?.access_token) {
       return Response.json({ 
-        error: 'BLING_API_KEY não configurada',
-        message: 'Configure a chave de API do Bling nas configurações'
+        error: 'Integração Bling não está conectada',
+        message: 'Conecte o Bling primeiro em Admin > Bling'
       }, { status: 500 });
     }
+
+    const accessToken = tokenRes.data.access_token;
 
     // Preparar dados da nota fiscal (NFe de serviço - NFS-e)
     const notaData = {
@@ -61,12 +65,13 @@ Deno.serve(async (req) => {
       informacoes_adicionais_contribuinte: 'Venda realizada através da plataforma Sociedade de Consumidores'
     };
 
-    // Emitir nota no Bling
-    const response = await fetch('https://api.bling.com.br/Api/v3/nfe', {
+    // Emitir nota no Bling (usando OAuth token)
+    const response = await fetch('https://www.bling.com.br/Api/v3/nfe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json'
       },
       body: JSON.stringify(notaData)
     });
@@ -84,16 +89,17 @@ Deno.serve(async (req) => {
     console.log('[Bling] Nota emitida com sucesso:', result.data?.numero);
 
     // Registrar log da emissão
-    await base44.asServiceRole.entities.LogsFinanceiro.create({
-      usuarioId: partnerId,
-      tipo: 'nota_fiscal_emitida',
-      descricao: `Nota fiscal emitida: ${result.data?.numero || 'N/A'}`,
-      valor: amount,
-      metadata: {
+    await base44.asServiceRole.entities.LogIntegracaoBling.create({
+      tipo: 'api_call',
+      status: 'sucesso',
+      mensagem: `Nota fiscal emitida: ${result.data?.numero || 'N/A'}`,
+      detalhes: {
+        partnerId,
         numeroNota: result.data?.numero,
         chaveAcesso: result.data?.chave_acesso,
         purchaseId,
-        productName
+        productName,
+        valor: amount
       }
     });
 

@@ -222,6 +222,27 @@ export default function Store() {
         </AlertDescription>
       </Alert>
 
+      {/* Venda seus produtos */}
+      <Alert className="bg-blue-500/10 border-blue-500/30">
+        <Package className="w-4 h-4 text-blue-400" />
+        <AlertDescription className="text-blue-200">
+          <div className="space-y-2">
+            <p className="font-bold text-blue-100">GANHE MAIS!</p>
+            <p className="text-sm">Você tem produtos:</p>
+            <ul className="text-sm ml-4 list-disc space-y-1">
+              <li>Físicos</li>
+              <li>Digitais</li>
+              <li>Ou Serviços</li>
+            </ul>
+            <p className="text-sm">Para vender?</p>
+            <p className="font-semibold">Coloque GRÁTIS seus produtos à venda em nossa loja.</p>
+            <p className="text-sm mt-2">
+              📞 Consulte o SUPORTE: <a href="https://wa.me/5511951453200" target="_blank" className="text-blue-300 hover:text-blue-200 underline font-semibold">(11) 95145-3200</a>
+            </p>
+          </div>
+        </AlertDescription>
+      </Alert>
+
       {/* First Purchase Alert */}
       {partner && !partner.first_purchase_done && (
         <Alert className="bg-orange-500/10 border-orange-500/30">
