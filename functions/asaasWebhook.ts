@@ -98,6 +98,24 @@ Deno.serve(async (req) => {
           console.error(`[asaasWebhook] Erro ao processar purchase: ${e.message}`);
         }
 
+        // Emitir nota fiscal automaticamente
+        try {
+          const internalSecret = Deno.env.get("INTERNAL_SECRET");
+          await fetch(`${req.url.replace('/asaasWebhook', '/blingEmitirNotaAutomatica')}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-internal-secret': internalSecret || ''
+            },
+            body: JSON.stringify({
+              payment_id: payment.id
+            })
+          });
+          console.log(`[asaasWebhook] Nota fiscal automática solicitada para payment ${payment.id}`);
+        } catch (notaErr) {
+          console.error(`[asaasWebhook] Erro ao emitir nota fiscal: ${notaErr.message}`);
+        }
+
         // Enviar email de boas-vindas / ativação
         try {
           const parceirosEmail = await base44.asServiceRole.entities.Partner.filter({ id: boleto.userId });

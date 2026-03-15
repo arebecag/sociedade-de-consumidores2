@@ -87,6 +87,16 @@ export default function AdminNotasFiscais() {
         </div>
       </div>
 
+      {/* Info sobre emissão automática */}
+      <Card className="bg-blue-500/10 border-blue-500/20">
+        <CardContent className="p-4">
+          <p className="text-blue-200 text-sm">
+            ℹ️ <strong>Emissão Automática:</strong> Quando um pagamento é confirmado pela Asaas, a nota fiscal é emitida automaticamente. 
+            Use o formulário abaixo apenas para emitir notas que falharam ou para casos especiais.
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Emitir Nova Nota */}
         <Card className="bg-zinc-900 border-orange-500/20">
