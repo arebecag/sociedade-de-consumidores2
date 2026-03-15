@@ -43,7 +43,6 @@ const AuthenticatedApp = () => {
       <Route path="/CampanhaDesafio" element={<LayoutWrapper currentPageName="CampanhaDesafio"><CampanhaDesafio /></LayoutWrapper>} />
       <Route path="/AdminCampanhas" element={<LayoutWrapper currentPageName="AdminCampanhas"><AdminCampanhas /></LayoutWrapper>} />
       <Route path="/AdminBling" element={<LayoutWrapper currentPageName="AdminBling"><AdminBling /></LayoutWrapper>} />
-      <Route path="/integracoes/bling/callback" element={<div />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   )
