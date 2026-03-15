@@ -57,14 +57,14 @@ export default function VerifyEmail() {
         {status === "success" && (
           <div className="flex flex-col items-center gap-4 py-6">
             <CheckCircle className="w-16 h-16 text-green-500" />
-            <h2 className="text-xl font-bold text-white">Email verificado!</h2>
+            <h2 className="text-xl font-bold text-white">Email verificado com sucesso!</h2>
             <p className="text-gray-300">{message}</p>
-            <p className="text-gray-500 text-sm">Clique abaixo para entrar na sua conta.</p>
+            <p className="text-gray-500 text-sm">Agora você pode fazer login na sua conta.</p>
             <Button
-              onClick={() => base44.auth.redirectToLogin(createPageUrl("Dashboard"))}
+              onClick={() => window.location.href = createPageUrl("Register")}
               className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-8"
             >
-              Entrar na minha conta
+              Fazer Login
             </Button>
           </div>
         )}
