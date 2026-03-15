@@ -60,14 +60,16 @@ export default function Register() {
       
       if (code) {
         setReferrerCode(code);
-        loadReferrer(code);
+        await loadReferrer(code);
       } else {
         // Sem código de indicação → usar indicador padrão (admin)
-        loadReferrer(DEFAULT_REFERRER_CODE);
+        setReferrerCode(DEFAULT_REFERRER_CODE);
+        await loadReferrer(DEFAULT_REFERRER_CODE);
       }
     } catch (error) {
       console.error("Error checking first user:", error);
       setLoadingReferrer(false);
+      setInvalidReferrer(false); // Não bloquear se erro
     }
   };
 
@@ -104,12 +106,26 @@ export default function Register() {
       setReferrerName(partners[0].display_name || partners[0].full_name);
       setReferrerPartnerId(partners[0].id);
       setInvalidReferrer(false);
+      console.log('[Register] Indicador carregado:', partners[0].full_name);
     } else {
-      setInvalidReferrer(true);
+      // Se é código padrão mas não encontrou, permitir cadastro sem indicador
+      const isDefaultCode = normalizedCode === DEFAULT_REFERRER_CODE;
+      if (isDefaultCode) {
+        console.warn('[Register] Código padrão não encontrado, permitindo cadastro sem indicador');
+        setReferrerName("Sem indicador");
+        setReferrerPartnerId(null);
+        setInvalidReferrer(false);
+      } else {
+        console.error('[Register] Código inválido:', normalizedCode);
+        setInvalidReferrer(true);
+      }
     }
   } catch (error) {
     console.error("Error loading referrer:", error);
-    setInvalidReferrer(true);
+    // Em caso de erro, não bloquear - permitir cadastro
+    setInvalidReferrer(false);
+    setReferrerName("Sem indicador");
+    setReferrerPartnerId(null);
   } finally {
     setLoadingReferrer(false);
   }
