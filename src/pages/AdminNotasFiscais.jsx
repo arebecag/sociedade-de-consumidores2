@@ -31,7 +31,7 @@ export default function AdminNotasFiscais() {
 
   const { data: logs = [] } = useQuery({
     queryKey: ['notas-logs'],
-    queryFn: () => base44.entities.LogsFinanceiro.filter({ tipo: 'nota_fiscal_emitida' })
+    queryFn: () => base44.entities.LogIntegracaoBling.filter({ tipo: 'api_call', status: 'sucesso' })
   });
 
   const filteredPartners = partners.filter(p => 
@@ -218,19 +218,21 @@ export default function AdminNotasFiscais() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <p className="text-white font-medium text-sm">
-                          NF {log.metadata?.numeroNota || 'N/A'}
+                          NF {log.detalhes?.numeroNota || 'N/A'}
                         </p>
-                        <p className="text-gray-400 text-xs">{log.descricao}</p>
-                        <p className="text-green-500 text-sm font-semibold mt-1">
-                          R$ {log.valor?.toFixed(2)}
-                        </p>
+                        <p className="text-gray-400 text-xs">{log.mensagem}</p>
+                        {log.detalhes?.valor && (
+                          <p className="text-green-500 text-sm font-semibold mt-1">
+                            R$ {log.detalhes.valor?.toFixed(2)}
+                          </p>
+                        )}
                         <p className="text-gray-500 text-xs mt-1">
                           {new Date(log.created_date).toLocaleString('pt-BR')}
                         </p>
                       </div>
-                      {log.metadata?.link_pdf && (
+                      {log.detalhes?.link_pdf && (
                         <a
-                          href={log.metadata.link_pdf}
+                          href={log.detalhes.link_pdf}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-orange-500 hover:text-orange-400"
