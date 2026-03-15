@@ -140,7 +140,9 @@ export default function Store() {
         const boletoData = boletoResp.data;
         console.log('[Store] Dados do boleto:', boletoData);
         
-        const invoiceUrl = boletoData?.boleto?.invoiceUrl || boletoData?.boleto?.bankSlipUrl;
+        // A API retorna { boleto: {...} } diretamente
+        const boleto = boletoData?.boleto;
+        const invoiceUrl = boleto?.invoiceUrl || boleto?.bankSlipUrl;
         console.log('[Store] Invoice URL:', invoiceUrl);
 
         if (invoiceUrl) {
