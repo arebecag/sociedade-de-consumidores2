@@ -581,12 +581,7 @@ export default function Register() {
               <TabsContent value="register">
                 <form onSubmit={handleSubmit} className="space-y-6">
               {/* Referrer Info */}
-              {isFirstUser ? (
-                <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-                  <p className="text-orange-400 text-sm font-medium">Primeiro cadastro — sem indicador</p>
-                </div>
-              ) : referrerPartnerId ? (
+              {referrerName && referrerName !== "Sem indicador" ? (
                 <div className="p-3 bg-zinc-800 rounded-lg border border-zinc-700 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                     <span className="text-orange-400 text-xs font-bold">{referrerName[0]}</span>
@@ -596,20 +591,7 @@ export default function Register() {
                     <p className="text-white font-semibold text-sm">{referrerName}</p>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <Label className="text-gray-300 text-sm">Código do Indicador *</Label>
-                  <Input
-                    placeholder="Ex: ABC12345"
-                    className="bg-zinc-800 border-zinc-700 text-white focus:border-orange-500 uppercase"
-                    onChange={(e) => handleManualReferrerCode(e.target.value)}
-                  />
-                  {referrerPartnerId && referrerName && (
-                    <p className="text-green-500 text-xs">✓ Indicador: {referrerName}</p>
-                  )}
-                  {errors.referrer && <p className="text-red-500 text-xs">{errors.referrer}</p>}
-                </div>
-              )}
+              ) : null}
 
               {/* Full Name */}
               <div className="space-y-1.5">
