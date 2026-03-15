@@ -426,9 +426,13 @@ export default function Register() {
         throw new Error("Falha ao criar perfil: " + (res.data?.error || "Tente novamente."));
       }
 
-      toast.success("✅ Cadastro realizado! Verifique seu e-mail e faça login.", { duration: 8000 });
-      // Redirecionar para uma página de "email enviado" ou login
-      navigate(createPageUrl("Dashboard"));
+      toast.success("🎉 Parabéns! Cadastro efetuado com sucesso! Sua conta está ativa e você já pode entrar.", { duration: 8000 });
+      
+      // Mudar para aba de login após 2 segundos
+      setTimeout(() => {
+        setActiveTab("login");
+        setLoading(false);
+      }, 2000);
 
     } catch (xe) {
       console.error("[Register] ERRO:", xe?.message, xe?.response?.data);
