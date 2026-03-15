@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
 
     // Enviar email de verificação
     // NOTA: Para receber emails, o usuário precisa estar convidado no Base44 via dashboard
+    let emailSent = false;
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: emailNormalized,
@@ -76,8 +77,15 @@ Deno.serve(async (req) => {
           <p>Se você não se cadastrou, ignore este e-mail.</p>
         `
       });
+      emailSent = true;
     } catch (emailError) {
       console.error('Erro ao enviar email:', emailError);
+      // Se não conseguir enviar email, ativar a conta automaticamente
+      await base44.asServiceRole.entities.LoginUser.update(loginUser.id, {
+        is_email_verified: true,
+        status: 'active'
+      });
+      console.log('[authRegister] Email não enviado, conta ativada automaticamente');
     }
 
     return Response.json({
