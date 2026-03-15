@@ -62,30 +62,37 @@ Deno.serve(async (req) => {
       used: false
     });
 
-    // Enviar email de verificação
-    // NOTA: Para receber emails, o usuário precisa estar convidado no Base44 via dashboard
-    let emailSent = false;
-    try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: emailNormalized,
-        subject: 'Verificação de E-mail - Sociedade de Consumidores',
-        body: `
-          <h2>Bem-vindo à Sociedade de Consumidores!</h2>
-          <p>Seu código de verificação é:</p>
-          <h1 style="color: #f97316; font-size: 32px; letter-spacing: 4px;">${verificationCode}</h1>
-          <p>Este código expira em 24 horas.</p>
-          <p>Se você não se cadastrou, ignore este e-mail.</p>
-        `
-      });
-      emailSent = true;
-    } catch (emailError) {
-      console.error('Erro ao enviar email:', emailError);
-      // Se não conseguir enviar email, ativar a conta automaticamente
+    // Se não tiver indicador (será vinculado ao Eder), ativar automaticamente
+    if (!referrer_id) {
       await base44.asServiceRole.entities.LoginUser.update(loginUser.id, {
         is_email_verified: true,
         status: 'active'
       });
-      console.log('[authRegister] Email não enviado, conta ativada automaticamente');
+      console.log('[authRegister] Usuário sem indicador, conta ativada automaticamente');
+    } else {
+      // Enviar email de verificação apenas se tiver indicador
+      // NOTA: Para receber emails, o usuário precisa estar convidado no Base44 via dashboard
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: emailNormalized,
+          subject: 'Verificação de E-mail - Sociedade de Consumidores',
+          body: `
+            <h2>Bem-vindo à Sociedade de Consumidores!</h2>
+            <p>Seu código de verificação é:</p>
+            <h1 style="color: #f97316; font-size: 32px; letter-spacing: 4px;">${verificationCode}</h1>
+            <p>Este código expira em 24 horas.</p>
+            <p>Se você não se cadastrou, ignore este e-mail.</p>
+          `
+        });
+      } catch (emailError) {
+        console.error('Erro ao enviar email:', emailError);
+        // Se falhar ao enviar, ativar mesmo assim
+        await base44.asServiceRole.entities.LoginUser.update(loginUser.id, {
+          is_email_verified: true,
+          status: 'active'
+        });
+        console.log('[authRegister] Falha ao enviar email, conta ativada automaticamente');
+      }
     }
 
     return Response.json({
