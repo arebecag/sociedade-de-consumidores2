@@ -97,6 +97,7 @@ function LayoutContent({ children, currentPageName }) {
     menuItems.push({ name: "Admin: Saques", icon: ArrowDownCircle, page: "AdminSaques" });
     menuItems.push({ name: "Admin: Cadastrados", icon: Users, page: "AdminCadastrados" });
     menuItems.push({ name: "Admin: Notas Fiscais", icon: FileText, page: "AdminNotasFiscais" });
+    menuItems.push({ name: "Admin: Bling", icon: Globe, page: "AdminBling" });
   }
 
   const NavContent = () => (

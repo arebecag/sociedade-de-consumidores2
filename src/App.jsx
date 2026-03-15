@@ -10,6 +10,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError'
 import AdminNotasFiscais from '@/pages/AdminNotasFiscais'
 import CampanhaDesafio from '@/pages/CampanhaDesafio'
 import AdminCampanhas from '@/pages/AdminCampanhas'
+import AdminBling from '@/pages/AdminBling'
 
 const { Pages, Layout, mainPage } = pagesConfig
 const mainPageKey = mainPage ?? Object.keys(Pages)[0]
@@ -41,6 +42,8 @@ const AuthenticatedApp = () => {
       <Route path="/AdminNotasFiscais" element={<LayoutWrapper currentPageName="AdminNotasFiscais"><AdminNotasFiscais /></LayoutWrapper>} />
       <Route path="/CampanhaDesafio" element={<LayoutWrapper currentPageName="CampanhaDesafio"><CampanhaDesafio /></LayoutWrapper>} />
       <Route path="/AdminCampanhas" element={<LayoutWrapper currentPageName="AdminCampanhas"><AdminCampanhas /></LayoutWrapper>} />
+      <Route path="/AdminBling" element={<LayoutWrapper currentPageName="AdminBling"><AdminBling /></LayoutWrapper>} />
+      <Route path="/integracoes/bling/callback" element={<div />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   )
