@@ -47,15 +47,19 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminBling from './pages/AdminBling';
 import AdminCadastrados from './pages/AdminCadastrados';
+import AdminCampanhas from './pages/AdminCampanhas';
 import AdminContrato from './pages/AdminContrato';
 import AdminCursosEAD from './pages/AdminCursosEAD';
 import AdminFinanceiro from './pages/AdminFinanceiro';
 import AdminNetwork from './pages/AdminNetwork';
+import AdminNotasFiscais from './pages/AdminNotasFiscais';
 import AdminPagamentos from './pages/AdminPagamentos';
 import AdminPagamentosTed from './pages/AdminPagamentosTed';
 import AdminSaques from './pages/AdminSaques';
 import Bonus from './pages/Bonus';
+import CampanhaDesafio from './pages/CampanhaDesafio';
 import Dashboard from './pages/Dashboard';
 import Extrato from './pages/Extrato';
 import FAQ from './pages/FAQ';
@@ -82,15 +86,19 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminBling": AdminBling,
     "AdminCadastrados": AdminCadastrados,
+    "AdminCampanhas": AdminCampanhas,
     "AdminContrato": AdminContrato,
     "AdminCursosEAD": AdminCursosEAD,
     "AdminFinanceiro": AdminFinanceiro,
     "AdminNetwork": AdminNetwork,
+    "AdminNotasFiscais": AdminNotasFiscais,
     "AdminPagamentos": AdminPagamentos,
     "AdminPagamentosTed": AdminPagamentosTed,
     "AdminSaques": AdminSaques,
     "Bonus": Bonus,
+    "CampanhaDesafio": CampanhaDesafio,
     "Dashboard": Dashboard,
     "Extrato": Extrato,
     "FAQ": FAQ,
