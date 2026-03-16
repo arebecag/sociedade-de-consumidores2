@@ -17,7 +17,7 @@ export default function Bonus() {
   const loadData = async () => {
     try {
       const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
+      const partners = await base44.entities.Partner.filter({ email: user.email });
       
       if (partners.length > 0) {
         setPartner(partners[0]);
