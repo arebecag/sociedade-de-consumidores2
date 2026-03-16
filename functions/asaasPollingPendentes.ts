@@ -29,28 +29,43 @@ Deno.serve(async (req) => {
 
       if (novoStatus === cobranca.status) continue;
 
-      // Atualizar URLs se disponíveis
-      if (data.invoiceUrl || data.bankSlipUrl) {
-        await base44.asServiceRole.entities.Financeiro.update(cobranca.id, {
-          invoiceUrl: data.invoiceUrl || cobranca.invoiceUrl,
-          bankSlipUrl: data.bankSlipUrl || cobranca.bankSlipUrl
-        });
-      }
-
-      // Delegar atualização de status e bônus para atualizarStatusBoleto com secret interno
-      const internalSecret = Deno.env.get("INTERNAL_SECRET");
-      const appId = Deno.env.get("BASE44_APP_ID");
-      const fnUrl = `https://appfunctions.base44.com/api/apps/${appId}/functions/atualizarStatusBoleto`;
-      await fetch(fnUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-internal-secret": internalSecret || ""
-        },
-        body: JSON.stringify({ paymentId: cobranca.asaasPaymentId, status: novoStatus })
+      // Atualizar status da cobrança
+      await base44.asServiceRole.entities.Financeiro.update(cobranca.id, {
+        status: novoStatus,
+        invoiceUrl: data.invoiceUrl || cobranca.invoiceUrl,
+        bankSlipUrl: data.bankSlipUrl || cobranca.bankSlipUrl
       });
 
-      if (["CONFIRMED", "RECEIVED"].includes(novoStatus)) confirmadas++;
+      // Se confirmado/recebido, processar ativação
+      if (["CONFIRMED", "RECEIVED"].includes(novoStatus)) {
+        confirmadas++;
+        
+        // Buscar parceiro
+        const parceiro = await base44.asServiceRole.entities.Partner.filter({ email: cobranca.userEmail });
+        if (parceiro.length === 0) continue;
+        const partner = parceiro[0];
+
+        // Se primeira compra, ativar
+        if (!partner.first_purchase_done) {
+          await base44.asServiceRole.entities.Partner.update(partner.id, {
+            status: "ativo",
+            first_purchase_done: true,
+            pending_reasons: []
+          });
+
+          // Distribuir comissões
+          await base44.asServiceRole.functions.invoke('distribuirComissoes', {
+            purchaseId: cobranca.id,
+            partnerId: partner.id,
+            amount: cobranca.valor
+          });
+        }
+
+        // Liberar acesso
+        await base44.asServiceRole.functions.invoke('liberarAcesso', {
+          financeiroId: cobranca.id
+        });
+      }
     }
 
     return Response.json({
