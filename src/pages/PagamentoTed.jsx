@@ -12,6 +12,7 @@ import { toast } from "sonner";
 const formatCurrency = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
 
 export default function PagamentoTed() {
+  const { partner } = useAuthCustom();
   const [step, setStep] = useState("valor"); // valor | aguardando | enviado
   const [valor, setValor] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,12 +22,13 @@ export default function PagamentoTed() {
   const [meusPagamentos, setMeusPagamentos] = useState([]);
   const [loadingHistorico, setLoadingHistorico] = useState(true);
 
-  useEffect(() => { loadHistorico(); }, []);
+  useEffect(() => { 
+    if (partner) loadHistorico(); 
+  }, [partner]);
 
   const loadHistorico = async () => {
     try {
-      const user = await base44.auth.me();
-      const pags = await base44.entities.PagamentosTED.filter({ usuarioId: user.id }, "-created_date", 10);
+      const pags = await base44.entities.PagamentosTED.filter({ usuarioId: partner.id }, "-created_date", 10);
       setMeusPagamentos(pags);
     } catch (e) {
       console.error(e);
