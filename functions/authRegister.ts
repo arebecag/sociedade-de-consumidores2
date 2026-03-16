@@ -98,6 +98,7 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       user_id: loginUser.id,
+      email: emailNormalized,
       message: 'Cadastro realizado! Verifique seu e-mail.'
     });
 

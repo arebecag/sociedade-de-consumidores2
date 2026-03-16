@@ -293,6 +293,7 @@ export default function CampanhaDesafio() {
           <p>✅ O pagamento é feito via PIX na hora</p>
           <p>✅ Você pode acumular múltiplos prêmios (24 clientes = R$ 1.600, 36 clientes = R$ 2.400...)</p>
           <p>✅ Apenas clientes com status ATIVO na GlobalEAD são contabilizados</p>
+          <p>✅ Apenas clientes com status ATIVO na Sociedade de Consumidores são contabilizados</p>
           <p>⏰ Campanha válida até <strong className="text-orange-500">30/04/2026</strong></p>
         </CardContent>
       </Card>
