@@ -41,30 +41,19 @@ Deno.serve(async (req) => {
         confirmadas++;
         
         // Buscar parceiro
-        const parceiro = await base44.asServiceRole.entities.Partner.filter({ email: cobranca.userEmail });
-        if (parceiro.length === 0) continue;
-        const partner = parceiro[0];
+        const parceiros = await base44.asServiceRole.entities.Partner.filter({ email: cobranca.userEmail });
+        if (parceiros.length > 0) {
+          const partner = parceiros[0];
 
-        // Se primeira compra, ativar
-        if (!partner.first_purchase_done) {
-          await base44.asServiceRole.entities.Partner.update(partner.id, {
-            status: "ativo",
-            first_purchase_done: true,
-            pending_reasons: []
-          });
-
-          // Distribuir comissões
-          await base44.asServiceRole.functions.invoke('distribuirComissoes', {
-            purchaseId: cobranca.id,
-            partnerId: partner.id,
-            amount: cobranca.valor
-          });
+          // Se primeira compra, ativar
+          if (!partner.first_purchase_done) {
+            await base44.asServiceRole.entities.Partner.update(partner.id, {
+              status: "ativo",
+              first_purchase_done: true,
+              pending_reasons: []
+            });
+          }
         }
-
-        // Liberar acesso
-        await base44.asServiceRole.functions.invoke('liberarAcesso', {
-          financeiroId: cobranca.id
-        });
       }
     }
 
