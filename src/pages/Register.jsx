@@ -426,13 +426,26 @@ export default function Register() {
         throw new Error("Falha ao criar perfil: " + (res.data?.error || "Tente novamente."));
       }
 
-      toast.success("🎉 Parabéns! Cadastro efetuado com sucesso! Sua conta está ativa e você já pode entrar.", { duration: 8000 });
+      toast.success("🎉 Cadastro realizado com sucesso! Use seu e-mail e senha para entrar.", { duration: 5000 });
       
-      // Mudar para aba de login após 2 segundos
+      // Limpar formulário e mudar para aba de login
+      setFormData({
+        full_name: "",
+        birth_date: "",
+        gender: "",
+        email: "",
+        phone: "",
+        password: "",
+        accepted_terms: false,
+        accepted_rules: false
+      });
+      setPasswordStrength({ valid: false, message: "" });
+      
+      // Mudar para aba de login após 1.5 segundos
       setTimeout(() => {
         setActiveTab("login");
         setLoading(false);
-      }, 2000);
+      }, 1500);
 
     } catch (xe) {
       console.error("[Register] ERRO:", xe?.message, xe?.response?.data);
