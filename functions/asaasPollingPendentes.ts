@@ -29,32 +29,93 @@ Deno.serve(async (req) => {
 
       if (novoStatus === cobranca.status) continue;
 
-      // Atualizar status da cobrança
-      await base44.asServiceRole.entities.Financeiro.update(cobranca.id, {
+      // Preparar atualização
+      const updateData = { 
         status: novoStatus,
         invoiceUrl: data.invoiceUrl || cobranca.invoiceUrl,
         bankSlipUrl: data.bankSlipUrl || cobranca.bankSlipUrl
-      });
+      };
 
-      // Se confirmado/recebido, processar ativação
+      // Se confirmado/recebido, processar ativação e comissões
       if (["CONFIRMED", "RECEIVED"].includes(novoStatus)) {
         confirmadas++;
-        
-        // Buscar parceiro
-        const parceiros = await base44.asServiceRole.entities.Partner.filter({ email: cobranca.userEmail });
-        if (parceiros.length > 0) {
-          const partner = parceiros[0];
+        updateData.dataPagamento = new Date().toISOString();
+        updateData.acessoLiberado = true;
 
-          // Se primeira compra, ativar
-          if (!partner.first_purchase_done) {
-            await base44.asServiceRole.entities.Partner.update(partner.id, {
-              status: "ativo",
-              first_purchase_done: true,
-              pending_reasons: []
+        // Distribuir comissões apenas uma vez
+        if (!cobranca.bonusLiberado) {
+          updateData.bonusLiberado = true;
+
+          // Marcar first_purchase_done no parceiro e ativar
+          const parceiros = await base44.asServiceRole.entities.Partner.filter({ id: cobranca.userId });
+          if (parceiros.length > 0) {
+            const parceiro = parceiros[0];
+            const pendingReasons = (parceiro.pending_reasons || []).filter(r => r !== "Falta da primeira compra");
+            const updatePartner = { first_purchase_done: true, pending_reasons: pendingReasons };
+            if (pendingReasons.length === 0) {
+              updatePartner.status = "ativo";
+            }
+            await base44.asServiceRole.entities.Partner.update(cobranca.userId, updatePartner);
+          }
+
+          // Distribuir comissões
+          try {
+            const internalSecret = Deno.env.get("INTERNAL_SECRET");
+            await fetch(`https://appfunctions.base44.com/api/apps/${Deno.env.get("BASE44_APP_ID")}/functions/distribuirComissoes`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-internal-secret': internalSecret || ''
+              },
+              body: JSON.stringify({
+                purchaseId: cobranca.id,
+                amount: cobranca.valor,
+                buyerPartnerId: cobranca.userId
+              })
             });
+          } catch (e) {
+            console.error(`Erro ao distribuir comissões: ${e.message}`);
+          }
+
+          // Processar compra pendente
+          try {
+            const internalSecret = Deno.env.get("INTERNAL_SECRET");
+            await fetch(`https://appfunctions.base44.com/api/apps/${Deno.env.get("BASE44_APP_ID")}/functions/processPurchasePayment`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-internal-secret': internalSecret || ''
+              },
+              body: JSON.stringify({
+                financeiroId: cobranca.id,
+                partnerId: cobranca.userId
+              })
+            });
+          } catch (e) {
+            console.error(`Erro ao processar purchase: ${e.message}`);
+          }
+
+          // Emitir nota fiscal
+          try {
+            const internalSecret = Deno.env.get("INTERNAL_SECRET");
+            await fetch(`https://appfunctions.base44.com/api/apps/${Deno.env.get("BASE44_APP_ID")}/functions/blingEmitirNotaAutomatica`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-internal-secret': internalSecret || ''
+              },
+              body: JSON.stringify({ payment_id: cobranca.asaasPaymentId })
+            });
+          } catch (e) {
+            console.error(`Erro ao emitir nota: ${e.message}`);
           }
         }
+      } else if (novoStatus === "OVERDUE") {
+        updateData.acessoLiberado = false;
       }
+
+      // Atualizar cobrança
+      await base44.asServiceRole.entities.Financeiro.update(cobranca.id, updateData);
     }
 
     return Response.json({
