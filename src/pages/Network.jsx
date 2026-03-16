@@ -29,7 +29,7 @@ export default function Network() {
   const loadData = async () => {
     try {
       const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
+      const partners = await base44.entities.Partner.filter({ email: user.email });
       
       if (partners.length > 0) {
         const p = partners[0];
