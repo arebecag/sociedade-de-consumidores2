@@ -29,7 +29,7 @@ export default function MinhasCobranças() {
   const loadData = async () => {
     try {
       const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
+      const partners = await base44.entities.Partner.filter({ user_id: user.id });
       if (partners.length > 0) {
         setPartner(partners[0]);
         const data = await base44.entities.Financeiro.filter({ userId: partners[0].id }, "-created_date", 20);
