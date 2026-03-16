@@ -20,22 +20,28 @@ const STATUS_CONFIG = {
 };
 
 export default function MinhasCobranças() {
+  const { partner: authPartner } = useAuthCustom();
   const [cobranças, setCobranças] = useState([]);
   const [loading, setLoading] = useState(true);
   const [gerandoBoleto, setGerandoBoleto] = useState(false);
   const [partner, setPartner] = useState(null);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    if (authPartner) {
+      setPartner(authPartner);
+      loadCobranças(authPartner.id);
+    }
+  }, [authPartner]);
 
-  const loadData = async () => {
+  const loadData = () => {
+    if (authPartner) loadCobranças(authPartner.id);
+  };
+
+  const loadCobranças = async (partnerId) => {
+    setLoading(true);
     try {
-      const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ user_id: user.id });
-      if (partners.length > 0) {
-        setPartner(partners[0]);
-        const data = await base44.entities.Financeiro.filter({ userId: partners[0].id }, "-created_date", 20);
-        setCobranças(data);
-      }
+      const data = await base44.entities.Financeiro.filter({ userId: partnerId }, "-created_date", 20);
+      setCobranças(data);
     } catch (e) {
       console.error(e);
     } finally {
