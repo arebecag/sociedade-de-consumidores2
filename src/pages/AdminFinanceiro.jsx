@@ -55,6 +55,18 @@ export default function AdminFinanceiro() {
     }
   };
 
+  const processarPagamentoManual = async (financeiroId) => {
+    if (!confirm("Confirma processar este pagamento manualmente? Isso irá ativar o parceiro, enviar email e emitir nota fiscal.")) return;
+    
+    try {
+      const res = await base44.functions.invoke("adminProcessarPagamento", { financeiroId });
+      toast.success("Pagamento processado com sucesso!");
+      loadData();
+    } catch (e) {
+      toast.error("Erro ao processar: " + (e.message || "Tente novamente"));
+    }
+  };
+
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
 
   if (!user) return (
@@ -150,6 +162,16 @@ export default function AdminFinanceiro() {
                           <a href={c.invoiceUrl} target="_blank" rel="noreferrer">
                             <Button size="sm" variant="outline" className="border-zinc-700 text-gray-400 text-xs">Ver Fatura</Button>
                           </a>
+                        )}
+                        {c.status === "PENDING" && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => processarPagamentoManual(c.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                          >
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Processar Agora
+                          </Button>
                         )}
                       </div>
                     </div>
