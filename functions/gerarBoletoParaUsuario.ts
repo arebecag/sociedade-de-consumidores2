@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         name: partner.full_name,
         cpfCnpj: cpfLimpo,
-        email: user.email,
+        email: partner.email,
         mobilePhone: (partner.phone || "").replace(/\D/g, ""),
         address: partner.address?.street || undefined,
         addressNumber: partner.address?.number || undefined,
