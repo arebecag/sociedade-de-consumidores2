@@ -102,60 +102,69 @@ function LayoutContent({ children, currentPageName }) {
 
   const NavContent = () => (
     <div className="flex flex-col h-full">
-      <div className="p-6 border-b border-orange-500/20">
-        <h1 className="text-xl font-bold text-orange-500">Sociedade de</h1>
-        <h1 className="text-xl font-bold text-white">Consumidores</h1>
+      {/* Logo */}
+      <div className="px-5 py-5 border-b border-zinc-800">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center font-black text-white text-base flex-shrink-0">3</div>
+          <div>
+            <p className="text-white font-black text-sm leading-none">Sociedade de</p>
+            <p className="text-orange-500 font-black text-sm leading-none">Consumidores</p>
+          </div>
+        </div>
       </div>
+
+      {/* User card */}
+      {authPartner && (
+        <div className="mx-3 mt-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+              <span className="text-orange-400 text-sm font-bold">
+                {(authPartner.display_name || authPartner.full_name || "?")[0]}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-xs font-semibold truncate">{authPartner.display_name || authPartner.full_name}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                  authPartner.status === 'ativo' ? 'bg-green-500' :
+                  authPartner.status === 'pendente' ? 'bg-yellow-500' : 'bg-red-500'
+                }`} />
+                <span className={`text-xs font-semibold ${
+                  authPartner.status === 'ativo' ? 'text-green-400' :
+                  authPartner.status === 'pendente' ? 'text-yellow-400' : 'text-red-400'
+                }`}>{authPartner.status?.toUpperCase()}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto mt-1">
         {menuItems.map((item) => (
           <Link
             key={item.page}
             to={createPageUrl(item.page)}
             onClick={() => setIsOpen(false)}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
               currentPageName === item.page
                 ? "bg-orange-500 text-white"
-                : "text-gray-300 hover:bg-orange-500/10 hover:text-orange-500"
+                : "text-gray-400 hover:bg-zinc-800 hover:text-white"
             }`}
           >
-            <item.icon className="w-5 h-5 flex-shrink-0 min-w-[20px]" />
-            <span className="font-semibold text-base">{item.name}</span>
+            <item.icon className="w-4 h-4 flex-shrink-0" />
+            <span className="font-medium text-sm">{item.name}</span>
           </Link>
         ))}
       </nav>
 
-      <div className="p-4 border-t border-orange-500/20">
-        {authPartner && (
-          <div className="mb-4 p-3 bg-orange-500/10 rounded-lg">
-            <p className="text-xs text-gray-400 mb-1">Conta</p>
-            <p className="text-white text-sm font-medium truncate">{authPartner.display_name || authPartner.full_name}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
-                authPartner.status === 'ativo' ? 'bg-green-500' :
-                authPartner.status === 'pendente' ? 'bg-yellow-500' : 'bg-red-500'
-              }`} />
-              <p className={`text-sm font-semibold ${
-                authPartner.status === 'ativo' ? 'text-green-500' :
-                authPartner.status === 'pendente' ? 'text-yellow-500' : 'text-red-500'
-              }`}>
-                {authPartner.status?.toUpperCase()}
-              </p>
-            </div>
-            {authPartner.status === 'pendente' && authPartner.pending_reasons?.length > 0 && (
-              <p className="text-yellow-600 text-xs mt-1 leading-tight">
-                {authPartner.pending_reasons[0]}
-              </p>
-            )}
-          </div>
-        )}
+      <div className="p-3 border-t border-zinc-800">
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start text-gray-400 hover:text-orange-500 hover:bg-orange-500/10"
+          className="w-full justify-start text-gray-500 hover:text-white hover:bg-zinc-800 rounded-xl px-3 h-10"
         >
-          <LogOut className="w-5 h-5 mr-3" />
-          Sair
+          <LogOut className="w-4 h-4 mr-3" />
+          <span className="text-sm font-medium">Sair</span>
         </Button>
       </div>
     </div>
@@ -164,24 +173,26 @@ function LayoutContent({ children, currentPageName }) {
   return (
     <div className="min-h-screen bg-black">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-zinc-950 border-r border-orange-500/20">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-zinc-950 border-r border-zinc-800">
         <NavContent />
       </aside>
 
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-zinc-950 border-b border-orange-500/20">
-        <div className="flex items-center justify-between p-4">
-          <div>
-            <h1 className="text-lg font-bold text-orange-500">Sociedade de</h1>
-            <h1 className="text-sm font-bold text-white">Consumidores</h1>
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-zinc-950 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-4 h-14">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-sm">3</div>
+            <div>
+              <p className="text-white font-black text-sm leading-none">Sociedade de <span className="text-orange-500">Consumidores</span></p>
+            </div>
           </div>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-orange-500">
-                <Menu className="w-6 h-6" />
+              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0 bg-zinc-950 border-orange-500/20">
+            <SheetContent side="left" className="w-64 p-0 bg-zinc-950 border-zinc-800">
               <NavContent />
             </SheetContent>
           </Sheet>
