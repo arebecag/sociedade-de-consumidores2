@@ -476,7 +476,7 @@ export default function Profile() {
         )}
       </div>
 
-      <Tabs defaultValue="personal" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="bg-zinc-900 border border-orange-500/20">
           <TabsTrigger value="personal" className="data-[state=active]:bg-orange-500">
             <User className="w-4 h-4 mr-2" />
