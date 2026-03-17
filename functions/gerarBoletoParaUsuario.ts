@@ -5,8 +5,6 @@ const PROXY_URL = "https://arebecag-asaas-proxy.vercel.app";
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: "Não autorizado" }, { status: 401 });
 
     const { userId, valor, descricao, dataVencimento } = await req.json();
     if (!userId || !valor || !dataVencimento) {
