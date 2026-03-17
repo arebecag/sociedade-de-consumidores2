@@ -29,6 +29,8 @@ export default function RegisterCustom() {
   });
   const [errors, setErrors] = useState({});
   const [passwordStrength, setPasswordStrength] = useState({ valid: false, message: '' });
+  const [cadastroSucesso, setCadastroSucesso] = useState(false);
+  const [nomeRegistrado, setNomeRegistrado] = useState('');
 
   const DEFAULT_REFERRER_CODE = 'WKK321P5';
 
