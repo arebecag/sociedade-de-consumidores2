@@ -344,13 +344,12 @@ export default function Profile() {
         gender: formData.gender || partner.gender || "prefiro_nao_informar",
         phone: formData.phone || partner.phone || "",
         full_name: formData.full_name || partner.full_name || "",
-        birth_date: formData.birth_date || partner.birth_date || "",
+        birth_date: formData.birth_date || partner.birth_date || null,
       };
 
-      // Remove empty string fields that are not required to avoid validation errors
-      // Also remove nested objects with empty fields to avoid crashes on mobile
+      // Remove empty string fields to avoid validation errors
       Object.keys(updateData).forEach(key => {
-        if (updateData[key] === "" && !["full_name", "birth_date", "gender", "phone"].includes(key)) {
+        if (updateData[key] === "" && key !== "full_name" && key !== "phone" && key !== "gender") {
           updateData[key] = null;
         }
       });
