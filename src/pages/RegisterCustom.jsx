@@ -131,8 +131,8 @@ export default function RegisterCustom() {
         referrerName
       );
 
-      toast.success('✅ Cadastro realizado! Verifique seu e-mail para confirmar.');
-      navigate(createPageUrl('LoginCustom'));
+      setNomeRegistrado(formData.full_name.split(' ')[0]);
+      setCadastroSucesso(true);
     } catch (error) {
       console.error('[Register] Erro:', error);
       const msg = error.message || '';
