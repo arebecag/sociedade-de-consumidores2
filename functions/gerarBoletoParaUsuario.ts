@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
     // 6. Salvar no banco
     const boleto = await base44.asServiceRole.entities.Financeiro.create({
       userId,
-      userEmail: user.email,
+      userEmail: partner.email,
       userName: partner.full_name,
       asaasCustomerId,
       asaasPaymentId: cobrancaData.id,
