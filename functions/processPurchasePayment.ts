@@ -76,17 +76,7 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.Partner.update(partnerId, partnerUpdates);
     console.log(`[processPurchasePayment] Partner ${partner.full_name} atualizado - first_purchase_done: true`);
 
-    // 5. Distribuir comissões (15% direto, 30% indireto)
-    try {
-      const comissoesRes = await base44.asServiceRole.functions.invoke('distribuirComissoes', {
-        purchaseId: purchase.id,
-        amount: purchase.amount,
-        buyerPartnerId: partnerId
-      });
-      console.log(`[processPurchasePayment] Comissões distribuídas:`, comissoesRes.data);
-    } catch (e) {
-      console.error(`[processPurchasePayment] Erro ao distribuir comissões: ${e.message}`);
-    }
+    // Nota: comissões são distribuídas pelo polling/webhook que chama distribuirComissoes diretamente
 
     // 6. Buscar produto para obter link de download
     let downloadLink = '';

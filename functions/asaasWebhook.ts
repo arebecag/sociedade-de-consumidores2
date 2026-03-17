@@ -58,27 +58,6 @@ Deno.serve(async (req) => {
           console.log(`[asaasWebhook] Parceiro ${parceiro.full_name} atualizado - first_purchase_done: true`);
         }
 
-        // Distribuir comissões (15% direto, 30% indireto)
-        try {
-          const internalSecret = Deno.env.get("INTERNAL_SECRET");
-          const comissoesRes = await fetch(`${req.url.replace('/asaasWebhook', '/distribuirComissoes')}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-internal-secret': internalSecret || ''
-            },
-            body: JSON.stringify({
-              purchaseId: boleto.id,
-              amount: boleto.valor,
-              buyerPartnerId: boleto.userId
-            })
-          });
-          const comissoesData = await comissoesRes.json();
-          console.log(`[asaasWebhook] Comissões distribuídas para compra ${boleto.id}:`, JSON.stringify(comissoesData));
-        } catch (e) {
-          console.error(`[asaasWebhook] Erro ao distribuir comissões: ${e.message}`);
-        }
-
         // Processar compra pendente (ativa, distribui comissões, libera acesso)
         try {
           const internalSecret = Deno.env.get("INTERNAL_SECRET");
