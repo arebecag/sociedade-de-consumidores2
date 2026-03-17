@@ -147,6 +147,46 @@ export default function RegisterCustom() {
     }
   };
 
+  if (cadastroSucesso) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="w-full max-w-md text-center space-y-6">
+          <div className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
+            <CheckCircle className="w-14 h-14 text-green-500" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black text-white mb-2">Cadastro realizado!</h1>
+            <p className="text-xl text-orange-500 font-bold">Bem-vindo(a), {nomeRegistrado}! 🎉</p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-5 text-left space-y-3">
+            <p className="text-gray-300 text-sm font-semibold">Próximos passos:</p>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+              <p className="text-gray-400 text-sm">Verifique seu <strong className="text-white">e-mail</strong> para confirmar sua conta</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+              <p className="text-gray-400 text-sm">Faça <strong className="text-white">login</strong> com seu e-mail e senha</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+              <p className="text-gray-400 text-sm">Complete seu <strong className="text-white">perfil</strong> e realize sua primeira compra para ser ativado</p>
+            </div>
+          </div>
+          <Button
+            onClick={() => navigate(createPageUrl('LoginCustom'))}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold h-12 text-base"
+          >
+            Ir para o Login →
+          </Button>
+          <p className="text-gray-600 text-xs">
+            ⚠️ Não tente se cadastrar novamente — sua conta já foi criada!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (loadingReferrer) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
