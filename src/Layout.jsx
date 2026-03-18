@@ -8,9 +8,8 @@ import FinanceiroGuard from "@/components/FinanceiroGuard";
 import {
   LayoutDashboard, User, ShoppingBag, Users, FileText, Receipt,
   LogOut, Menu, Award, Globe, CreditCard, HelpCircle, Megaphone,
-  GraduationCap, DollarSign, ArrowDownCircle, Trophy, ChevronRight
+  GraduationCap, DollarSign, ArrowDownCircle, Trophy, X
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const menuItems = [
@@ -34,17 +33,17 @@ const menuItems = [
 ];
 
 const adminMenuItems = [
-  { name: "Campanhas",    icon: Trophy,          page: "AdminCampanhas" },
-  { name: "Auditoria",    icon: Users,           page: "AdminNetwork" },
-  { name: "EAD",          icon: GraduationCap,   page: "AdminCursosEAD" },
-  { name: "Contrato",     icon: FileText,        page: "AdminContrato" },
-  { name: "Pagamentos",   icon: CreditCard,      page: "AdminPagamentos" },
-  { name: "TED",          icon: CreditCard,      page: "AdminPagamentosTed" },
-  { name: "Financeiro",   icon: DollarSign,      page: "AdminFinanceiro" },
-  { name: "Saques",       icon: ArrowDownCircle, page: "AdminSaques" },
-  { name: "Cadastrados",  icon: Users,           page: "AdminCadastrados" },
-  { name: "Notas Fiscais",icon: FileText,        page: "AdminNotasFiscais" },
-  { name: "Bling",        icon: Globe,           page: "AdminBling" },
+  { name: "Campanhas",     icon: Trophy,          page: "AdminCampanhas" },
+  { name: "Auditoria",     icon: Users,           page: "AdminNetwork" },
+  { name: "EAD",           icon: GraduationCap,   page: "AdminCursosEAD" },
+  { name: "Contrato",      icon: FileText,        page: "AdminContrato" },
+  { name: "Pagamentos",    icon: CreditCard,      page: "AdminPagamentos" },
+  { name: "TED",           icon: CreditCard,      page: "AdminPagamentosTed" },
+  { name: "Financeiro",    icon: DollarSign,      page: "AdminFinanceiro" },
+  { name: "Saques",        icon: ArrowDownCircle, page: "AdminSaques" },
+  { name: "Cadastrados",   icon: Users,           page: "AdminCadastrados" },
+  { name: "Notas Fiscais", icon: FileText,        page: "AdminNotasFiscais" },
+  { name: "Bling",         icon: Globe,           page: "AdminBling" },
 ];
 
 function NavItem({ item, currentPageName, onClick }) {
@@ -53,81 +52,81 @@ function NavItem({ item, currentPageName, onClick }) {
     <Link
       to={createPageUrl(item.page)}
       onClick={onClick}
-      className={`group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
         isActive
           ? "bg-orange-500 text-white"
-          : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04]"
+          : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
       }`}
     >
-      <item.icon className={`w-[15px] h-[15px] flex-shrink-0 ${isActive ? "text-white" : "text-zinc-600 group-hover:text-zinc-300"}`} />
-      <span className="truncate">{item.name}</span>
+      <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-zinc-600"}`} />
+      <span className="truncate leading-none">{item.name}</span>
     </Link>
   );
 }
 
 function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, onLogout }) {
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full bg-[#0d0d0d]">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-[60px] border-b border-white/[0.04] flex-shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-sm flex-shrink-0">3</div>
+      <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.05]">
+        <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-sm flex-shrink-0">
+          3
+        </div>
         <div className="leading-none">
-          <p className="text-white font-bold text-[13px]">Sociedade de</p>
-          <p className="text-orange-500 font-bold text-[13px]">Consumidores</p>
+          <p className="text-white font-bold text-xs">Sociedade de</p>
+          <p className="text-orange-500 font-bold text-xs">Consumidores</p>
         </div>
       </div>
 
-      {/* User card */}
+      {/* User chip */}
       {authPartner && (
-        <div className="mx-3 mt-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] flex-shrink-0">
-          <div className="flex items-center gap-2.5">
+        <div className="mx-3 mt-3 mb-1 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0">
               <span className="text-orange-400 text-sm font-bold">
                 {(authPartner.display_name || authPartner.full_name || "?")[0]}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-zinc-200 text-xs font-semibold truncate">{authPartner.display_name || authPartner.full_name}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                  authPartner.status === 'ativo' ? 'bg-green-500' :
-                  authPartner.status === 'pendente' ? 'bg-yellow-500' : 'bg-red-500'
-                }`} />
-                <span className={`text-[10px] font-bold tracking-wide ${
-                  authPartner.status === 'ativo' ? 'text-green-400' :
-                  authPartner.status === 'pendente' ? 'text-yellow-400' : 'text-red-400'
-                }`}>{authPartner.status?.toUpperCase()}</span>
-              </div>
+              <p className="text-zinc-200 text-xs font-semibold truncate">
+                {authPartner.display_name || authPartner.full_name}
+              </p>
+              <span className={`text-[10px] font-bold ${
+                authPartner.status === "ativo" ? "text-green-400" :
+                authPartner.status === "pendente" ? "text-yellow-400" : "text-red-400"
+              }`}>
+                {authPartner.status?.toUpperCase()}
+              </span>
             </div>
           </div>
         </div>
       )}
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5 min-h-0">
+      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
         {menuItems.map(item => (
           <NavItem key={item.page} item={item} currentPageName={currentPageName} onClick={onLinkClick} />
         ))}
 
-        {authUser?.role === 'admin' && (
+        {authUser?.role === "admin" && (
           <>
-            <div className="pt-4 pb-1 px-3">
+            <div className="pt-3 pb-1 px-3">
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-700">Admin</p>
             </div>
             {adminMenuItems.map(item => (
-              <NavItem key={item.page} item={{ ...item, name: item.name }} currentPageName={currentPageName} onClick={onLinkClick} />
+              <NavItem key={item.page} item={item} currentPageName={currentPageName} onClick={onLinkClick} />
             ))}
           </>
         )}
       </nav>
 
-      {/* Footer */}
-      <div className="flex-shrink-0 px-2 py-3 border-t border-white/[0.04]">
+      {/* Logout */}
+      <div className="px-2 py-3 border-t border-white/[0.05]">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-300 hover:bg-white/[0.04] transition-all"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-300 hover:bg-white/5 transition-colors"
         >
-          <LogOut className="w-[15px] h-[15px] flex-shrink-0" />
+          <LogOut className="w-4 h-4 flex-shrink-0" />
           <span>Sair</span>
         </button>
       </div>
@@ -137,7 +136,7 @@ function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, o
 
 function LayoutContent({ children, currentPageName }) {
   const { user: authUser, partner: authPartner, logout: authLogout, isAuthenticated } = useAuthCustom();
-  const [isOpen, setIsOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
 
   const publicPages = ["LandingPage", "Register", "PartnerSite", "VerifyEmail", "RegisterCustom", "ForgotPassword"];
@@ -146,7 +145,7 @@ function LayoutContent({ children, currentPageName }) {
     if (!publicPages.includes(currentPageName) && !isAuthenticated()) {
       navigate(createPageUrl("Register"));
     }
-  }, [currentPageName, isAuthenticated]);
+  }, [currentPageName]);
 
   const handleLogout = async () => {
     try { await authLogout(); } catch {}
@@ -158,9 +157,9 @@ function LayoutContent({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 overflow-x-hidden">
+    <div className="flex h-screen bg-[#0a0a0a] overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-[220px] lg:flex-col bg-[#0d0d0d] border-r border-white/[0.04] z-30">
+      <aside className="hidden lg:flex lg:flex-col w-[220px] flex-shrink-0 border-r border-white/[0.04] h-screen sticky top-0">
         <SidebarContent
           currentPageName={currentPageName}
           authUser={authUser}
@@ -170,38 +169,45 @@ function LayoutContent({ children, currentPageName }) {
         />
       </aside>
 
-      {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 inset-x-0 z-50 h-14 bg-[#0d0d0d] border-b border-white/[0.04] flex items-center justify-between px-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-xs">3</div>
-          <span className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></span>
-        </div>
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <button className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/[0.04] transition-all">
-              <Menu className="w-5 h-5" />
-            </button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[220px] p-0 bg-[#0d0d0d] border-white/[0.04]">
-            <SidebarContent
-              currentPageName={currentPageName}
-              authUser={authUser}
-              authPartner={authPartner}
-              onLinkClick={() => setIsOpen(false)}
-              onLogout={handleLogout}
-            />
-          </SheetContent>
-        </Sheet>
-      </header>
+      {/* Content column */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Mobile top bar */}
+        <header className="lg:hidden flex-shrink-0 h-14 bg-[#0d0d0d] border-b border-white/[0.05] flex items-center justify-between px-4 z-40">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-xs flex-shrink-0">
+              3
+            </div>
+            <span className="text-white font-bold text-sm">
+              Sociedade de <span className="text-orange-500">Consumidores</span>
+            </span>
+          </div>
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <button className="p-2 rounded-lg text-zinc-500 hover:text-white hover:bg-white/5 transition-colors">
+                <Menu className="w-5 h-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[220px] p-0 bg-[#0d0d0d] border-white/[0.05]">
+              <SidebarContent
+                currentPageName={currentPageName}
+                authUser={authUser}
+                authPartner={authPartner}
+                onLinkClick={() => setMobileOpen(false)}
+                onLogout={handleLogout}
+              />
+            </SheetContent>
+          </Sheet>
+        </header>
 
-      {/* Main */}
-      <main className="lg:pl-[220px] pt-14 lg:pt-0 min-h-screen w-full overflow-x-hidden">
-        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-          <FinanceiroGuard currentPageName={currentPageName}>
-            {children}
-          </FinanceiroGuard>
-        </div>
-      </main>
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+            <FinanceiroGuard currentPageName={currentPageName}>
+              {children}
+            </FinanceiroGuard>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
