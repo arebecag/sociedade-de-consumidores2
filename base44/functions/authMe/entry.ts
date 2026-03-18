@@ -1,4 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import * as jose from 'npm:jose@5.10.0';
+
+const JWT_SECRET = new TextEncoder().encode(Deno.env.get('INTERNAL_SECRET') || 'sc3x3-secret-key-2024');
 
 Deno.serve(async (req) => {
   try {
@@ -9,32 +12,33 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Token não fornecido' }, { status: 401 });
     }
 
-    // Buscar sessão pelo token apenas (evita scan composto lento)
-    const sessions = await base44.asServiceRole.entities.LoginSession.filter({ token });
-    if (sessions.length === 0) {
-      return Response.json({ error: 'Sessão inválida' }, { status: 401 });
+    // Verificar JWT (sem acesso ao banco)
+    let payload;
+    try {
+      const result = await jose.jwtVerify(token, JWT_SECRET);
+      payload = result.payload;
+    } catch (e) {
+      return Response.json({ error: 'Token inválido ou expirado' }, { status: 401 });
     }
 
-    const session = sessions[0];
-
-    if (!session.is_active) {
-      return Response.json({ error: 'Sessão inativa' }, { status: 401 });
-    }
-
-    if (new Date(session.expires_at) < new Date()) {
-      await base44.asServiceRole.entities.LoginSession.update(session.id, { is_active: false });
-      return Response.json({ error: 'Sessão expirada' }, { status: 401 });
+    const userId = payload.uid;
+    if (!userId) {
+      return Response.json({ error: 'Token inválido' }, { status: 401 });
     }
 
     // Buscar usuário pelo ID
-    const users = await base44.asServiceRole.entities.LoginUser.filter({ id: session.user_id });
+    const users = await base44.asServiceRole.entities.LoginUser.filter({ id: userId });
     if (users.length === 0) {
       return Response.json({ error: 'Usuário não encontrado' }, { status: 401 });
     }
 
     const loginUser = users[0];
 
-    // Buscar Partner vinculado
+    if (loginUser.status === 'blocked') {
+      return Response.json({ error: 'Conta bloqueada' }, { status: 403 });
+    }
+
+    // Buscar Partner
     let partner = null;
     try {
       if (loginUser.partner_id) {
@@ -45,9 +49,7 @@ Deno.serve(async (req) => {
         const partnersByEmail = await base44.asServiceRole.entities.Partner.filter({ email: loginUser.email });
         if (partnersByEmail.length > 0) {
           partner = partnersByEmail[0];
-          if (!loginUser.partner_id) {
-            await base44.asServiceRole.entities.LoginUser.update(loginUser.id, { partner_id: partner.id });
-          }
+          base44.asServiceRole.entities.LoginUser.update(loginUser.id, { partner_id: partner.id }).catch(() => {});
         }
       }
     } catch (e) {
