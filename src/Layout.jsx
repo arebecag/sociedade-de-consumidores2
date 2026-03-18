@@ -72,10 +72,7 @@ function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, o
         <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-sm flex-shrink-0">
           3
         </div>
-        <div className="leading-none">
-          <p className="text-white font-bold text-xs">Sociedade de</p>
-          <p className="text-orange-500 font-bold text-xs">Consumidores</p>
-        </div>
+        <p className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></p>
       </div>
 
       {/* User chip */}
@@ -177,9 +174,7 @@ function LayoutContent({ children, currentPageName }) {
             <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-xs flex-shrink-0">
               3
             </div>
-            <span className="text-white font-bold text-sm">
-              Sociedade de <span className="text-orange-500">Consumidores</span>
-            </span>
+            <span className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></span>
           </div>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
