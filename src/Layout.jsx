@@ -155,7 +155,7 @@ function LayoutContent({ children, currentPageName }) {
   }
 
   return (
-    <div className="flex h-screen bg-[#1a1a1a] overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{backgroundColor: '#1a1a1a'}}>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col w-[220px] flex-shrink-0 border-r border-white/[0.04] h-screen sticky top-0">
         <SidebarContent
