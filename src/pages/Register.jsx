@@ -229,10 +229,7 @@ export default function Register() {
           {/* Logo */}
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="flex items-center gap-3">
-            <div className="flex flex-col items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25 flex-shrink-0">
-              <span className="text-white font-black text-[11px] leading-none">SC</span>
-              <span className="text-white font-black text-[11px] leading-none">3X3</span>
-            </div>
+            <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-12 h-12 object-contain flex-shrink-0" />
             <div>
               <p className="text-white font-black text-lg leading-none">Sociedade de</p>
               <p className="text-orange-500 font-black text-lg leading-none">Consumidores</p>
@@ -285,10 +282,7 @@ export default function Register() {
             {/* Mobile logo */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
               className="lg:hidden flex items-center gap-3 mb-10 justify-center">
-              <div className="flex flex-col items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25 flex-shrink-0">
-                <span className="text-white font-black text-[10px] leading-none">SC</span>
-                <span className="text-white font-black text-[10px] leading-none">3X3</span>
-              </div>
+              <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-11 h-11 object-contain flex-shrink-0" />
               <div>
                 <p className="text-white font-black text-base leading-none">Sociedade de</p>
                 <p className="text-orange-500 font-black text-base leading-none">Consumidores</p>

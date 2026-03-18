@@ -69,10 +69,7 @@ function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, o
     <div className="flex flex-col h-full bg-[#0d0d0d]">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.05]">
-        <div className="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-orange-500 flex-shrink-0 leading-none">
-          <span className="text-white font-black text-[9px]">SC</span>
-          <span className="text-white font-black text-[9px]">3X3</span>
-        </div>
+        <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-10 h-10 object-contain flex-shrink-0" />
         <div className="leading-none">
           <p className="text-white font-bold text-xs">Sociedade de</p>
           <p className="text-orange-500 font-bold text-xs">Consumidores</p>
@@ -175,10 +172,7 @@ function LayoutContent({ children, currentPageName }) {
         {/* Mobile top bar */}
         <header className="lg:hidden flex-shrink-0 h-14 bg-[#0d0d0d] border-b border-white/[0.05] flex items-center justify-between px-4 z-40">
           <div className="flex items-center gap-2">
-            <div className="flex flex-col items-center justify-center w-9 h-9 rounded-lg bg-orange-500 flex-shrink-0 leading-none">
-              <span className="text-white font-black text-[8px]">SC</span>
-              <span className="text-white font-black text-[8px]">3X3</span>
-            </div>
+            <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-9 h-9 object-contain flex-shrink-0" />
             <span className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></span>
           </div>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
