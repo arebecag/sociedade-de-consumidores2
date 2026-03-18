@@ -186,7 +186,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex">
+    <div className="min-h-screen bg-zinc-950 flex flex-col lg:flex-row">
       {/* Left panel - branding */}
       <div className="hidden lg:flex lg:w-[45%] bg-gradient-to-br from-zinc-900 via-zinc-950 to-black flex-col justify-between p-12 border-r border-zinc-800">
         <div>
@@ -224,7 +224,7 @@ export default function Register() {
       </div>
 
       {/* Right panel - form */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-10 overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8 overflow-y-auto">
         <div className="w-full max-w-md mx-auto">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
@@ -275,7 +275,7 @@ export default function Register() {
                   {errors.full_name && <p className="text-red-400 text-xs mt-1">{errors.full_name}</p>}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-gray-300 text-sm mb-1.5 block">Nascimento *</Label>
                     <Input type="date" value={formData.birth_date} onChange={e => handleChange("birth_date", e.target.value)}
@@ -292,7 +292,7 @@ export default function Register() {
 
                 <div>
                   <Label className="text-gray-300 text-sm mb-1.5 block">Gênero *</Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                     {[["masculino","Masculino"],["feminino","Feminino"],["outro","Outro"],["prefiro_nao_informar","Prefiro não informar"]].map(([v, l]) => (
                       <button key={v} type="button" onClick={() => handleChange("gender", v)}
                         className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${formData.gender === v ? "bg-orange-500 border-orange-500 text-white" : "bg-zinc-900 border-zinc-700 text-gray-400 hover:border-zinc-500"}`}>

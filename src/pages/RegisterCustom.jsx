@@ -146,7 +146,7 @@ export default function RegisterCustom() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex">
+    <div className="min-h-screen bg-zinc-950 flex flex-col lg:flex-row">
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-[45%] bg-gradient-to-br from-zinc-900 via-zinc-950 to-black flex-col justify-between p-12 border-r border-zinc-800">
         <div>
@@ -182,7 +182,7 @@ export default function RegisterCustom() {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-10">
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8">
         <div className="w-full max-w-md mx-auto">
           <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
             <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white">3</div>

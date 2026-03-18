@@ -200,8 +200,8 @@ function LayoutContent({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main className="lg:pl-64 pt-20 lg:pt-0 min-h-screen">
-        <div className="p-4 lg:p-8">
+      <main className="lg:pl-64 pt-14 lg:pt-0 min-h-screen">
+        <div className="p-4 sm:p-6 lg:p-8">
           <FinanceiroGuard currentPageName={currentPageName}>
             {children}
           </FinanceiroGuard>

@@ -111,12 +111,12 @@ export default function Dashboard() {
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-gray-500 text-sm mb-1">Bem-vindo(a) de volta 👋</p>
-          <h1 className="text-3xl font-black text-white">{partner.display_name || partner.full_name}</h1>
-          <p className="text-gray-500 text-sm mt-1">{partner.email}</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-white break-words">{partner.display_name || partner.full_name}</h1>
+          <p className="text-gray-500 text-sm mt-1 truncate">{partner.email}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 shrink-0">
           <span className={`px-3 py-1.5 rounded-full text-xs font-bold border ${statusInfo.cls}`}>{statusInfo.label}</span>
           <span className={`px-3 py-1.5 rounded-full text-xs font-bold border ${grad.bg} ${grad.color}`}>{grad.label}</span>
           {partner.unique_code && (
@@ -157,7 +157,7 @@ export default function Dashboard() {
             Ver extrato <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {bonusItems.map(({ label, value, icon: Icon, color, bg }) => (
             <div key={label} className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-colors">
               <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center mb-3`}>
@@ -233,7 +233,7 @@ export default function Dashboard() {
       {/* Ações Rápidas */}
       <div>
         <h2 className="text-white font-bold text-lg mb-4">Ações Rápidas</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
           {quickActions.map(({ label, icon: Icon, page, desc }) => (
             <Link key={page} to={createPageUrl(page)}>
               <div className="group p-4 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-orange-500/40 hover:bg-zinc-800/80 transition-all cursor-pointer h-full">
