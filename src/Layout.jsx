@@ -66,7 +66,7 @@ function NavItem({ item, currentPageName, onClick }) {
 
 function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, onLogout }) {
   return (
-    <div className="flex flex-col h-full bg-[#0d0d0d]">
+    <div className="flex flex-col h-full bg-[#1c1c1c]">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.05]">
         <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-10 h-10 object-contain flex-shrink-0" />
@@ -155,7 +155,7 @@ function LayoutContent({ children, currentPageName }) {
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0a0a] overflow-hidden">
+    <div className="flex h-screen bg-[#1a1a1a] overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col w-[220px] flex-shrink-0 border-r border-white/[0.04] h-screen sticky top-0">
         <SidebarContent

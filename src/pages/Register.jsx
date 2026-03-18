@@ -180,7 +180,7 @@ export default function Register() {
 
   if (loadingReferrer) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
           <div className="relative">
             <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
@@ -195,7 +195,7 @@ export default function Register() {
 
   if (invalidReferrer) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center p-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-4 max-w-sm">
           <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
             <AlertCircle className="w-8 h-8 text-red-400" />
@@ -211,11 +211,11 @@ export default function Register() {
   const strengthTextColors = ["", "text-red-400", "text-orange-400", "text-yellow-400", "text-green-400", "text-emerald-400"];
 
   return (
-    <div className="min-h-screen bg-[#080808] flex">
+    <div className="min-h-screen bg-[#1a1a1a] flex">
       {/* ─── LEFT: Branding ─── */}
       <div className="hidden lg:flex lg:w-[44%] relative flex-col overflow-hidden">
         {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-[#0d0d0d] to-[#080808]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-[#1c1c1c] to-[#1a1a1a]" />
         {/* Glow orbs */}
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-orange-500/8 rounded-full blur-[100px]" />
         <div className="absolute bottom-0 right-0 w-80 h-80 bg-orange-600/6 rounded-full blur-[80px]" />
@@ -274,7 +274,7 @@ export default function Register() {
 
       {/* ─── RIGHT: Form ─── */}
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
-        <div className="absolute inset-0 bg-[#0a0a0a]" />
+        <div className="absolute inset-0 bg-[#1a1a1a]" />
 
         <div className="relative z-10 flex flex-col justify-center min-h-screen px-4 sm:px-8 py-10">
           <div className="w-full max-w-[440px] mx-auto">
