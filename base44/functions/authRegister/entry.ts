@@ -39,61 +39,17 @@ Deno.serve(async (req) => {
     // Hash da senha
     const password_hash = await hashPassword(password);
 
-    // Convidar usuário no Base44 para permitir envio de emails
-    try {
-      await base44.asServiceRole.users.inviteUser(emailNormalized, 'user');
-      console.log('[authRegister] Usuário convidado no Base44:', emailNormalized);
-    } catch (inviteError) {
-      console.error('[authRegister] Erro ao convidar usuário:', inviteError);
-      // Continua mesmo se falhar o convite
-    }
-
-    // Criar LoginUser (sem partner_id ainda - será definido depois)
+    // Criar LoginUser com conta já ativa
     const loginUser = await base44.asServiceRole.entities.LoginUser.create({
       email: emailNormalized,
       password_hash,
       full_name: full_name.trim(),
-      partner_id: null, // Será vinculado depois que o Partner for criado
-      status: 'pending',
-      is_email_verified: false
+      partner_id: null,
+      status: 'active',
+      is_email_verified: true
     });
 
-    // Gerar código de verificação
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
-
-    await base44.asServiceRole.entities.EmailVerificationCode.create({
-      user_id: loginUser.id,
-      email: emailNormalized,
-      code: verificationCode,
-      expires_at: expiresAt.toISOString(),
-      used: false
-    });
-
-    // Enviar email de verificação
-    try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: emailNormalized,
-        subject: 'Verificação de E-mail - Sociedade de Consumidores',
-        body: `
-          <h2>Bem-vindo à Sociedade de Consumidores!</h2>
-          <p>Seu código de verificação é:</p>
-          <h1 style="color: #f97316; font-size: 32px; letter-spacing: 4px;">${verificationCode}</h1>
-          <p>Este código expira em 24 horas.</p>
-          <p>Se você não se cadastrou, ignore este e-mail.</p>
-        `
-      });
-      console.log('[authRegister] Email de verificação enviado com sucesso');
-    } catch (emailError) {
-      console.error('Erro ao enviar email:', emailError);
-      // Se falhar ao enviar, ativar automaticamente
-      await base44.asServiceRole.entities.LoginUser.update(loginUser.id, {
-        is_email_verified: true,
-        status: 'active'
-      });
-      console.log('[authRegister] Falha ao enviar email, conta ativada automaticamente');
-    }
+    console.log('[authRegister] Usuário criado com sucesso:', loginUser.id);
 
     return Response.json({
       success: true,
