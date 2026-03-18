@@ -80,7 +80,7 @@ function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, o
       {authPartner && (
         <div className="mx-3 mt-3 mb-1 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0"></div>
+            <div className="w-8 h-8 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0">
               <span className="text-orange-400 text-sm font-bold">
                 {(authPartner.display_name || authPartner.full_name || "?")[0]}
               </span>
