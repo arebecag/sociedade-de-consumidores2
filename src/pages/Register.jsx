@@ -191,11 +191,8 @@ export default function Register() {
       <div className="hidden lg:flex lg:w-[45%] bg-gradient-to-br from-zinc-900 via-zinc-950 to-black flex-col justify-between p-12 border-r border-zinc-800">
         <div>
           <div className="flex items-center gap-3 mb-12">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center font-black text-white text-lg">3</div>
-            <div>
-              <p className="text-white font-black text-lg leading-none">Sociedade de</p>
-              <p className="text-orange-500 font-black text-lg leading-none">Consumidores</p>
-            </div>
+            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center font-black text-white text-lg flex-shrink-0">3</div>
+            <p className="text-white font-black text-lg leading-none">Sociedade de <span className="text-orange-500">Consumidores</span></p>
           </div>
           <h1 className="text-4xl font-black text-white leading-tight mb-4">
             Seu dinheiro<br/><span className="text-orange-500">trabalhando</span><br/>por você.
@@ -228,7 +225,7 @@ export default function Register() {
         <div className="w-full max-w-md mx-auto">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white">3</div>
+            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white flex-shrink-0">3</div>
             <p className="text-white font-black text-lg">Sociedade de <span className="text-orange-500">Consumidores</span></p>
           </div>
 
