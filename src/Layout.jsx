@@ -8,7 +8,7 @@ import FinanceiroGuard from "@/components/FinanceiroGuard";
 import {
   LayoutDashboard, User, ShoppingBag, Users, FileText, Receipt,
   LogOut, Menu, Award, Globe, CreditCard, HelpCircle, Megaphone,
-  GraduationCap, DollarSign, ArrowDownCircle, Trophy, X
+  GraduationCap, DollarSign, ArrowDownCircle, Trophy
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -69,7 +69,11 @@ function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, o
     <div className="flex flex-col h-full bg-card">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.05]">
-        <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-10 h-10 object-contain flex-shrink-0" />
+        <img
+          src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png"
+          alt="SC 3X3"
+          className="w-10 h-10 object-contain flex-shrink-0"
+        />
         <div className="leading-none">
           <p className="text-white font-bold text-xs">Sociedade de</p>
           <p className="text-orange-500 font-bold text-xs">Consumidores</p>
@@ -172,8 +176,14 @@ function LayoutContent({ children, currentPageName }) {
         {/* Mobile top bar */}
         <header className="lg:hidden flex-shrink-0 h-14 bg-card border-b border-border flex items-center justify-between px-4 z-40">
           <div className="flex items-center gap-2">
-            <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-9 h-9 object-contain flex-shrink-0" />
-            <span className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></span>
+            <img
+              src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png"
+              alt="SC 3X3"
+              className="w-9 h-9 object-contain flex-shrink-0"
+            />
+            <span className="text-white font-bold text-sm">
+              Sociedade de <span className="text-orange-500">Consumidores</span>
+            </span>
           </div>
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
@@ -181,7 +191,7 @@ function LayoutContent({ children, currentPageName }) {
                 <Menu className="w-5 h-5" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[220px] p-0 bg-[#0d0d0d] border-white/[0.05]">
+            <SheetContent side="left" className="w-[220px] p-0 bg-card border-white/[0.05]">
               <SidebarContent
                 currentPageName={currentPageName}
                 authUser={authUser}
