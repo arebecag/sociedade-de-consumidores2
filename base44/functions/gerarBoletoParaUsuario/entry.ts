@@ -19,9 +19,8 @@ Deno.serve(async (req) => {
     }
 
     // 2. Buscar dados do parceiro
-    const parceiros = await base44.asServiceRole.entities.Partner.filter({ id: userId });
-    if (!parceiros.length) return Response.json({ error: "Parceiro não encontrado" }, { status: 404 });
-    const partner = parceiros[0];
+    const partner = await base44.asServiceRole.entities.Partner.get(userId);
+    if (!partner) return Response.json({ error: "Parceiro não encontrado" }, { status: 404 });
 
     // 3. Validar CPF
     const cpfLimpo = (partner.cpf || "").replace(/\D/g, "");
