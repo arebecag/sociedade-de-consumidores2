@@ -315,11 +315,10 @@ export default function CampanhaDesafio() {
           <CardTitle className="text-white text-sm">📋 Regras da Campanha</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-gray-400">
-          <p>✅ A cada 12 clientes ativos <strong className="text-white">nos quais você é o indicador direto</strong>, você ganha R$ 800,00</p>
-          <p>✅ O pagamento é feito via PIX na hora</p>
-          <p>✅ Você pode acumular múltiplos prêmios (24 = R$ 1.600, 36 = R$ 2.400...)</p>
-          <p>✅ Apenas clientes com status <strong className="text-green-400">ATIVO</strong> e que você indicou diretamente são contabilizados</p>
-          <p>⚠️ Clientes indicados pelos seus clientes (nível 2) <strong className="text-yellow-400">não contam</strong> para este desafio — apenas os seus diretos</p>
+          <p>✅ A cada 12 clientes do seu grupo que estiverem <strong className="text-green-400">ATIVOS</strong>, você ganha R$ 800,00 via PIX</p>
+          <p>✅ Somente contam os clientes que <strong className="text-white">você cadastrou diretamente</strong></p>
+          <p>✅ Você pode acumular múltiplos prêmios: 24 clientes = R$ 1.600 · 36 clientes = R$ 2.400...</p>
+          <p>✅ Fique ATIVO! Sem sua primeira compra, você não recebe prêmios, bônus nem comissões</p>
           <p>⏰ Campanha válida até <strong className="text-orange-500">15/04/2026</strong></p>
         </CardContent>
       </Card>
