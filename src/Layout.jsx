@@ -170,7 +170,7 @@ function LayoutContent({ children, currentPageName }) {
       {/* Content column */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
-        <header className="lg:hidden flex-shrink-0 h-14 bg-[#0d0d0d] border-b border-white/[0.05] flex items-center justify-between px-4 z-40">
+        <header className="lg:hidden flex-shrink-0 h-14 bg-[#1c1c1c] border-b border-white/[0.05] flex items-center justify-between px-4 z-40">
           <div className="flex items-center gap-2">
             <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-9 h-9 object-contain flex-shrink-0" />
             <span className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></span>
