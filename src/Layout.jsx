@@ -103,7 +103,7 @@ function LayoutContent({ children, currentPageName }) {
   const NavContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-zinc-800">
+      <div className="px-5 py-5 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center font-black text-white text-base flex-shrink-0">3</div>
           <div>
@@ -115,7 +115,7 @@ function LayoutContent({ children, currentPageName }) {
 
       {/* User card */}
       {authPartner && (
-        <div className="mx-3 mt-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800">
+        <div className="mx-3 mt-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
               <span className="text-orange-400 text-sm font-bold">
@@ -145,10 +145,10 @@ function LayoutContent({ children, currentPageName }) {
             key={item.page}
             to={createPageUrl(item.page)}
             onClick={() => setIsOpen(false)}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 ${
               currentPageName === item.page
                 ? "bg-orange-500 text-white"
-                : "text-gray-400 hover:bg-zinc-800 hover:text-white"
+                : "text-gray-500 hover:bg-white/5 hover:text-white"
             }`}
           >
             <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -157,11 +157,11 @@ function LayoutContent({ children, currentPageName }) {
         ))}
       </nav>
 
-      <div className="p-3 border-t border-zinc-800">
+      <div className="p-3 border-t border-white/5">
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start text-gray-500 hover:text-white hover:bg-zinc-800 rounded-xl px-3 h-10"
+          className="w-full justify-start text-gray-600 hover:text-white hover:bg-white/5 rounded-xl px-3 h-10"
         >
           <LogOut className="w-4 h-4 mr-3" />
           <span className="text-sm font-medium">Sair</span>
@@ -171,14 +171,14 @@ function LayoutContent({ children, currentPageName }) {
   );
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#0a0a0a]">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-zinc-950 border-r border-zinc-800">
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col bg-[#0d0d0d] border-r border-white/5">
         <NavContent />
       </aside>
 
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-zinc-950 border-b border-zinc-800">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#0d0d0d] border-b border-white/5">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-sm">3</div>
@@ -188,11 +188,11 @@ function LayoutContent({ children, currentPageName }) {
           </div>
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+              <Button variant="ghost" size="icon" className="text-gray-500 hover:text-white">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0 bg-zinc-950 border-zinc-800">
+            <SheetContent side="left" className="w-64 p-0 bg-[#0d0d0d] border-white/5">
               <NavContent />
             </SheetContent>
           </Sheet>
