@@ -66,7 +66,7 @@ function NavItem({ item, currentPageName, onClick }) {
 
 function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, onLogout }) {
   return (
-    <div className="flex flex-col h-full bg-[#1c1c1c]">
+    <div className="flex flex-col h-full bg-card">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.05]">
         <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-10 h-10 object-contain flex-shrink-0" />
@@ -155,7 +155,7 @@ function LayoutContent({ children, currentPageName }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{backgroundColor: '#1a1a1a'}}>
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col w-[220px] flex-shrink-0 border-r border-white/[0.04] h-screen sticky top-0">
         <SidebarContent
@@ -170,7 +170,7 @@ function LayoutContent({ children, currentPageName }) {
       {/* Content column */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top bar */}
-        <header className="lg:hidden flex-shrink-0 h-14 bg-[#1c1c1c] border-b border-white/[0.05] flex items-center justify-between px-4 z-40">
+        <header className="lg:hidden flex-shrink-0 h-14 bg-card border-b border-border flex items-center justify-between px-4 z-40">
           <div className="flex items-center gap-2">
             <img src="https://media.base44.com/images/public/697d0116fccbb3128aabd5bf/84fd68149_AZz8L_P0CuwhojYm0yGlnQ-AZz8L_P0axgZJ703tpUGAQ1.png" alt="SC 3X3" className="w-9 h-9 object-contain flex-shrink-0" />
             <span className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></span>

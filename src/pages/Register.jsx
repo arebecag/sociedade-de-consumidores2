@@ -211,11 +211,11 @@ export default function Register() {
   const strengthTextColors = ["", "text-red-400", "text-orange-400", "text-yellow-400", "text-green-400", "text-emerald-400"];
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] flex">
+    <div className="min-h-screen bg-background flex">
       {/* ─── LEFT: Branding ─── */}
       <div className="hidden lg:flex lg:w-[44%] relative flex-col overflow-hidden">
         {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-[#1c1c1c] to-[#1a1a1a]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/80 via-card to-background" />
         {/* Glow orbs */}
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-orange-500/8 rounded-full blur-[100px]" />
         <div className="absolute bottom-0 right-0 w-80 h-80 bg-orange-600/6 rounded-full blur-[80px]" />
@@ -274,7 +274,7 @@ export default function Register() {
 
       {/* ─── RIGHT: Form ─── */}
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
-        <div className="absolute inset-0 bg-[#1a1a1a]" />
+        <div className="absolute inset-0 bg-background" />
 
         <div className="relative z-10 flex flex-col justify-center min-h-screen px-4 sm:px-8 py-10">
           <div className="w-full max-w-[440px] mx-auto">
