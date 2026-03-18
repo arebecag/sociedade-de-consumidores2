@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       full_name: full_name.trim(),
       partner_id: null,
       status: 'active',
-      is_email_verified: true
+      is_email_verified: false
     });
 
     console.log('[authRegister] Usuário criado com sucesso:', loginUser.id);

@@ -10,6 +10,7 @@ import {
   TrendingUp, Users, Award, ShoppingBag, CreditCard,
   AlertCircle, Wallet, BarChart2, Star, ChevronRight
 } from "lucide-react";
+import EmailVerificationBanner from "@/components/EmailVerificationBanner.jsx";
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
@@ -121,6 +122,9 @@ export default function Dashboard() {
           </div>
         </div>
       </AnimatedItem>
+
+      {/* Banner verificação de email */}
+      {!authUser?.is_email_verified && <AnimatedItem><EmailVerificationBanner email={partner.email} /></AnimatedItem>}
 
       {partner.status === 'pendente' && partner.pending_reasons?.length > 0 && (
         <AnimatedItem>
