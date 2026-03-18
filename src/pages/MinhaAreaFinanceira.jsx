@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { AnimatedPage, AnimatedItem, PageHeader, LoadingSpinner, EmptyState } from "@/components/PageWrapper";
 import { ExternalLink, FileText, CheckCircle2, Clock, AlertTriangle, RefreshCw, TrendingUp, DollarSign, Calendar, Gift, ArrowDownCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
