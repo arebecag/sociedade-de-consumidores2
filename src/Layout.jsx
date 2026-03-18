@@ -158,7 +158,7 @@ function LayoutContent({ children, currentPageName }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100 overflow-x-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-[220px] lg:flex-col bg-[#0d0d0d] border-r border-white/[0.04] z-30">
         <SidebarContent
@@ -195,8 +195,8 @@ function LayoutContent({ children, currentPageName }) {
       </header>
 
       {/* Main */}
-      <main className="lg:pl-[220px] pt-14 lg:pt-0 min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="lg:pl-[220px] pt-14 lg:pt-0 min-h-screen w-full overflow-x-hidden">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
           <FinanceiroGuard currentPageName={currentPageName}>
             {children}
           </FinanceiroGuard>
