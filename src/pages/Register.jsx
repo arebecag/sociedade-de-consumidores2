@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { useAuthCustom } from "@/components/AuthContextCustom";
@@ -9,8 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle, UserPlus, LogIn, Shield, Users, Zap } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle, UserPlus, LogIn, Shield, Users, Zap, TrendingUp, Star, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+
+const fadeUp = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } };
+const stagger = { show: { transition: { staggerChildren: 0.08 } } };
 
 export default function Register() {
   const navigate = useNavigate();
@@ -161,12 +165,12 @@ export default function Register() {
   if (loadingReferrer) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center">
+            <Loader2 className="w-7 h-7 animate-spin text-orange-500" />
           </div>
           <p className="text-gray-500 text-sm">Carregando...</p>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -174,24 +178,40 @@ export default function Register() {
   if (invalidReferrer) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-        <div className="text-center space-y-4 max-w-sm">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center space-y-4 max-w-sm">
           <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto">
             <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
           <h2 className="text-xl font-bold text-white">Link Inválido</h2>
           <p className="text-gray-400 text-sm">O código de indicação não foi encontrado. Verifique o link e tente novamente.</p>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
+  const features = [
+    { icon: Zap, title: "Bônus Semanais", desc: "Receba toda segunda-feira automaticamente", color: "text-yellow-400", bg: "bg-yellow-500/10 border-yellow-500/20" },
+    { icon: Users, title: "Rede 3x3", desc: "Sistema inteligente de indicações em rede", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+    { icon: TrendingUp, title: "Até 40% de Bônus", desc: "Sobre as compras da sua equipe", color: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
+    { icon: Shield, title: "Garantia Total", desc: "Devolução sem perguntas", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20" },
+  ];
+
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col lg:flex-row">
-      {/* Left panel - branding */}
-      <div className="hidden lg:flex lg:w-[45%] bg-gradient-to-br from-zinc-900 via-zinc-950 to-black flex-col justify-between p-12 border-r border-zinc-800">
-        <div>
-          <div className="flex items-center gap-3 mb-12">
-            <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-orange-500 flex-shrink-0 leading-none">
+    <div className="min-h-screen bg-zinc-950 flex flex-col lg:flex-row overflow-hidden">
+
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-[46%] relative flex-col justify-between p-12 overflow-hidden">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-orange-600/8 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-orange-500/3 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2" />
+
+        <div className="relative z-10">
+          {/* Logo */}
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
+            className="flex items-center gap-3 mb-14">
+            <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-orange-500 flex-shrink-0 leading-none shadow-lg shadow-orange-500/30">
               <span className="text-white font-black text-[11px]">SC</span>
               <span className="text-white font-black text-[11px]">3X3</span>
             </div>
@@ -199,165 +219,229 @@ export default function Register() {
               <p className="text-white font-black text-lg leading-none">Sociedade de</p>
               <p className="text-orange-500 font-black text-lg leading-none">Consumidores</p>
             </div>
-          </div>
-          <h1 className="text-4xl font-black text-white leading-tight mb-4">
-            Seu dinheiro<br/><span className="text-orange-500">trabalhando</span><br/>por você.
-          </h1>
-          <p className="text-gray-400 text-lg leading-relaxed">
-            Junte-se à rede e receba bônus pelas compras da sua equipe toda semana.
-          </p>
+          </motion.div>
+
+          {/* Headline */}
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+            <h1 className="text-5xl font-black text-white leading-[1.1] mb-5">
+              Seu dinheiro<br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">trabalhando</span><br/>
+              por você.
+            </h1>
+            <p className="text-zinc-400 text-lg leading-relaxed max-w-sm">
+              Junte-se à rede e receba bônus pelas compras da sua equipe toda semana.
+            </p>
+          </motion.div>
         </div>
-        <div className="space-y-4">
-          {[
-            { icon: Zap, title: "Bônus Semanais", desc: "Receba toda segunda-feira" },
-            { icon: Users, title: "Rede 3x3", desc: "Sistema inteligente de indicações" },
-            { icon: Shield, title: "Garantia Total", desc: "Devolução sem perguntas" },
-          ].map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-5 h-5 text-orange-400" />
+
+        {/* Feature cards */}
+        <motion.div variants={stagger} initial="hidden" animate="show" className="relative z-10 grid grid-cols-2 gap-3">
+          {features.map(({ icon: Icon, title, desc, color, bg }) => (
+            <motion.div key={title} variants={fadeUp}
+              className={`p-4 rounded-2xl border backdrop-blur-sm ${bg} hover:scale-[1.02] transition-transform duration-200 cursor-default`}>
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 ${bg}`}>
+                <Icon className={`w-4 h-4 ${color}`} />
               </div>
-              <div>
-                <p className="text-white font-semibold text-sm">{title}</p>
-                <p className="text-gray-500 text-xs">{desc}</p>
-              </div>
-            </div>
+              <p className="text-white font-semibold text-sm leading-tight">{title}</p>
+              <p className="text-zinc-500 text-xs mt-0.5 leading-snug">{desc}</p>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
-      {/* Right panel - form */}
-      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 py-8 overflow-y-auto">
-        <div className="w-full max-w-md mx-auto">
+      {/* Right panel */}
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-8 py-10 overflow-y-auto relative">
+        {/* Subtle background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-zinc-950 to-zinc-900 lg:bg-zinc-950" />
+
+        <div className="relative z-10 w-full max-w-md mx-auto">
+
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <div className="flex flex-col items-center justify-center w-9 h-9 rounded-lg bg-orange-500 flex-shrink-0 leading-none">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+            className="lg:hidden flex items-center gap-3 mb-10 justify-center">
+            <div className="flex flex-col items-center justify-center w-10 h-10 rounded-xl bg-orange-500 flex-shrink-0 leading-none shadow-lg shadow-orange-500/30">
               <span className="text-white font-black text-[9px]">SC</span>
               <span className="text-white font-black text-[9px]">3X3</span>
             </div>
-            <p className="text-white font-black text-lg">Sociedade de <span className="text-orange-500">Consumidores</span></p>
-          </div>
+            <div>
+              <p className="text-white font-black text-base leading-none">Sociedade de</p>
+              <p className="text-orange-500 font-black text-base leading-none">Consumidores</p>
+            </div>
+          </motion.div>
 
           {/* Tab switcher */}
-          <div className="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1 mb-8">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+            className="relative flex bg-zinc-900/80 border border-zinc-800 rounded-2xl p-1.5 mb-8 backdrop-blur-sm">
+            {/* Sliding indicator */}
+            <motion.div
+              className="absolute top-1.5 bottom-1.5 w-[calc(50%-3px)] bg-orange-500 rounded-xl shadow-lg shadow-orange-500/20"
+              animate={{ x: activeTab === "login" ? 0 : "calc(100% + 6px)" }}
+              transition={{ type: "spring", stiffness: 400, damping: 35 }}
+            />
             <button onClick={() => setActiveTab("login")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === "login" ? "bg-orange-500 text-white shadow" : "text-gray-400 hover:text-white"}`}>
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 ${activeTab === "login" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
               <LogIn className="w-4 h-4" /> Entrar
             </button>
             <button onClick={() => setActiveTab("register")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === "register" ? "bg-orange-500 text-white shadow" : "text-gray-400 hover:text-white"}`}>
+              className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 ${activeTab === "register" ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}>
               <UserPlus className="w-4 h-4" /> Cadastrar
             </button>
-          </div>
+          </motion.div>
 
-          {activeTab === "login" ? (
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-1">Bem-vindo de volta</h2>
-              <p className="text-gray-400 text-sm mb-6">Acesse seu Escritório Virtual</p>
-              <LoginForm onLoginSuccess={() => navigate(createPageUrl("Dashboard"))} />
-            </div>
-          ) : (
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-1">Criar conta</h2>
-              <p className="text-gray-400 text-sm mb-6">Preencha os dados abaixo para se cadastrar</p>
-
-              {referrerName && referrerName !== "Sem indicador" && (
-                <div className="mb-5 p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">{referrerName[0]}</span>
-                  </div>
-                  <div>
-                    <p className="text-orange-400 text-xs">Indicado por</p>
-                    <p className="text-white font-semibold text-sm">{referrerName}</p>
-                  </div>
+          {/* Content area */}
+          <AnimatePresence mode="wait">
+            {activeTab === "login" ? (
+              <motion.div key="login"
+                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.25 }}>
+                <div className="mb-7">
+                  <h2 className="text-2xl font-black text-white mb-1">Bem-vindo de volta 👋</h2>
+                  <p className="text-zinc-400 text-sm">Acesse seu Escritório Virtual</p>
                 </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label className="text-gray-300 text-sm mb-1.5 block">Nome Completo *</Label>
-                  <Input value={formData.full_name} onChange={e => handleChange("full_name", e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500 h-11" placeholder="Seu nome completo" />
-                  {errors.full_name && <p className="text-red-400 text-xs mt-1">{errors.full_name}</p>}
+                <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-6 backdrop-blur-sm">
+                  <LoginForm onLoginSuccess={() => navigate(createPageUrl("Dashboard"))} />
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="register"
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.25 }}>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-black text-white mb-1">Criar sua conta</h2>
+                  <p className="text-zinc-400 text-sm">Preencha os dados abaixo para começar</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-gray-300 text-sm mb-1.5 block">Nascimento *</Label>
-                    <Input type="date" value={formData.birth_date} onChange={e => handleChange("birth_date", e.target.value)}
-                      className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500 h-11" />
-                    {errors.birth_date && <p className="text-red-400 text-xs mt-1">{errors.birth_date}</p>}
-                  </div>
-                  <div>
-                    <Label className="text-gray-300 text-sm mb-1.5 block">Telefone *</Label>
-                    <Input value={formData.phone} onChange={e => handleChange("phone", e.target.value)}
-                      className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500 h-11" placeholder="(11) 99999-9999" maxLength={15} />
-                    {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
-                  </div>
-                </div>
+                {/* Referrer badge */}
+                {referrerName && referrerName !== "Sem indicador" && (
+                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                    className="mb-5 p-3.5 bg-orange-500/8 border border-orange-500/20 rounded-2xl flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-orange-500/20">
+                      <span className="text-white text-sm font-black">{referrerName[0]}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-orange-400/80 text-xs">Indicado por</p>
+                      <p className="text-white font-bold text-sm truncate">{referrerName}</p>
+                    </div>
+                    <Star className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                  </motion.div>
+                )}
 
-                <div>
-                  <Label className="text-gray-300 text-sm mb-1.5 block">Gênero *</Label>
-                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
-                    {[["masculino","Masculino"],["feminino","Feminino"],["outro","Outro"],["prefiro_nao_informar","Prefiro não informar"]].map(([v, l]) => (
-                      <button key={v} type="button" onClick={() => handleChange("gender", v)}
-                        className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${formData.gender === v ? "bg-orange-500 border-orange-500 text-white" : "bg-zinc-900 border-zinc-700 text-gray-400 hover:border-zinc-500"}`}>
-                        {l}
-                      </button>
-                    ))}
-                  </div>
-                  {errors.gender && <p className="text-red-400 text-xs mt-1">{errors.gender}</p>}
-                </div>
+                <div className="bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-6 backdrop-blur-sm">
+                  <form onSubmit={handleSubmit} className="space-y-4">
 
-                <div>
-                  <Label className="text-gray-300 text-sm mb-1.5 block">E-mail *</Label>
-                  <Input type="email" value={formData.email} onChange={e => handleChange("email", e.target.value)}
-                    className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500 h-11" placeholder="seu@email.com" />
-                  {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
-                </div>
+                    {/* Full name */}
+                    <div>
+                      <Label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Nome Completo *</Label>
+                      <Input value={formData.full_name} onChange={e => handleChange("full_name", e.target.value)}
+                        className="bg-zinc-800/80 border-zinc-700 text-white focus:border-orange-500 focus:ring-orange-500/20 h-11 rounded-xl placeholder:text-zinc-600" placeholder="Seu nome completo" />
+                      {errors.full_name && <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.full_name}</p>}
+                    </div>
 
-                <div>
-                  <Label className="text-gray-300 text-sm mb-1.5 block">Senha *</Label>
-                  <div className="relative">
-                    <Input type={showPassword ? "text" : "password"} value={formData.password} onChange={e => handleChange("password", e.target.value)}
-                      className="bg-zinc-900 border-zinc-700 text-white focus:border-orange-500 h-11 pr-10" placeholder="Mín. 8 chars, maiúscula e número" />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {formData.password && (
-                    <p className={`text-xs mt-1 ${passwordStrength.valid ? "text-green-500" : "text-yellow-500"}`}>{passwordStrength.message}</p>
-                  )}
-                  {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
-                </div>
+                    {/* Birth + Phone */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Nascimento *</Label>
+                        <Input type="date" value={formData.birth_date} onChange={e => handleChange("birth_date", e.target.value)}
+                          className="bg-zinc-800/80 border-zinc-700 text-white focus:border-orange-500 h-11 rounded-xl" />
+                        {errors.birth_date && <p className="text-red-400 text-xs mt-1">{errors.birth_date}</p>}
+                      </div>
+                      <div>
+                        <Label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Telefone *</Label>
+                        <Input value={formData.phone} onChange={e => handleChange("phone", e.target.value)}
+                          className="bg-zinc-800/80 border-zinc-700 text-white focus:border-orange-500 h-11 rounded-xl placeholder:text-zinc-600" placeholder="(11) 99999-9999" maxLength={15} />
+                        {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
+                      </div>
+                    </div>
 
-                <div className="space-y-2 pt-1">
-                  <div className="flex items-start gap-2.5">
-                    <Checkbox id="terms" checked={formData.accepted_terms} onCheckedChange={v => handleChange("accepted_terms", v)}
-                      className="border-zinc-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 mt-0.5" />
-                    <label htmlFor="terms" className="text-gray-400 text-sm cursor-pointer">
-                      Li e aceito o{" "}
-                      <button type="button" onClick={() => setTermsOpen(true)} className="text-orange-400 hover:text-orange-300 font-medium underline">Contrato de Serviços</button>
-                    </label>
-                  </div>
-                  {errors.accepted_terms && <p className="text-red-400 text-xs pl-6">{errors.accepted_terms}</p>}
-                  <div className="flex items-start gap-2.5">
-                    <Checkbox id="rules" checked={formData.accepted_rules} onCheckedChange={v => handleChange("accepted_rules", v)}
-                      className="border-zinc-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 mt-0.5" />
-                    <label htmlFor="rules" className="text-gray-400 text-sm cursor-pointer">
-                      Li e aceito o{" "}
-                      <button type="button" onClick={() => setRulesOpen(true)} className="text-orange-400 hover:text-orange-300 font-medium underline">Regimento Interno</button>
-                    </label>
-                  </div>
-                  {errors.accepted_rules && <p className="text-red-400 text-xs pl-6">{errors.accepted_rules}</p>}
-                </div>
+                    {/* Gender */}
+                    <div>
+                      <Label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Gênero *</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[["masculino","Masculino"],["feminino","Feminino"],["outro","Outro"],["prefiro_nao_informar","Prefiro não informar"]].map(([v, l]) => (
+                          <button key={v} type="button" onClick={() => handleChange("gender", v)}
+                            className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all duration-150 ${
+                              formData.gender === v
+                                ? "bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20"
+                                : "bg-zinc-800/80 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200"
+                            }`}>
+                            {l}
+                          </button>
+                        ))}
+                      </div>
+                      {errors.gender && <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.gender}</p>}
+                    </div>
 
-                <Button type="submit" disabled={loading} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold h-12 text-base mt-2">
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Cadastrando...</> : <><CheckCircle className="w-4 h-4 mr-2" />Criar Conta</>}
-                </Button>
-              </form>
-            </div>
-          )}
+                    {/* Email */}
+                    <div>
+                      <Label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">E-mail *</Label>
+                      <Input type="email" value={formData.email} onChange={e => handleChange("email", e.target.value)}
+                        className="bg-zinc-800/80 border-zinc-700 text-white focus:border-orange-500 h-11 rounded-xl placeholder:text-zinc-600" placeholder="seu@email.com" />
+                      {errors.email && <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.email}</p>}
+                    </div>
+
+                    {/* Password */}
+                    <div>
+                      <Label className="text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-1.5 block">Senha *</Label>
+                      <div className="relative">
+                        <Input type={showPassword ? "text" : "password"} value={formData.password} onChange={e => handleChange("password", e.target.value)}
+                          className="bg-zinc-800/80 border-zinc-700 text-white focus:border-orange-500 h-11 rounded-xl pr-10 placeholder:text-zinc-600" placeholder="Mín. 8 chars, maiúscula e número" />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      {formData.password && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="flex-1 h-1 rounded-full bg-zinc-700 overflow-hidden">
+                            <motion.div animate={{ width: passwordStrength.valid ? "100%" : "40%" }}
+                              className={`h-full rounded-full ${passwordStrength.valid ? "bg-green-500" : "bg-yellow-500"}`}
+                              transition={{ duration: 0.3 }} />
+                          </div>
+                          <p className={`text-xs whitespace-nowrap ${passwordStrength.valid ? "text-green-500" : "text-yellow-500"}`}>
+                            {passwordStrength.message}
+                          </p>
+                        </div>
+                      )}
+                      {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
+                    </div>
+
+                    {/* Terms */}
+                    <div className="space-y-2.5 pt-1">
+                      {[
+                        { id: "terms", field: "accepted_terms", label: "Li e aceito o", linkLabel: "Contrato de Serviços", onClick: () => setTermsOpen(true), error: errors.accepted_terms },
+                        { id: "rules", field: "accepted_rules", label: "Li e aceito o", linkLabel: "Regimento Interno", onClick: () => setRulesOpen(true), error: errors.accepted_rules },
+                      ].map(({ id, field, label, linkLabel, onClick, error }) => (
+                        <div key={id}>
+                          <div className="flex items-start gap-2.5">
+                            <Checkbox id={id} checked={formData[field]} onCheckedChange={v => handleChange(field, v)}
+                              className="border-zinc-600 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 mt-0.5 rounded" />
+                            <label htmlFor={id} className="text-zinc-400 text-sm cursor-pointer">
+                              {label}{" "}
+                              <button type="button" onClick={onClick} className="text-orange-400 hover:text-orange-300 font-semibold underline underline-offset-2 transition-colors">
+                                {linkLabel}
+                              </button>
+                            </label>
+                          </div>
+                          {error && <p className="text-red-400 text-xs pl-7 mt-1">{error}</p>}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Submit */}
+                    <motion.div whileTap={{ scale: 0.98 }} className="pt-1">
+                      <Button type="submit" disabled={loading}
+                        className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold h-12 text-base rounded-xl shadow-lg shadow-orange-500/20 transition-all duration-200 group">
+                        {loading ? (
+                          <><Loader2 className="w-4 h-4 animate-spin mr-2" />Cadastrando...</>
+                        ) : (
+                          <><CheckCircle className="w-4 h-4 mr-2" />Criar Conta <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" /></>
+                        )}
+                      </Button>
+                    </motion.div>
+                  </form>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
