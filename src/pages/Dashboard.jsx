@@ -4,11 +4,15 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { usePartner } from "@/components/usePartner";
 import { useAuthCustom } from "@/components/AuthContextCustom";
+import { motion } from "framer-motion";
+import { AnimatedPage, AnimatedItem, LoadingSpinner } from "@/components/PageWrapper";
 import {
-  Loader2, TrendingUp, Users, Award, ShoppingBag, CreditCard,
-  AlertCircle, CheckCircle, ArrowUpRight, Wallet, BarChart2, Star, ChevronRight
+  TrendingUp, Users, Award, ShoppingBag, CreditCard,
+  AlertCircle, Wallet, BarChart2, Star, ChevronRight
 } from "lucide-react";
 import EmailVerificationBanner from "@/components/EmailVerificationBanner.jsx";
+
+const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 const gradConfig = {
   cliente_iniciante: { label: "Cliente Iniciante", color: "text-zinc-300", bg: "bg-zinc-700/50 border-zinc-600" },
@@ -66,16 +70,7 @@ export default function Dashboard() {
     finally { setStatsLoading(false); }
   };
 
-  if (partnerLoading || statsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-          <p className="text-gray-500 text-sm">Carregando seu painel...</p>
-        </div>
-      </div>
-    );
-  }
+  if (partnerLoading || statsLoading) return <LoadingSpinner />;
 
   if (!partner) {
     return (
@@ -84,7 +79,7 @@ export default function Dashboard() {
           <AlertCircle className="w-8 h-8 text-orange-500" />
         </div>
         <h2 className="text-2xl font-bold text-white mb-2">Complete seu cadastro</h2>
-        <p className="text-gray-400">Acesse seu perfil para completar as informações.</p>
+        <p className="text-zinc-400">Acesse seu perfil para completar as informações.</p>
       </div>
     );
   }
@@ -98,155 +93,162 @@ export default function Dashboard() {
     : { label: 'EXCLUÍDO', cls: 'text-red-400 bg-red-500/10 border-red-500/20' };
 
   const bonusItems = [
-    { label: "Total Gerado",          value: fmtR(partner.total_bonus_generated), icon: TrendingUp, color: "text-orange-400", bg: "bg-orange-500/10" },
-    { label: "Para Saque",            value: fmtR(partner.bonus_for_withdrawal),  icon: Wallet,     color: "text-green-400",  bg: "bg-green-500/10"  },
-    { label: "Para Compras",          value: fmtR(partner.bonus_for_purchases),   icon: ShoppingBag,color: "text-purple-400", bg: "bg-purple-500/10" },
-    { label: "Total Depositado",      value: fmtR(partner.total_withdrawn),       icon: CreditCard, color: "text-blue-400",   bg: "bg-blue-500/10"   },
-    { label: "Gasto em Compras",      value: fmtR(partner.total_spent_purchases), icon: BarChart2,  color: "text-pink-400",   bg: "bg-pink-500/10"   },
-    { label: "Grupos Fechados",       value: partner.groups_formed || 0,          icon: Star,       color: "text-yellow-400", bg: "bg-yellow-500/10" },
+    { label: "Total Gerado",     value: fmtR(partner.total_bonus_generated), icon: TrendingUp, color: "text-orange-400", bg: "bg-orange-500/10" },
+    { label: "Para Saque",       value: fmtR(partner.bonus_for_withdrawal),  icon: Wallet,     color: "text-green-400",  bg: "bg-green-500/10"  },
+    { label: "Para Compras",     value: fmtR(partner.bonus_for_purchases),   icon: ShoppingBag,color: "text-purple-400", bg: "bg-purple-500/10" },
+    { label: "Total Depositado", value: fmtR(partner.total_withdrawn),       icon: CreditCard, color: "text-blue-400",   bg: "bg-blue-500/10"   },
+    { label: "Gasto em Compras", value: fmtR(partner.total_spent_purchases), icon: BarChart2,  color: "text-pink-400",   bg: "bg-pink-500/10"   },
+    { label: "Grupos Fechados",  value: partner.groups_formed || 0,          icon: Star,       color: "text-yellow-400", bg: "bg-yellow-500/10" },
   ];
 
   return (
-    <div className="space-y-8 max-w-5xl">
-
+    <AnimatedPage>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-gray-500 text-sm mb-1">Bem-vindo(a) de volta 👋</p>
-          <h1 className="text-2xl sm:text-3xl font-black text-white break-words">{partner.display_name || partner.full_name}</h1>
-          <p className="text-gray-500 text-sm mt-1 truncate">{partner.email}</p>
+      <AnimatedItem>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-zinc-500 text-sm mb-1">Bem-vindo(a) de volta 👋</p>
+            <h1 className="text-2xl sm:text-3xl font-black text-white break-words">{partner.display_name || partner.full_name}</h1>
+            <p className="text-zinc-600 text-sm mt-1 truncate">{partner.email}</p>
+          </div>
+          <div className="flex flex-wrap gap-2 shrink-0">
+            <span className={`px-3 py-1.5 rounded-full text-xs font-bold border ${statusInfo.cls}`}>{statusInfo.label}</span>
+            <span className={`px-3 py-1.5 rounded-full text-xs font-bold border ${grad.bg} ${grad.color}`}>{grad.label}</span>
+            {partner.unique_code && (
+              <span className="px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                #{partner.unique_code}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2 shrink-0">
-          <span className={`px-3 py-1.5 rounded-full text-xs font-bold border ${statusInfo.cls}`}>{statusInfo.label}</span>
-          <span className={`px-3 py-1.5 rounded-full text-xs font-bold border ${grad.bg} ${grad.color}`}>{grad.label}</span>
-          {partner.unique_code && (
-            <span className="px-3 py-1.5 rounded-full text-xs font-mono font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20">
-              #{partner.unique_code}
-            </span>
-          )}
-        </div>
-      </div>
+      </AnimatedItem>
 
       {/* Banners */}
-      {!authUser?.is_email_verified && <EmailVerificationBanner email={partner.email} />}
+      {!authUser?.is_email_verified && <AnimatedItem><EmailVerificationBanner email={partner.email} /></AnimatedItem>}
 
       {partner.status === 'pendente' && partner.pending_reasons?.length > 0 && (
-        <div className="p-4 rounded-2xl bg-yellow-500/5 border border-yellow-500/15 flex items-start gap-3">
-          <div className="w-8 h-8 rounded-xl bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="w-4 h-4 text-yellow-400" />
+        <AnimatedItem>
+          <div className="p-4 rounded-2xl bg-yellow-500/5 border border-yellow-500/15 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-4 h-4 text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-yellow-300 font-semibold text-sm mb-1">Conta Pendente — ação necessária</p>
+              <ul className="space-y-0.5">
+                {partner.pending_reasons.map((r, i) => (
+                  <li key={i} className="text-zinc-400 text-sm flex items-center gap-2">
+                    <span className="w-1 h-1 rounded-full bg-yellow-500 flex-shrink-0" />
+                    {r}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div>
-            <p className="text-yellow-300 font-semibold text-sm mb-1">Conta Pendente — ação necessária</p>
-            <ul className="space-y-0.5">
-              {partner.pending_reasons.map((r, i) => (
-                <li key={i} className="text-gray-400 text-sm flex items-center gap-2">
-                  <span className="w-1 h-1 rounded-full bg-yellow-500 flex-shrink-0" />
-                  {r}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        </AnimatedItem>
       )}
 
       {/* Bônus Cards */}
-      <div>
+      <AnimatedItem>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-white font-bold text-lg">Seus Bônus</h2>
-          <Link to={createPageUrl("Bonus")} className="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1">
+          <Link to={createPageUrl("Bonus")} className="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
             Ver extrato <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {bonusItems.map(({ label, value, icon: Icon, color, bg }) => (
-            <div key={label} className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition-colors">
+            <motion.div key={label} variants={fadeUp}
+              className="p-4 rounded-2xl bg-zinc-900/60 border border-white/[0.05] hover:border-white/10 transition-all">
               <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center mb-3`}>
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
-              <p className="text-gray-500 text-xs mb-1">{label}</p>
-              <p className={`text-lg font-bold ${color}`}>{value}</p>
-            </div>
+              <p className="text-zinc-500 text-xs mb-1">{label}</p>
+              <p className={`text-base font-bold ${color}`}>{value}</p>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </AnimatedItem>
 
       {/* Rede + Indicador */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-bold text-lg">Minha Rede</h2>
-            <Link to={createPageUrl("Network")} className="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1">
-              Ver todos <ChevronRight className="w-4 h-4" />
-            </Link>
+      <AnimatedItem>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-white font-bold text-lg">Minha Rede</h2>
+              <Link to={createPageUrl("Network")} className="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
+                Ver todos <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            {networkStats.direct === 0 && networkStats.indirect === 0 ? (
+              <div className="rounded-2xl bg-zinc-900/60 border border-white/[0.05] p-8 text-center">
+                <Users className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+                <p className="text-zinc-400 text-sm font-medium">Nenhum cliente ainda</p>
+                <p className="text-zinc-600 text-xs mt-1">Compartilhe seu código para crescer</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Total", value: networkStats.direct + networkStats.indirect, color: "text-orange-400" },
+                  { label: "Ativos", value: networkStats.active, color: "text-green-400" },
+                  { label: `Nível 1 (${networkStats.direct % 3}/3)`, value: networkStats.direct, color: "text-blue-400" },
+                  { label: `Nível 2 (${networkStats.indirect % 9}/9)`, value: networkStats.indirect, color: "text-purple-400" },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="p-4 rounded-2xl bg-zinc-900/60 border border-white/[0.05]">
+                    <p className="text-zinc-500 text-xs mb-2">{label}</p>
+                    <p className={`text-2xl font-bold ${color}`}>{value}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          {networkStats.direct === 0 && networkStats.indirect === 0 ? (
-            <div className="rounded-2xl bg-white/[0.03] border border-white/5 p-8 text-center">
-              <Users className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-              <p className="text-gray-400 text-sm font-medium">Nenhum cliente ainda</p>
-              <p className="text-gray-600 text-xs mt-1">Compartilhe seu código para crescer</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: "Total", value: networkStats.direct + networkStats.indirect, color: "text-orange-400" },
-                { label: "Ativos", value: networkStats.active, color: "text-green-400" },
-                { label: `Nível 1 (${networkStats.direct % 3}/3)`, value: networkStats.direct, color: "text-blue-400" },
-                { label: `Nível 2 (${networkStats.indirect % 9}/9)`, value: networkStats.indirect, color: "text-purple-400" },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800">
-                  <p className="text-gray-500 text-xs mb-2">{label}</p>
-                  <p className={`text-2xl font-bold ${color}`}>{value}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        <div>
-          <h2 className="text-white font-bold text-lg mb-4">Meu Indicador</h2>
-          {myReferrer ? (
-            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-orange-400 text-xl font-bold">
-                  {(myReferrer.display_name || myReferrer.full_name || "?")[0]}
+          <div>
+            <h2 className="text-white font-bold text-lg mb-4">Meu Indicador</h2>
+            {myReferrer ? (
+              <div className="p-5 rounded-2xl bg-zinc-900/60 border border-white/[0.05] flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-orange-400 text-xl font-bold">
+                    {(myReferrer.display_name || myReferrer.full_name || "?")[0]}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold truncate">{myReferrer.display_name || myReferrer.full_name}</p>
+                  <p className="text-zinc-500 text-xs font-mono mt-0.5">#{myReferrer.unique_code}</p>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-bold flex-shrink-0 ${
+                  myReferrer.status === 'ativo' ? 'bg-green-500/10 text-green-400' :
+                  myReferrer.status === 'pendente' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'
+                }`}>
+                  {myReferrer.status?.toUpperCase()}
                 </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold truncate">{myReferrer.display_name || myReferrer.full_name}</p>
-                <p className="text-gray-500 text-xs font-mono mt-0.5">#{myReferrer.unique_code}</p>
+            ) : (
+              <div className="p-5 rounded-2xl bg-zinc-900/60 border border-white/[0.05] flex items-center justify-center min-h-[80px]">
+                <p className="text-zinc-500 text-sm">Você é o primeiro da rede.</p>
               </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-bold flex-shrink-0 ${
-                myReferrer.status === 'ativo' ? 'bg-green-500/10 text-green-400' :
-                myReferrer.status === 'pendente' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'
-              }`}>
-                {myReferrer.status?.toUpperCase()}
-              </span>
-            </div>
-          ) : (
-            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center min-h-[80px]">
-              <p className="text-gray-500 text-sm">Você é o primeiro da rede.</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      </AnimatedItem>
 
       {/* Ações Rápidas */}
-      <div>
+      <AnimatedItem>
         <h2 className="text-white font-bold text-lg mb-4">Ações Rápidas</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {quickActions.map(({ label, icon: Icon, page, desc }) => (
             <Link key={page} to={createPageUrl(page)}>
-              <div className="group p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-orange-500/30 hover:bg-white/[0.05] transition-all cursor-pointer h-full">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="group p-4 rounded-2xl bg-zinc-900/60 border border-white/[0.05] hover:border-orange-500/30 hover:bg-zinc-900 transition-all cursor-pointer h-full">
                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center mb-3 group-hover:bg-orange-500/20 transition-colors">
                   <Icon className="w-5 h-5 text-orange-400" />
                 </div>
                 <p className="text-white font-semibold text-sm">{label}</p>
-                <p className="text-gray-500 text-xs mt-0.5">{desc}</p>
-              </div>
+                <p className="text-zinc-500 text-xs mt-0.5">{desc}</p>
+              </motion.div>
             </Link>
           ))}
         </div>
-      </div>
-    </div>
+      </AnimatedItem>
+    </AnimatedPage>
   );
 }
