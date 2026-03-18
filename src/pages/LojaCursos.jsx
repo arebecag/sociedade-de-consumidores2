@@ -1,45 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { createPageUrl } from "@/utils";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, GraduationCap, ShoppingCart, CheckCircle2, BookOpen, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
+import { AnimatedPage, AnimatedItem, PageHeader, LoadingSpinner, EmptyState } from "@/components/PageWrapper";
+import { Loader2, GraduationCap, ShoppingCart, CheckCircle2, BookOpen, ExternalLink, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
 const URL_ACESSO = "https://globaleadflix.com.br/login";
 const fmt = (v) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0);
 
-// Status por cursoId: 'liberado' | 'processando' | 'erro'
 export default function LojaCursos() {
   const [cursos, setCursos] = useState([]);
   const [partner, setPartner] = useState(null);
-  const [statusCursos, setStatusCursos] = useState({}); // cursoId -> 'liberado' | 'processando' | 'erro'
+  const [statusCursos, setStatusCursos] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedCurso, setSelectedCurso] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [processingCursoId, setProcessingCursoId] = useState(null); // lock por curso
+  const [processingCursoId, setProcessingCursoId] = useState(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     try {
       const user = await base44.auth.me();
       const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      const p = partners[0] || null;
-      setPartner(p);
-
+      const p = partners[0] || null; setPartner(p);
       const [allCursos, todasCompras] = await Promise.all([
         base44.entities.CursosEAD.filter({ ativo: true }),
         p ? base44.entities.ComprasCursosEAD.filter({ usuarioId: p.id }) : Promise.resolve([])
       ]);
-
       setCursos(allCursos);
-
       const mapa = {};
       for (const c of todasCompras) {
         if (c.status === 'LIBERADO') mapa[c.cursoId] = 'liberado';
@@ -47,311 +39,162 @@ export default function LojaCursos() {
         else if (c.status === 'ERRO') mapa[c.cursoId] = 'erro';
       }
       setStatusCursos(mapa);
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
-    }
+    } catch { }
+    finally { setLoading(false); }
   };
 
   const handleComprarClick = (curso) => {
-    if (!partner) {
-      toast.error("Complete seu cadastro para comprar cursos.");
-      return;
-    }
-    if (statusCursos[curso.id] === 'liberado') return;
-    if (processingCursoId === curso.id) return; // lock
-
-    if ((partner.bonus_for_purchases || 0) < curso.valorBonus) {
-      toast.error("Saldo de bônus insuficiente para este curso.");
-      return;
-    }
-
-    setSelectedCurso(curso);
-    setDialogOpen(true);
+    if (!partner) { toast.error("Complete seu cadastro para comprar cursos."); return; }
+    if (statusCursos[curso.id] === 'liberado' || processingCursoId === curso.id) return;
+    if ((partner.bonus_for_purchases || 0) < curso.valorBonus) { toast.error("Saldo de bônus insuficiente."); return; }
+    setSelectedCurso(curso); setDialogOpen(true);
   };
 
   const handleConfirmarCompra = async () => {
     if (!partner || !selectedCurso) return;
-
-    // Checar saldo
-    if ((partner.bonus_for_purchases || 0) < selectedCurso.valorBonus) {
-      toast.error("Saldo de bônus insuficiente.");
-      return;
-    }
-
-    // Checar se já liberado
-    if (statusCursos[selectedCurso.id] === 'liberado') {
-      toast.error("Você já possui este curso.");
-      setDialogOpen(false);
-      return;
-    }
-
-    // Lock duplo clique
+    if ((partner.bonus_for_purchases || 0) < selectedCurso.valorBonus) { toast.error("Saldo insuficiente."); return; }
+    if (statusCursos[selectedCurso.id] === 'liberado') { toast.error("Você já possui este curso."); setDialogOpen(false); return; }
     if (processingCursoId === selectedCurso.id) return;
-
-    setProcessing(true);
-    setProcessingCursoId(selectedCurso.id);
-    setDialogOpen(false);
-
-    // Status visual: processando
+    setProcessing(true); setProcessingCursoId(selectedCurso.id); setDialogOpen(false);
     setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'processando' }));
-
     try {
-      // Verificar novamente no banco (segurança contra duplo clique / race)
-      const comprasExistentes = await base44.entities.ComprasCursosEAD.filter({
-        usuarioId: partner.id,
-        cursoId: selectedCurso.id,
-        status: 'LIBERADO'
-      });
-      if (comprasExistentes.length > 0) {
-        toast.error("Você já possui este curso.");
-        setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'liberado' }));
-        return;
-      }
-
-      // Verificar saldo fresco no banco (evita usar saldo stale do state)
-      const partnersFrescos = await base44.entities.Partner.filter({ id: partner.id });
-      const partnerFresco = partnersFrescos[0];
+      const comprasExist = await base44.entities.ComprasCursosEAD.filter({ usuarioId: partner.id, cursoId: selectedCurso.id, status: 'LIBERADO' });
+      if (comprasExist.length > 0) { toast.error("Você já possui este curso."); setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'liberado' })); return; }
+      const [partnerFresco] = await base44.entities.Partner.filter({ id: partner.id });
       const saldoAtual = partnerFresco?.bonus_for_purchases || 0;
-
-      if (saldoAtual < selectedCurso.valorBonus) {
-        toast.error(`Saldo insuficiente: R$ ${fmt(saldoAtual)} disponível.`);
-        setPartner(prev => ({ ...prev, bonus_for_purchases: saldoAtual }));
-        return;
-      }
-
-      // Criar registro de compra ANTES de debitar (se falhar aqui, nada foi debitado)
+      if (saldoAtual < selectedCurso.valorBonus) { toast.error(`Saldo insuficiente: ${fmt(saldoAtual)}`); setPartner(p => ({ ...p, bonus_for_purchases: saldoAtual })); return; }
       const compra = await base44.entities.ComprasCursosEAD.create({
-        usuarioId: partner.id,
-        usuarioEmail: partnerFresco.created_by || partner.created_by,
-        cursoId: selectedCurso.id,
-        cursoNome: selectedCurso.nome,
-        dataCompra: new Date().toISOString(),
-        status: 'PROCESSANDO',
-        valorBonus: selectedCurso.valorBonus
+        usuarioId: partner.id, usuarioEmail: partnerFresco.created_by || partner.created_by,
+        cursoId: selectedCurso.id, cursoNome: selectedCurso.nome,
+        dataCompra: new Date().toISOString(), status: 'PROCESSANDO', valorBonus: selectedCurso.valorBonus
       });
-
-      // Liberar acesso via função (inclui débito atômico no backend)
-      const response = await base44.functions.invoke('liberarCursoIndividual', {
-        compraId: compra.id,
-        cursoId: selectedCurso.id
-      });
-
+      const response = await base44.functions.invoke('liberarCursoIndividual', { compraId: compra.id, cursoId: selectedCurso.id });
       if (response.data?.success) {
         setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'liberado' }));
-        setPartner(prev => ({
-          ...prev,
-          bonus_for_purchases: saldoAtual - selectedCurso.valorBonus,
-          total_spent_purchases: (prev.total_spent_purchases || 0) + selectedCurso.valorBonus
-        }));
+        setPartner(prev => ({ ...prev, bonus_for_purchases: saldoAtual - selectedCurso.valorBonus, total_spent_purchases: (prev.total_spent_purchases || 0) + selectedCurso.valorBonus }));
         toast.success("🎉 Curso liberado com sucesso! Redirecionando...");
-        setTimeout(() => {
-          window.open(URL_ACESSO, '_blank');
-        }, 1500);
+        setTimeout(() => window.open(URL_ACESSO, '_blank'), 1500);
       } else {
         setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'erro' }));
         toast.error(response.data?.error || "Erro ao liberar acesso.");
       }
-    } catch (error) {
-      console.error("Error:", error);
+    } catch {
       setStatusCursos(prev => ({ ...prev, [selectedCurso.id]: 'erro' }));
       toast.error("Erro ao processar compra. Tente novamente.");
-    } finally {
-      setProcessing(false);
-      setProcessingCursoId(null);
-    }
+    } finally { setProcessing(false); setProcessingCursoId(null); }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-white">Cursos EAD</h1>
-        <p className="text-gray-400">Adquira cursos usando seus bônus e aprenda quando quiser</p>
-      </div>
+    <AnimatedPage>
+      <PageHeader title="Cursos EAD" subtitle="Adquira cursos usando seus bônus e aprenda quando quiser" />
 
-      {/* Saldo */}
       {partner && (
-        <Card className="bg-zinc-950 border-orange-500/20">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-gray-400 text-sm">Bônus disponível para compras</p>
-              <p className="text-2xl font-bold text-orange-500">{fmt(partner.bonus_for_purchases)}</p>
+        <AnimatedItem>
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/5 border border-orange-500/20">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center">
+              <Wallet className="w-5 h-5 text-orange-400" />
             </div>
-            <ShoppingCart className="w-8 h-8 text-orange-500 opacity-60" />
-          </CardContent>
-        </Card>
+            <div>
+              <p className="text-zinc-500 text-xs">Bônus disponível para compras</p>
+              <p className="text-orange-400 font-black text-2xl">{fmt(partner.bonus_for_purchases)}</p>
+            </div>
+          </div>
+        </AnimatedItem>
       )}
 
-      {/* Grid de cursos */}
-      {cursos.length === 0 ? (
-        <Card className="bg-zinc-950 border-orange-500/20">
-          <CardContent className="p-12 text-center">
-            <GraduationCap className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400">Nenhum curso disponível no momento.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cursos.map((curso) => {
-            const status = statusCursos[curso.id]; // 'liberado' | 'processando' | 'erro' | undefined
-            const semSaldo = (partner?.bonus_for_purchases || 0) < curso.valorBonus;
-            const isProcessando = processingCursoId === curso.id || status === 'processando';
+      <AnimatedItem>
+        {cursos.length === 0 ? <EmptyState icon={GraduationCap} message="Nenhum curso disponível no momento." /> : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {cursos.map((curso) => {
+              const status = statusCursos[curso.id];
+              const semSaldo = (partner?.bonus_for_purchases || 0) < curso.valorBonus;
+              const isProcessando = processingCursoId === curso.id || status === 'processando';
 
-            const borderClass =
-              status === 'liberado' ? "border-green-500/30" :
-              isProcessando ? "border-yellow-500/30" :
-              status === 'erro' ? "border-red-500/30" :
-              "border-orange-500/20 hover:border-orange-500/40";
+              const borderClass =
+                status === 'liberado' ? "border-green-500/25" :
+                isProcessando ? "border-yellow-500/25" :
+                status === 'erro' ? "border-red-500/25" :
+                "border-white/[0.05] hover:border-orange-500/25";
 
-            return (
-              <Card
-                key={curso.id}
-                className={`bg-zinc-950 border transition-all overflow-hidden flex flex-col ${borderClass}`}
-              >
-                {/* Imagem ou placeholder */}
-                {curso.imagem ? (
-                  <img src={curso.imagem} alt={curso.nome} className="w-full h-44 object-cover" />
-                ) : (
-                  <div className="w-full h-44 bg-zinc-900 flex items-center justify-center">
-                    <GraduationCap className="w-16 h-16 text-orange-500/20" />
-                  </div>
-                )}
-
-                <CardContent className="p-5 flex flex-col flex-1 space-y-3">
-                  {/* Status badge */}
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-white font-semibold text-lg leading-tight">{curso.nome}</h3>
+              return (
+                <motion.div key={curso.id} whileHover={{ y: -2 }}
+                  className={`rounded-2xl bg-zinc-900/60 border transition-all overflow-hidden flex flex-col ${borderClass}`}>
+                  {curso.imagem ? (
+                    <img src={curso.imagem} alt={curso.nome} className="w-full h-44 object-cover" />
+                  ) : (
+                    <div className="w-full h-44 bg-zinc-800 flex items-center justify-center">
+                      <GraduationCap className="w-14 h-14 text-orange-500/20" />
+                    </div>
+                  )}
+                  <div className="p-4 flex flex-col flex-1 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-white font-bold text-sm leading-tight">{curso.nome}</h3>
+                      {status === 'liberado' ? (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-green-500/10 text-green-400 border-green-500/20 shrink-0 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" />Adquirido</span>
+                      ) : isProcessando ? (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shrink-0 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />Processando</span>
+                      ) : status === 'erro' ? (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-red-500/10 text-red-400 border-red-500/20 shrink-0">Erro</span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-blue-500/10 text-blue-400 border-blue-500/20 shrink-0 flex items-center gap-1"><BookOpen className="w-3 h-3" />Disponível</span>
+                      )}
+                    </div>
+                    <p className="text-zinc-500 text-xs line-clamp-3 flex-1">{curso.descricao || "Curso de qualidade para seu desenvolvimento."}</p>
+                    <div>
+                      <p className="text-zinc-600 text-xs">Valor em Bônus</p>
+                      <p className="text-orange-400 font-black text-xl">{fmt(curso.valorBonus)}</p>
+                    </div>
                     {status === 'liberado' ? (
-                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30 shrink-0">
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                        Adquirido
-                      </Badge>
+                      <Button onClick={() => window.open(URL_ACESSO, '_blank')} className="w-full bg-green-600 hover:bg-green-700 rounded-xl gap-2"><ExternalLink className="w-4 h-4" />Acessar Curso</Button>
                     ) : isProcessando ? (
-                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 shrink-0">
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                        Processando
-                      </Badge>
+                      <Button disabled className="w-full bg-yellow-600/50 rounded-xl"><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processando...</Button>
                     ) : status === 'erro' ? (
-                      <Badge className="bg-red-500/20 text-red-400 border-red-500/30 shrink-0">
-                        Erro
-                      </Badge>
+                      <Button onClick={() => handleComprarClick(curso)} className="w-full bg-red-600 hover:bg-red-700 rounded-xl">Tentar Novamente</Button>
                     ) : (
-                      <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 shrink-0">
-                        <BookOpen className="w-3 h-3 mr-1" />
-                        Disponível
-                      </Badge>
+                      <Button onClick={() => handleComprarClick(curso)} disabled={!partner || semSaldo} className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl gap-2 disabled:opacity-50">
+                        <ShoppingCart className="w-4 h-4" />{semSaldo ? "Saldo Insuficiente" : "Comprar com Bônus"}
+                      </Button>
                     )}
                   </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </AnimatedItem>
 
-                  <p className="text-gray-400 text-sm line-clamp-3 flex-1">
-                    {curso.descricao || "Curso de qualidade para seu desenvolvimento."}
-                  </p>
-
-                  {/* Valor */}
-                  <div>
-                    <p className="text-gray-500 text-xs">Valor em Bônus</p>
-                    <p className="text-orange-500 font-bold text-xl">{fmt(curso.valorBonus)}</p>
-                  </div>
-
-                  {/* Botão */}
-                  {status === 'liberado' ? (
-                    <Button
-                      onClick={() => window.open(URL_ACESSO, '_blank')}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Acessar Curso
-                    </Button>
-                  ) : isProcessando ? (
-                    <Button disabled className="w-full bg-yellow-600/50 text-white cursor-not-allowed">
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processando compra...
-                    </Button>
-                  ) : status === 'erro' ? (
-                    <Button
-                      onClick={() => handleComprarClick(curso)}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      Tentar Novamente
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => handleComprarClick(curso)}
-                      disabled={!partner || semSaldo}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {semSaldo ? "Saldo Insuficiente" : "Comprar com Bônus"}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Dialog de confirmação */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-zinc-950 border-orange-500/20">
-          <DialogHeader>
-            <DialogTitle className="text-white">Confirmar Compra</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="bg-zinc-950 border-zinc-800">
+          <DialogHeader><DialogTitle className="text-white">Confirmar Compra</DialogTitle></DialogHeader>
           {selectedCurso && (
             <div className="space-y-4">
-              <div className="p-4 bg-zinc-900 rounded-lg">
-                <p className="text-gray-400 text-sm">Curso</p>
+              <div className="p-4 rounded-xl bg-zinc-900">
+                <p className="text-zinc-500 text-xs">Curso</p>
                 <p className="text-white font-semibold">{selectedCurso.nome}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-zinc-900 rounded-lg">
-                  <p className="text-gray-400 text-xs">Valor do curso</p>
-                  <p className="text-orange-500 font-bold">{fmt(selectedCurso.valorBonus)}</p>
+                <div className="p-3 rounded-xl bg-zinc-900">
+                  <p className="text-zinc-500 text-xs">Valor do curso</p>
+                  <p className="text-orange-400 font-bold">{fmt(selectedCurso.valorBonus)}</p>
                 </div>
-                <div className="p-3 bg-zinc-900 rounded-lg">
-                  <p className="text-gray-400 text-xs">Saldo após compra</p>
-                  <p className="text-white font-bold">
-                    {fmt((partner?.bonus_for_purchases || 0) - selectedCurso.valorBonus)}
-                  </p>
+                <div className="p-3 rounded-xl bg-zinc-900">
+                  <p className="text-zinc-500 text-xs">Saldo após compra</p>
+                  <p className="text-white font-bold">{fmt((partner?.bonus_for_purchases || 0) - selectedCurso.valorBonus)}</p>
                 </div>
               </div>
-              <p className="text-gray-400 text-sm text-center">
-                Após a compra, você será redirecionado para acessar o curso.
-              </p>
+              <p className="text-zinc-500 text-sm text-center">Após a compra, você será redirecionado para acessar o curso.</p>
               <div className="flex gap-3">
-                <Button
-                  onClick={() => setDialogOpen(false)}
-                  variant="outline"
-                  className="flex-1"
-                  disabled={processing}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleConfirmarCompra}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600"
-                  disabled={processing}
-                >
-                  {processing ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processando...</>
-                  ) : (
-                    "Confirmar Compra"
-                  )}
+                <Button onClick={() => setDialogOpen(false)} variant="outline" className="flex-1 border-zinc-700 text-zinc-300 rounded-xl" disabled={processing}>Cancelar</Button>
+                <Button onClick={handleConfirmarCompra} className="flex-1 bg-orange-500 hover:bg-orange-600 rounded-xl" disabled={processing}>
+                  {processing ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processando...</> : "Confirmar Compra"}
                 </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </AnimatedPage>
   );
 }
