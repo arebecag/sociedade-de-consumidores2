@@ -52,6 +52,10 @@ export default function Store() {
   };
 
   const addToCart = (product) => {
+    if (product.category === 'tele_consulta') {
+      toast.info("Tele Consulta estará disponível em breve!");
+      return;
+    }
     setCart(prev => {
       const existing = prev.find(i => i.product.id === product.id);
       if (existing) {
@@ -327,19 +331,23 @@ export default function Store() {
                       <p className="text-2xl font-bold text-orange-500 mt-4">{formatCurrency(product.price)}</p>
                     </CardContent>
                     <CardFooter>
-                      {inCart ? (
-                        <div className="w-full flex items-center justify-between bg-orange-500/10 border border-orange-500/30 rounded-lg px-3 py-2">
-                          <span className="text-orange-400 text-sm font-medium">No carrinho ({inCart.qty})</span>
-                          <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300 h-7 px-2" onClick={() => removeFromCart(product.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button onClick={() => addToCart(product)} className="w-full bg-orange-500 hover:bg-orange-600">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Adicionar ao Carrinho
-                        </Button>
-                      )}
+                     {product.category === 'tele_consulta' ? (
+                       <Button disabled className="w-full bg-zinc-700 text-gray-400 cursor-not-allowed">
+                         🔒 Em Breve
+                       </Button>
+                     ) : inCart ? (
+                       <div className="w-full flex items-center justify-between bg-orange-500/10 border border-orange-500/30 rounded-lg px-3 py-2">
+                         <span className="text-orange-400 text-sm font-medium">No carrinho ({inCart.qty})</span>
+                         <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300 h-7 px-2" onClick={() => removeFromCart(product.id)}>
+                           <Trash2 className="w-4 h-4" />
+                         </Button>
+                       </div>
+                     ) : (
+                       <Button onClick={() => addToCart(product)} className="w-full bg-orange-500 hover:bg-orange-600">
+                         <Plus className="w-4 h-4 mr-2" />
+                         Adicionar ao Carrinho
+                       </Button>
+                     )}
                     </CardFooter>
                   </Card>
                 );
