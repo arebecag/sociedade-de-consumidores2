@@ -52,10 +52,10 @@ function NavItem({ item, currentPageName, onClick }) {
     <Link
       to={createPageUrl(item.page)}
       onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
         isActive
-          ? "bg-orange-500 text-white"
-          : "text-zinc-500 hover:text-zinc-200 hover:bg-white/5"
+          ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+          : "text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06]"
       }`}
     >
       <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-zinc-600"}`} />
@@ -78,9 +78,9 @@ function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, o
 
       {/* User chip */}
       {authPartner && (
-        <div className="mx-3 mt-3 mb-1 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+        <div className="mx-3 mt-3 mb-1 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0"></div>
               <span className="text-orange-400 text-sm font-bold">
                 {(authPartner.display_name || authPartner.full_name || "?")[0]}
               </span>
@@ -122,7 +122,7 @@ function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, o
       <div className="px-2 py-3 border-t border-white/[0.05]">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 hover:text-zinc-300 hover:bg-white/5 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-zinc-600 hover:text-zinc-300 hover:bg-white/[0.06] transition-all duration-150"
         >
           <LogOut className="w-4 h-4 flex-shrink-0" />
           <span>Sair</span>
