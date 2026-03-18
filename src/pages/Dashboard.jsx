@@ -174,7 +174,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-white font-bold text-lg">Minha Rede</h2>
+              <h2 className="text-white font-bold text-lg">Meus Clientes</h2>
               <Link to={createPageUrl("Network")} className="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
                 Ver todos <ChevronRight className="w-4 h-4" />
               </Link>
@@ -183,7 +183,7 @@ export default function Dashboard() {
               <div className="rounded-2xl bg-zinc-900/60 border border-white/[0.05] p-8 text-center">
                 <Users className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
                 <p className="text-zinc-400 text-sm font-medium">Nenhum cliente ainda</p>
-                <p className="text-zinc-600 text-xs mt-1">Compartilhe seu código para crescer</p>
+                <p className="text-zinc-600 text-xs mt-1">Compartilhe seu código para começar</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
@@ -224,7 +224,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="p-5 rounded-2xl bg-zinc-900/60 border border-white/[0.05] flex items-center justify-center min-h-[80px]">
-                <p className="text-zinc-500 text-sm">Você é o primeiro da rede.</p>
+                <p className="text-zinc-500 text-sm">Você é o primeiro da plataforma.</p>
               </div>
             )}
           </div>

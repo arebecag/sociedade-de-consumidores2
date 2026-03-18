@@ -143,7 +143,7 @@ export default function CampanhaDesafio() {
 
             <div className="mt-4 flex items-center gap-2 text-yellow-200">
               <Calendar className="w-5 h-5" />
-              <span className="font-semibold">Esta campanha termina no dia 30/04/2026</span>
+              <span className="font-semibold">Esta campanha termina no dia 15/04/2026</span>
             </div>
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function CampanhaDesafio() {
           <p>✅ O pagamento é feito via PIX na hora</p>
           <p>✅ Você pode acumular múltiplos prêmios (24 clientes = R$ 1.600, 36 clientes = R$ 2.400...)</p>
           <p>✅ Apenas clientes com status ATIVO na Sociedade de Consumidores são contabilizados</p>
-          <p>⏰ Campanha válida até <strong className="text-orange-500">30/04/2026</strong></p>
+          <p>⏰ Campanha válida até <strong className="text-orange-500">15/04/2026</strong></p>
         </CardContent>
       </Card>
     </div>

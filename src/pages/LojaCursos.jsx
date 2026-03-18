@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { usePartner } from "@/components/usePartner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
@@ -11,6 +12,7 @@ const URL_ACESSO = "https://globaleadflix.com.br/login";
 const fmt = (v) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0);
 
 export default function LojaCursos() {
+  const { partner: partnerFromHook, loading: partnerLoading } = usePartner();
   const [cursos, setCursos] = useState([]);
   const [partner, setPartner] = useState(null);
   const [statusCursos, setStatusCursos] = useState({});
@@ -20,13 +22,15 @@ export default function LojaCursos() {
   const [processing, setProcessing] = useState(false);
   const [processingCursoId, setProcessingCursoId] = useState(null);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    if (!partnerLoading) {
+      setPartner(partnerFromHook);
+      loadData(partnerFromHook);
+    }
+  }, [partnerLoading, partnerFromHook?.id]);
 
-  const loadData = async () => {
+  const loadData = async (p) => {
     try {
-      const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      const p = partners[0] || null; setPartner(p);
       const [allCursos, todasCompras] = await Promise.all([
         base44.entities.CursosEAD.filter({ ativo: true }),
         p ? base44.entities.ComprasCursosEAD.filter({ usuarioId: p.id }) : Promise.resolve([])
