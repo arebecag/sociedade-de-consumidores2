@@ -51,6 +51,29 @@ Deno.serve(async (req) => {
 
     console.log('[authRegister] Usuário criado com sucesso:', loginUser.id);
 
+    // Enviar código de verificação em background
+    (async () => {
+      try {
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 24);
+        await base44.asServiceRole.entities.EmailVerificationCode.create({
+          user_id: loginUser.id,
+          email: emailNormalized,
+          code: verificationCode,
+          expires_at: expiresAt.toISOString(),
+          used: false
+        });
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: emailNormalized,
+          subject: 'Código de Verificação - Sociedade de Consumidores',
+          body: `<h2>Código de Verificação</h2><p>Bem-vindo(a)! Seu código de verificação é:</p><h1 style="color:#f97316;font-size:32px;letter-spacing:4px;">${verificationCode}</h1><p>Este código expira em 24 horas.</p>`
+        });
+      } catch (e) {
+        console.warn('[authRegister] Erro ao enviar código de verificação:', e.message);
+      }
+    })();
+
     return Response.json({
       success: true,
       user_id: loginUser.id,

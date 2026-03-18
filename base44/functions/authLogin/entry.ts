@@ -50,6 +50,31 @@ Deno.serve(async (req) => {
       last_login_at: new Date().toISOString()
     }).catch(() => {});
 
+    // Enviar código de verificação se email não verificado
+    if (!user.is_email_verified) {
+      (async () => {
+        try {
+          const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+          const expiresAt = new Date();
+          expiresAt.setHours(expiresAt.getHours() + 24);
+          await base44.asServiceRole.entities.EmailVerificationCode.create({
+            user_id: user.id,
+            email: emailNormalized,
+            code: verificationCode,
+            expires_at: expiresAt.toISOString(),
+            used: false
+          });
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: emailNormalized,
+            subject: 'Código de Verificação - Sociedade de Consumidores',
+            body: `<h2>Código de Verificação</h2><p>Seu código de verificação é:</p><h1 style="color:#f97316;font-size:32px;letter-spacing:4px;">${verificationCode}</h1><p>Este código expira em 24 horas.</p>`
+          });
+        } catch (e) {
+          console.warn('[authLogin] Erro ao enviar código de verificação:', e.message);
+        }
+      })();
+    }
+
     // Buscar Partner
     let partner = null;
     try {
