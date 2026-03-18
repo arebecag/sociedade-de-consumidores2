@@ -33,6 +33,8 @@ export default function Register() {
   const [errors, setErrors] = useState({});
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, valid: false, message: "" });
 
+  const DEFAULT_REFERRER_CODE = "WKK321P5";
+
   useEffect(() => {
     if (isAuthenticated()) navigate(createPageUrl("Dashboard"));
     checkFirstUser();
@@ -44,16 +46,9 @@ export default function Register() {
       const code = urlParams.get("ref");
       const tab = urlParams.get("tab");
       if (tab === "register") setActiveTab("register");
-      if (code) {
-        setReferrerCode(code);
-        await loadReferrer(code);
-      } else {
-        // Sem link de indicação — sem indicador
-        setReferrerName("Sem indicador");
-        setReferrerPartnerId(null);
-        setInvalidReferrer(false);
-        setLoadingReferrer(false);
-      }
+      const c = code || DEFAULT_REFERRER_CODE;
+      setReferrerCode(c);
+      await loadReferrer(c);
     } catch { setLoadingReferrer(false); }
   };
 

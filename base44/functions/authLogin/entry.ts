@@ -64,13 +64,23 @@ Deno.serve(async (req) => {
       last_login_at: new Date().toISOString()
     });
 
-    // Buscar Partner vinculado
+    // Buscar Partner vinculado (por ID ou fallback por email)
     let partner = null;
-    if (user.partner_id) {
-      const partners = await base44.asServiceRole.entities.Partner.filter({ id: user.partner_id });
-      if (partners.length > 0) {
-        partner = partners[0];
+    try {
+      if (user.partner_id) {
+        const partners = await base44.asServiceRole.entities.Partner.filter({ id: user.partner_id });
+        if (partners.length > 0) partner = partners[0];
       }
+      if (!partner) {
+        const partnersByEmail = await base44.asServiceRole.entities.Partner.filter({ email: emailNormalized });
+        if (partnersByEmail.length > 0) {
+          partner = partnersByEmail[0];
+          // Reparar vínculo automaticamente
+          await base44.asServiceRole.entities.LoginUser.update(user.id, { partner_id: partner.id });
+        }
+      }
+    } catch (e) {
+      console.warn('[authLogin] Erro ao buscar Partner:', e.message);
     }
 
     return Response.json({
