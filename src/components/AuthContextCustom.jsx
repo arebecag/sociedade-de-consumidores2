@@ -54,14 +54,20 @@ export const AuthProviderCustom = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const res = await base44.functions.invoke('authLogin', { email, password });
-    if (res.data?.success) {
-      setToken(res.data.token);
-      setUser(res.data.user);
-      setPartner(res.data.partner || null);
-      return res.data;
+    try {
+      const res = await base44.functions.invoke('authLogin', { email, password });
+      if (res.data?.success) {
+        setToken(res.data.token);
+        setUser(res.data.user);
+        setPartner(res.data.partner || null);
+        return res.data;
+      }
+      throw new Error(res.data?.error || 'E-mail ou senha incorretos');
+    } catch (error) {
+      const msg = error.response?.data?.error || error.response?.data?.message || error.message;
+      if (msg && !msg.includes('status code')) throw new Error(msg);
+      throw new Error('E-mail ou senha incorretos');
     }
-    throw new Error(res.data?.error || 'E-mail ou senha incorretos');
   };
 
   const logout = async () => {
