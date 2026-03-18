@@ -399,7 +399,9 @@ export default function Register() {
                             <div className="grid grid-cols-2 gap-2">
                               {[["masculino","Masculino"],["feminino","Feminino"],["outro","Outro"],["prefiro_nao_informar","Prefiro não informar"]].map(([v, l]) => (
                                 <button key={v} type="button" onClick={() => handleChange("gender", v)}
-                                  className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all duration-150 ${
+                                  className={`py-2.5 px-2 rounded-xl border text-xs font-medium transition-all duration-150 leading-snug ${
+                                    v === "prefiro_nao_informar" ? "col-span-2" : ""
+                                  } ${
                                     formData.gender === v
                                       ? "bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/20"
                                       : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
