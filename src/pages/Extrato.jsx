@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, TrendingUp, TrendingDown, ShoppingBag, CreditCard, FileText, DollarSign, GraduationCap, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
+import { AnimatedPage, AnimatedItem, PageHeader, LoadingSpinner, EmptyState } from "@/components/PageWrapper";
+import { TrendingUp, TrendingDown, ShoppingBag, CreditCard, FileText, DollarSign, GraduationCap, ExternalLink } from "lucide-react";
 
 export default function Extrato() {
   const [partner, setPartner] = useState(null);
@@ -15,401 +15,196 @@ export default function Extrato() {
   const [financeiros, setFinanceiros] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     try {
       const user = await base44.auth.me();
       const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      
       if (partners.length > 0) {
-        const p = partners[0];
-        setPartner(p);
-        
-        // Load all transactions
+        const p = partners[0]; setPartner(p);
         const [bonus, withdrawal, purchase, cursosCompras, fins] = await Promise.all([
           base44.entities.BonusTransaction.filter({ partner_id: p.id }),
           base44.entities.Withdrawal.filter({ partner_id: p.id }),
           base44.entities.Purchase.filter({ partner_id: p.id }),
           base44.entities.ComprasCursosEAD.filter({ usuarioId: p.id }),
-          base44.entities.Financeiro.filter({ userId: p.id })
+          base44.entities.Financeiro.filter({ userId: p.id }),
         ]);
-        
         setBonusTransactions(bonus.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
         setWithdrawals(withdrawal.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
         setPurchases(purchase.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
         setCursosLogs(cursosCompras.filter(c => c.status === 'LIBERADO').sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
         setFinanceiros(fins.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
       }
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
-    }
+    } catch { }
+    finally { setLoading(false); }
   };
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
-  };
+  const fmt = (v) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v || 0);
+  const fmtR = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 
-  const formatNumber = (value) => {
-    return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
-  };
+  if (loading) return <LoadingSpinner />;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+  const summary = [
+    { label: "Bônus Total Gerado",    value: fmt(partner?.total_bonus_generated), icon: TrendingUp,  color: "text-orange-400", bg: "bg-orange-500/10" },
+    { label: "Disponível p/ Saque",   value: fmt(partner?.bonus_for_withdrawal),  icon: DollarSign,  color: "text-green-400",  bg: "bg-green-500/10"  },
+    { label: "Disponível p/ Compras", value: fmt(partner?.bonus_for_purchases),   icon: ShoppingBag, color: "text-purple-400", bg: "bg-purple-500/10" },
+    { label: "Total Sacado",          value: fmt(partner?.total_withdrawn),       icon: CreditCard,  color: "text-blue-400",   bg: "bg-blue-500/10"   },
+  ];
+
+  const TxRow = ({ icon: Icon, iconColor, label, sub, date, value, valueColor, statusEl, extra }) => (
+    <motion.div variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
+      className="flex items-center gap-3 p-3 rounded-xl bg-zinc-800/50 border border-white/[0.04]">
+      <div className={`w-8 h-8 rounded-lg ${iconColor.replace("text-", "bg-").replace("400", "500/10")} flex items-center justify-center flex-shrink-0`}>
+        <Icon className={`w-4 h-4 ${iconColor}`} />
       </div>
-    );
-  }
+      <div className="flex-1 min-w-0">
+        <p className="text-white text-sm font-medium truncate">{label}</p>
+        {sub && <p className="text-zinc-500 text-xs truncate">{sub}</p>}
+        <p className="text-zinc-600 text-xs">{new Date(date).toLocaleString('pt-BR')}</p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className={`font-bold text-sm ${valueColor}`}>{value}</p>
+        {statusEl}
+        {extra}
+      </div>
+    </motion.div>
+  );
+
+  const StatusBadge = ({ status, map }) => {
+    const cfg = map[status] || {};
+    return <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${cfg.cls || 'bg-zinc-700 text-zinc-400'}`}>{cfg.label || status}</span>;
+  };
+
+  const bonusStatus = { credited: { cls: "bg-green-500/10 text-green-400", label: "Creditado" }, blocked: { cls: "bg-red-500/10 text-red-400", label: "Retido" }, pending: { cls: "bg-yellow-500/10 text-yellow-400", label: "Pendente" } };
+  const wStatus    = { completed: { cls: "bg-green-500/10 text-green-400", label: "Concluído" }, cancelled: { cls: "bg-red-500/10 text-red-400", label: "Cancelado" }, pending: { cls: "bg-yellow-500/10 text-yellow-400", label: "Pendente" } };
+  const pStatus    = { paid: { cls: "bg-green-500/10 text-green-400", label: "Pago" }, cancelled: { cls: "bg-red-500/10 text-red-400", label: "Cancelado" }, pending: { cls: "bg-yellow-500/10 text-yellow-400", label: "Pendente" } };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-white">Extrato e Movimentações</h1>
-        <p className="text-gray-400">Acompanhe todas as suas transações financeiras</p>
-      </div>
+    <AnimatedPage>
+      <PageHeader title="Extrato e Movimentações" subtitle="Acompanhe todas as suas transações financeiras" />
 
-      {/* Balance Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-zinc-950 border-orange-500/20">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Bônus Total Gerado</p>
-                <p className="text-2xl font-bold text-orange-500">{formatNumber(partner?.total_bonus_generated)}</p>
+      <AnimatedItem>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {summary.map(({ label, value, icon: Icon, color, bg }) => (
+            <div key={label} className="p-4 rounded-2xl bg-zinc-900/60 border border-white/[0.05]">
+              <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center mb-3`}>
+                <Icon className={`w-4 h-4 ${color}`} />
               </div>
-              <TrendingUp className="w-8 h-8 text-orange-500" />
+              <p className="text-zinc-500 text-xs mb-1">{label}</p>
+              <p className={`text-base font-bold ${color}`}>{value}</p>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
+      </AnimatedItem>
 
-        <Card className="bg-zinc-950 border-orange-500/20">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Disponível para Saque</p>
-                <p className="text-2xl font-bold text-green-500">{formatNumber(partner?.bonus_for_withdrawal)}</p>
-              </div>
-              <DollarSign className="w-8 h-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
+      <AnimatedItem>
+        <Tabs defaultValue="bonus">
+          <div className="overflow-x-auto">
+            <TabsList className="bg-zinc-900 border border-white/[0.05] mb-4 w-max">
+              <TabsTrigger value="bonus" className="data-[state=active]:bg-orange-500 text-xs"><TrendingUp className="w-3 h-3 mr-1" />Bônus ({bonusTransactions.length})</TabsTrigger>
+              <TabsTrigger value="withdrawals" className="data-[state=active]:bg-orange-500 text-xs"><CreditCard className="w-3 h-3 mr-1" />Saques ({withdrawals.length})</TabsTrigger>
+              <TabsTrigger value="purchases" className="data-[state=active]:bg-orange-500 text-xs"><ShoppingBag className="w-3 h-3 mr-1" />Compras ({purchases.length})</TabsTrigger>
+              <TabsTrigger value="cursos" className="data-[state=active]:bg-orange-500 text-xs"><GraduationCap className="w-3 h-3 mr-1" />Cursos ({cursosLogs.length})</TabsTrigger>
+              <TabsTrigger value="all" className="data-[state=active]:bg-orange-500 text-xs"><FileText className="w-3 h-3 mr-1" />Todas</TabsTrigger>
+            </TabsList>
+          </div>
 
-        <Card className="bg-zinc-950 border-orange-500/20">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Disponível para Compras</p>
-                <p className="text-2xl font-bold text-purple-500">{formatNumber(partner?.bonus_for_purchases)}</p>
-              </div>
-              <ShoppingBag className="w-8 h-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
+          <TabsContent value="bonus">
+            {bonusTransactions.length === 0 ? <EmptyState icon={TrendingUp} message="Nenhuma transação de bônus ainda." /> : (
+              <motion.div variants={{ show: { transition: { staggerChildren: 0.04 } } }} initial="hidden" animate="show" className="space-y-2">
+                {bonusTransactions.map(t => (
+                  <TxRow key={t.id} icon={TrendingUp} iconColor="text-green-400"
+                    label={`Bônus ${t.type === 'direct' ? 'Direto' : 'Indireto'} (${t.percentage}%)`}
+                    sub={`De: ${t.source_partner_name}`} date={t.created_date}
+                    value={`+${fmt(t.total_amount)}`} valueColor="text-green-400"
+                    statusEl={<StatusBadge status={t.status} map={bonusStatus} />} />
+                ))}
+              </motion.div>
+            )}
+          </TabsContent>
 
-        <Card className="bg-zinc-950 border-orange-500/20">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Total Sacado</p>
-                <p className="text-2xl font-bold text-blue-500">{formatNumber(partner?.total_withdrawn)}</p>
-              </div>
-              <CreditCard className="w-8 h-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <TabsContent value="withdrawals">
+            {withdrawals.length === 0 ? <EmptyState icon={CreditCard} message="Nenhum saque realizado ainda." /> : (
+              <motion.div variants={{ show: { transition: { staggerChildren: 0.04 } } }} initial="hidden" animate="show" className="space-y-2">
+                {withdrawals.map(w => (
+                  <TxRow key={w.id} icon={TrendingDown} iconColor="text-red-400"
+                    label="Saque via PIX/TED"
+                    sub={`Chave: ${w.pix_key?.substring(0, 20)}...`} date={w.created_date}
+                    value={`-${fmtR(w.amount)}`} valueColor="text-red-400"
+                    statusEl={<StatusBadge status={w.status} map={wStatus} />} />
+                ))}
+              </motion.div>
+            )}
+          </TabsContent>
 
-      {/* Transactions */}
-      <Tabs defaultValue="bonus" className="space-y-4">
-        <TabsList className="bg-zinc-900 border border-orange-500/20">
-          <TabsTrigger value="bonus" className="data-[state=active]:bg-orange-500">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Bônus ({bonusTransactions.length})
-          </TabsTrigger>
-          <TabsTrigger value="withdrawals" className="data-[state=active]:bg-orange-500">
-            <CreditCard className="w-4 h-4 mr-2" />
-            Saques ({withdrawals.length})
-          </TabsTrigger>
-          <TabsTrigger value="purchases" className="data-[state=active]:bg-orange-500">
-            <ShoppingBag className="w-4 h-4 mr-2" />
-            Compras ({purchases.length})
-          </TabsTrigger>
-          <TabsTrigger value="cursos" className="data-[state=active]:bg-orange-500">
-            <GraduationCap className="w-4 h-4 mr-2" />
-            Cursos EAD ({cursosLogs.length})
-          </TabsTrigger>
-          <TabsTrigger value="all" className="data-[state=active]:bg-orange-500">
-            <FileText className="w-4 h-4 mr-2" />
-            Todas
-          </TabsTrigger>
-        </TabsList>
+          <TabsContent value="purchases">
+            {purchases.length === 0 ? <EmptyState icon={ShoppingBag} message="Nenhuma compra realizada ainda." /> : (
+              <motion.div variants={{ show: { transition: { staggerChildren: 0.04 } } }} initial="hidden" animate="show" className="space-y-2">
+                {purchases.map(p => {
+                  const boleto = financeiros.find(f => f.status === 'PENDING' && f.descricao?.includes(p.product_name));
+                  return (
+                    <TxRow key={p.id} icon={ShoppingBag} iconColor="text-purple-400"
+                      label={p.product_name}
+                      sub={`Pagamento: ${p.payment_method === 'bonus' ? 'Bônus' : p.payment_method === 'boleto' ? 'Boleto' : 'Misto'}`}
+                      date={p.created_date} value={fmtR(p.amount)} valueColor="text-purple-400"
+                      statusEl={<StatusBadge status={p.status} map={pStatus} />}
+                      extra={p.status === 'pending' && boleto?.invoiceUrl ? (
+                        <a href={boleto.invoiceUrl} target="_blank" rel="noreferrer">
+                          <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-xs h-6 px-2 mt-1 gap-1">
+                            <ExternalLink className="w-3 h-3" /> Pagar
+                          </Button>
+                        </a>
+                      ) : null} />
+                  );
+                })}
+              </motion.div>
+            )}
+          </TabsContent>
 
-        <TabsContent value="bonus">
-          <Card className="bg-zinc-950 border-orange-500/20">
-            <CardHeader>
-              <CardTitle className="text-white">Histórico de Bônus</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {bonusTransactions.length === 0 ? (
-                <div className="text-center py-12">
-                  <TrendingUp className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400">Nenhuma transação de bônus ainda.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {bonusTransactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <TrendingUp className="w-5 h-5 text-green-500" />
-                        <div>
-                          <p className="text-white font-medium">
-                            Bônus {transaction.type === 'direct' ? 'Direto' : 'Indireto'} ({transaction.percentage}%)
-                          </p>
-                          <p className="text-gray-400 text-sm">
-                            De: {transaction.source_partner_name}
-                          </p>
-                          <p className="text-gray-500 text-xs">
-                            {new Date(transaction.created_date).toLocaleString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-green-500 font-bold">{formatNumber(transaction.total_amount)}</p>
-                        <Badge className={
-                          transaction.status === 'credited' ? 'bg-green-500/20 text-green-500' :
-                          transaction.status === 'blocked' ? 'bg-red-500/20 text-red-500' :
-                          'bg-yellow-500/20 text-yellow-500'
-                        }>
-                          {transaction.status === 'credited' ? 'Creditado' :
-                           transaction.status === 'blocked' ? 'Bloqueado' : 'Pendente'}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="cursos">
+            {cursosLogs.length === 0 ? <EmptyState icon={GraduationCap} message="Nenhum curso adquirido ainda." /> : (
+              <motion.div variants={{ show: { transition: { staggerChildren: 0.04 } } }} initial="hidden" animate="show" className="space-y-2">
+                {cursosLogs.map(c => (
+                  <TxRow key={c.id} icon={GraduationCap} iconColor="text-blue-400"
+                    label={c.cursoNome} sub="BONUS_USADO_CURSO" date={c.created_date}
+                    value={`-${fmt(c.valorBonus)}`} valueColor="text-orange-400"
+                    statusEl={<span className="text-xs text-green-400 font-medium">Liberado</span>} />
+                ))}
+              </motion.div>
+            )}
+          </TabsContent>
 
-        <TabsContent value="withdrawals">
-          <Card className="bg-zinc-950 border-orange-500/20">
-            <CardHeader>
-              <CardTitle className="text-white">Histórico de Saques</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {withdrawals.length === 0 ? (
-                <div className="text-center py-12">
-                  <CreditCard className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400">Nenhum saque realizado ainda.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {withdrawals.map((withdrawal) => (
-                    <div key={withdrawal.id} className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <TrendingDown className="w-5 h-5 text-red-500" />
-                        <div>
-                          <p className="text-white font-medium">Saque via PIX</p>
-                          <p className="text-gray-400 text-sm">
-                            Chave: {withdrawal.pix_key?.substring(0, 20)}...
-                          </p>
-                          <p className="text-gray-500 text-xs">
-                            {new Date(withdrawal.created_date).toLocaleString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-red-500 font-bold">-{formatCurrency(withdrawal.amount)}</p>
-                        <Badge className={
-                          withdrawal.status === 'completed' ? 'bg-green-500/20 text-green-500' :
-                          withdrawal.status === 'cancelled' ? 'bg-red-500/20 text-red-500' :
-                          'bg-yellow-500/20 text-yellow-500'
-                        }>
-                          {withdrawal.status === 'completed' ? 'Concluído' :
-                           withdrawal.status === 'cancelled' ? 'Cancelado' : 'Pendente'}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="purchases">
-          <Card className="bg-zinc-950 border-orange-500/20">
-            <CardHeader>
-              <CardTitle className="text-white">Histórico de Compras</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {purchases.length === 0 ? (
-                <div className="text-center py-12">
-                  <ShoppingBag className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400">Nenhuma compra realizada ainda.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {purchases.map((purchase) => (
-                    <div key={purchase.id} className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <ShoppingBag className="w-5 h-5 text-purple-500" />
-                        <div>
-                          <p className="text-white font-medium">{purchase.product_name}</p>
-                          <p className="text-gray-400 text-sm">
-                            Pagamento: {purchase.payment_method === 'bonus' ? 'Bônus' :
-                                       purchase.payment_method === 'boleto' ? 'Boleto' : 'Misto'}
-                          </p>
-                          <p className="text-gray-500 text-xs">
-                            {new Date(purchase.created_date).toLocaleString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right flex flex-col items-end gap-2">
-                        <p className="text-purple-500 font-bold">{formatCurrency(purchase.amount)}</p>
-                        <Badge className={
-                          purchase.status === 'paid' ? 'bg-green-500/20 text-green-500' :
-                          purchase.status === 'cancelled' ? 'bg-red-500/20 text-red-500' :
-                          'bg-yellow-500/20 text-yellow-500'
-                        }>
-                          {purchase.status === 'paid' ? 'Pago' :
-                           purchase.status === 'cancelled' ? 'Cancelado' : 'Pendente'}
-                        </Badge>
-                        {purchase.status === 'pending' && (() => {
-                          // Find matching Financeiro (boleto) for this purchase
-                          const boleto = financeiros.find(f => f.status === 'PENDING' && f.descricao?.includes(purchase.product_name));
-                          return (
-                            <div className="flex flex-col gap-1 items-end">
-                              {boleto?.invoiceUrl && (
-                                <a href={boleto.invoiceUrl} target="_blank" rel="noreferrer">
-                                  <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-xs h-7 px-2">
-                                    <ExternalLink className="w-3 h-3 mr-1" /> Pagar
-                                  </Button>
-                                </a>
-                              )}
-                              <button
-                                onClick={async () => {
-                                  if (!window.confirm('Cancelar esta compra pendente?')) return;
-                                  await base44.entities.Purchase.update(purchase.id, { status: 'cancelled' });
-                                  setPurchases(prev => prev.map(p => p.id === purchase.id ? { ...p, status: 'cancelled' } : p));
-                                }}
-                                className="text-xs text-red-400 hover:text-red-300 underline"
-                              >
-                                Cancelar
-                              </button>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="cursos">
-          <Card className="bg-zinc-950 border-orange-500/20">
-            <CardHeader>
-              <CardTitle className="text-white">Cursos Adquiridos com Bônus</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {cursosLogs.length === 0 ? (
-                <div className="text-center py-12">
-                  <GraduationCap className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400">Nenhum curso adquirido ainda.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cursosLogs.map((compra) => (
-                    <div key={compra.id} className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <GraduationCap className="w-5 h-5 text-blue-400" />
-                        <div>
-                          <p className="text-white font-medium">{compra.cursoNome}</p>
-                          <p className="text-gray-400 text-xs">BONUS_USADO_CURSO — ID: {compra.id?.slice(0, 8)}...</p>
-                          <p className="text-gray-500 text-xs">{new Date(compra.created_date).toLocaleString('pt-BR')}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-orange-400 font-bold">-{formatNumber(compra.valorBonus)}</p>
-                        <span className="text-xs text-green-400 font-medium">Liberado</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="all">
-          <Card className="bg-zinc-950 border-orange-500/20">
-            <CardHeader>
-              <CardTitle className="text-white">Todas as Movimentações</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {bonusTransactions.length === 0 && withdrawals.length === 0 && purchases.length === 0 && cursosLogs.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400">Nenhuma movimentação ainda.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {[
-                    ...bonusTransactions.map(t => ({ ...t, txType: 'bonus' })),
-                    ...withdrawals.map(t => ({ ...t, txType: 'withdrawal' })),
-                    ...purchases.map(t => ({ ...t, txType: 'purchase' })),
-                    ...cursosLogs.map(t => ({ ...t, txType: 'curso' }))
-                  ]
-                    .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
-                    .map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-4 bg-zinc-900 rounded-lg">
-                        <div className="flex items-center gap-4">
-                          {transaction.txType === 'bonus' && <TrendingUp className="w-5 h-5 text-green-500" />}
-                          {transaction.txType === 'withdrawal' && <TrendingDown className="w-5 h-5 text-red-500" />}
-                          {transaction.txType === 'purchase' && <ShoppingBag className="w-5 h-5 text-purple-500" />}
-                          {transaction.txType === 'curso' && <GraduationCap className="w-5 h-5 text-blue-400" />}
-                          <div>
-                            <p className="text-white font-medium">
-                              {transaction.txType === 'bonus' && `Bônus ${transaction.type === 'direct' ? 'Direto' : 'Indireto'}`}
-                              {transaction.txType === 'withdrawal' && 'Saque via PIX'}
-                              {transaction.txType === 'purchase' && transaction.product_name}
-                              {transaction.txType === 'curso' && `Curso: ${transaction.cursoNome}`}
-                            </p>
-                            <p className="text-gray-500 text-xs">
-                              {new Date(transaction.created_date).toLocaleString('pt-BR')}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-bold ${
-                            transaction.txType === 'bonus' ? 'text-green-500' :
-                            transaction.txType === 'withdrawal' ? 'text-red-500' :
-                            transaction.txType === 'curso' ? 'text-orange-400' :
-                            'text-purple-500'
-                          }`}>
-                            {transaction.txType === 'bonus' && `+${formatNumber(transaction.total_amount)}`}
-                            {transaction.txType === 'withdrawal' && `-${formatCurrency(transaction.amount)}`}
-                            {transaction.txType === 'purchase' && formatCurrency(transaction.amount)}
-                            {transaction.txType === 'curso' && `-${formatNumber(transaction.valorBonus)}`}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+          <TabsContent value="all">
+            {bonusTransactions.length === 0 && withdrawals.length === 0 && purchases.length === 0 && cursosLogs.length === 0 ? (
+              <EmptyState icon={FileText} message="Nenhuma movimentação ainda." />
+            ) : (() => {
+              const all = [
+                ...bonusTransactions.map(t => ({ ...t, txType: 'bonus' })),
+                ...withdrawals.map(t => ({ ...t, txType: 'withdrawal' })),
+                ...purchases.map(t => ({ ...t, txType: 'purchase' })),
+                ...cursosLogs.map(t => ({ ...t, txType: 'curso' })),
+              ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+              return (
+                <motion.div variants={{ show: { transition: { staggerChildren: 0.03 } } }} initial="hidden" animate="show" className="space-y-2">
+                  {all.map(t => {
+                    const iconMap = { bonus: [TrendingUp, "text-green-400"], withdrawal: [TrendingDown, "text-red-400"], purchase: [ShoppingBag, "text-purple-400"], curso: [GraduationCap, "text-blue-400"] };
+                    const [Icon, iconColor] = iconMap[t.txType];
+                    const labelMap = { bonus: `Bônus ${t.type === 'direct' ? 'Direto' : 'Indireto'}`, withdrawal: 'Saque via PIX/TED', purchase: t.product_name, curso: `Curso: ${t.cursoNome}` };
+                    const valueMap = { bonus: `+${fmt(t.total_amount)}`, withdrawal: `-${fmtR(t.amount)}`, purchase: fmtR(t.amount), curso: `-${fmt(t.valorBonus)}` };
+                    const colorMap = { bonus: "text-green-400", withdrawal: "text-red-400", purchase: "text-purple-400", curso: "text-orange-400" };
+                    return (
+                      <TxRow key={t.id + t.txType} icon={Icon} iconColor={iconColor}
+                        label={labelMap[t.txType]} date={t.created_date}
+                        value={valueMap[t.txType]} valueColor={colorMap[t.txType]} />
+                    );
+                  })}
+                </motion.div>
+              );
+            })()}
+          </TabsContent>
+        </Tabs>
+      </AnimatedItem>
+    </AnimatedPage>
   );
 }
