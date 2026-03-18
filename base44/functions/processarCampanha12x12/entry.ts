@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
   try {
@@ -52,9 +52,25 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Campanha encerrada', dataFim: campanha.dataFim }, { status: 400 });
     }
 
-    // Buscar todos os parceiros com unique_code
+    // Buscar todos os parceiros ativos
     const parceiros = await base44.asServiceRole.entities.Partner.list(null, 1000);
     const parceirosValidos = parceiros.filter(p => p.unique_code && p.status === 'ativo');
+
+    // Buscar TODAS as relações diretas de uma vez (otimização)
+    const todasRelacoesDiretas = await base44.asServiceRole.entities.NetworkRelation.filter({
+      relation_type: 'direct'
+    });
+
+    // Montar mapa: referrer_id -> array de referred_ids diretos
+    const mapaRelacoesDiretas = {};
+    for (const rel of todasRelacoesDiretas) {
+      if (!mapaRelacoesDiretas[rel.referrer_id]) mapaRelacoesDiretas[rel.referrer_id] = [];
+      mapaRelacoesDiretas[rel.referrer_id].push(rel.referred_id);
+    }
+
+    // Mapa de id -> parceiro para lookup rápido
+    const mapaParceiros = {};
+    for (const p of parceiros) mapaParceiros[p.id] = p;
 
     logInicio.parceirosProcessados = parceirosValidos.length;
     const resultados = [];
@@ -63,10 +79,14 @@ Deno.serve(async (req) => {
     // Processar cada parceiro
     for (const parceiro of parceirosValidos) {
       try {
-        // Buscar clientes ativos na GlobalEAD
-        const clientesAtivos = await buscarClientesAtivosGlobalEAD(parceiro.unique_code);
-        
-        const totalClientes = clientesAtivos.length;
+        // Contar APENAS clientes diretos (onde o parceiro é o indicador) que estão ATIVOS
+        const idsDirectos = mapaRelacoesDiretas[parceiro.id] || [];
+        const clientesAtivosIds = idsDirectos.filter(id => {
+          const p = mapaParceiros[id];
+          return p && p.status === 'ativo';
+        });
+
+        const totalClientes = clientesAtivosIds.length;
         const blocosFechados = Math.floor(totalClientes / campanha.quantidadeNecessaria);
         const valorTotal = blocosFechados * campanha.valorPremio;
 
@@ -82,16 +102,14 @@ Deno.serve(async (req) => {
 
         if (!dryRun) {
           if (participante) {
-            // Atualizar participante
             await base44.asServiceRole.entities.CampanhaParticipantes.update(participante.id, {
               totalClientesAtivos: totalClientes,
               totalBlocosFechados: blocosFechados,
               valorTotalPremiado: valorTotal,
               dataUltimaAtualizacao: new Date().toISOString(),
-              clientesAtivosIds: clientesAtivos.map(c => String(c.id))
+              clientesAtivosIds: clientesAtivosIds
             });
           } else {
-            // Criar participante
             await base44.asServiceRole.entities.CampanhaParticipantes.create({
               campanhaId: campanha.id,
               parceiroId: parceiro.id,
@@ -101,7 +119,7 @@ Deno.serve(async (req) => {
               totalBlocosFechados: blocosFechados,
               valorTotalPremiado: valorTotal,
               dataUltimaAtualizacao: new Date().toISOString(),
-              clientesAtivosIds: clientesAtivos.map(c => String(c.id))
+              clientesAtivosIds: clientesAtivosIds
             });
           }
 
@@ -117,12 +135,11 @@ Deno.serve(async (req) => {
               valorPremio: campanha.valorPremio,
               dataGeracao: new Date().toISOString(),
               statusPagamento: 'pendente',
-              observacao: `Bloco ${blocoNumero} fechado - ${totalClientes} clientes ativos`,
+              observacao: `Bloco ${blocoNumero} fechado - ${totalClientes} clientes diretos ativos`,
               notificacaoEnviada: false
             });
             totalRecompensasGeradas++;
 
-            // Enviar notificação
             await enviarNotificacaoPremio(base44, parceiro, blocoNumero, campanha.valorPremio);
           }
         }
@@ -130,7 +147,7 @@ Deno.serve(async (req) => {
         resultados.push({
           parceiro: parceiro.full_name,
           email: parceiro.email,
-          clientesAtivos: totalClientes,
+          clientesDiretosAtivos: totalClientes,
           blocosFechados,
           novosBlocos,
           valorTotal,
@@ -144,14 +161,12 @@ Deno.serve(async (req) => {
     }
 
     logInicio.recompensasGeradas = totalRecompensasGeradas;
-    logInicio.mensagem = dryRun 
+    logInicio.mensagem = dryRun
       ? `Simulação: ${totalRecompensasGeradas} recompensas seriam geradas`
       : `Processamento concluído: ${totalRecompensasGeradas} recompensas geradas`;
     logInicio.detalhesTecnicos = { resultados };
 
-    if (logInicio.erros.length > 0) {
-      logInicio.status = 'parcial';
-    }
+    if (logInicio.erros.length > 0) logInicio.status = 'parcial';
 
     if (!dryRun) {
       await base44.asServiceRole.entities.LogIntegracaoCampanha.create(logInicio);
@@ -174,32 +189,6 @@ Deno.serve(async (req) => {
   }
 });
 
-// Função auxiliar para buscar clientes ativos na GlobalEAD
-async function buscarClientesAtivosGlobalEAD(codigoTutor) {
-  try {
-    // Buscar configurações EAD
-    const response = await fetch(`https://globaleadsys.com.br/api/v1/alunos?tutor=${codigoTutor}&status=ativo`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('GLOBALEAD_API_TOKEN') || ''}`
-      }
-    });
-
-    if (!response.ok) {
-      console.error('[GlobalEAD] Erro na API:', response.status);
-      return [];
-    }
-
-    const data = await response.json();
-    return data.alunos || [];
-  } catch (error) {
-    console.error('[GlobalEAD] Erro ao buscar clientes:', error);
-    return [];
-  }
-}
-
-// Função auxiliar para enviar notificação
 async function enviarNotificacaoPremio(base44, parceiro, blocoNumero, valor) {
   try {
     await base44.asServiceRole.integrations.Core.SendEmail({
@@ -210,8 +199,8 @@ async function enviarNotificacaoPremio(base44, parceiro, blocoNumero, valor) {
         <p>Olá, <strong>${parceiro.full_name}</strong>!</p>
         <p>Parabéns! Você fechou o <strong>bloco ${blocoNumero}</strong> e conquistou <strong>R$ ${valor.toFixed(2)}</strong>!</p>
         <p>Continue trazendo novos clientes ativos para conquistar mais prêmios!</p>
-        <p>A cada 12 clientes ativos, você ganha R$ 800,00 na hora via PIX.</p>
-        <p><em>Esta campanha termina em 30/04/2026.</em></p>
+        <p>A cada 12 clientes que <strong>você indicou diretamente</strong> e que estão ATIVOS, você ganha R$ 800,00 via PIX.</p>
+        <p><em>Esta campanha termina em 15/04/2026.</em></p>
       `
     });
   } catch (error) {

@@ -30,11 +30,24 @@ export default function CampanhaDesafio() {
     queryKey: ['participante-campanha', partner?.id, campanha?.id],
     queryFn: async () => {
       if (!partner?.id || !campanha?.id) return null;
+      // Conta apenas clientes DIRETOS (onde o parceiro é o indicador) com status ativo
+      const relacoesDiretas = await base44.entities.NetworkRelation.filter({
+        referrer_id: partner.id,
+        relation_type: 'direct'
+      });
+      const idsDirectos = relacoesDiretas.map(r => r.referred_id);
+      let clientesDiretosAtivos = 0;
+      if (idsDirectos.length > 0) {
+        const allPartners = await base44.entities.Partner.list(null, 500);
+        clientesDiretosAtivos = allPartners.filter(p => idsDirectos.includes(p.id) && p.status === 'ativo').length;
+      }
       const participantes = await base44.entities.CampanhaParticipantes.filter({
         campanhaId: campanha.id,
         parceiroId: partner.id
       });
-      return participantes[0] || null;
+      const p = participantes[0];
+      // Usar contagem ao vivo de diretos ativos
+      return p ? { ...p, totalClientesAtivos: clientesDiretosAtivos } : { totalClientesAtivos: clientesDiretosAtivos, totalBlocosFechados: 0, valorTotalPremiado: 0 };
     },
     enabled: !!partner?.id && !!campanha?.id
   });
@@ -149,6 +162,19 @@ export default function CampanhaDesafio() {
         </div>
       </div>
 
+      {/* Banner de participação */}
+      <div className="p-5 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-start gap-4">
+        <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Trophy className="w-5 h-5 text-orange-400" />
+        </div>
+        <div>
+          <p className="text-orange-300 font-bold text-base">🎉 Você já está participando deste desafio!</p>
+          <p className="text-orange-200/80 text-sm mt-1">
+            Faça sua primeira compra. Fique <strong>ATIVO</strong> para receber seus prêmios, bônus e comissões.
+          </p>
+        </div>
+      </div>
+
       {/* Cards de Status */}
       <div className="grid md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-blue-900 to-blue-800 border-blue-700">
@@ -158,7 +184,7 @@ export default function CampanhaDesafio() {
                 <Users className="w-6 h-6 text-blue-400" />
               </div>
               <div>
-                <p className="text-gray-300 text-sm">Clientes Ativos</p>
+                <p className="text-gray-300 text-sm">Clientes Diretos Ativos</p>
                 <p className="text-3xl font-bold text-white">{clientesAtivos}</p>
               </div>
             </div>
@@ -221,7 +247,7 @@ export default function CampanhaDesafio() {
           <div>
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-400">
-                {clientesAtivos % campanha.quantidadeNecessaria} de {campanha.quantidadeNecessaria} clientes
+                {clientesAtivos % campanha.quantidadeNecessaria} de {campanha.quantidadeNecessaria} clientes diretos ativos
               </span>
               <span className="text-orange-500 font-bold">{progressoAtual.toFixed(0)}%</span>
             </div>
@@ -289,10 +315,11 @@ export default function CampanhaDesafio() {
           <CardTitle className="text-white text-sm">📋 Regras da Campanha</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-gray-400">
-          <p>✅ A cada 12 clientes ativos vinculados, você ganha R$ 800,00</p>
+          <p>✅ A cada 12 clientes ativos <strong className="text-white">nos quais você é o indicador direto</strong>, você ganha R$ 800,00</p>
           <p>✅ O pagamento é feito via PIX na hora</p>
-          <p>✅ Você pode acumular múltiplos prêmios (24 clientes = R$ 1.600, 36 clientes = R$ 2.400...)</p>
-          <p>✅ Apenas clientes com status ATIVO na Sociedade de Consumidores são contabilizados</p>
+          <p>✅ Você pode acumular múltiplos prêmios (24 = R$ 1.600, 36 = R$ 2.400...)</p>
+          <p>✅ Apenas clientes com status <strong className="text-green-400">ATIVO</strong> e que você indicou diretamente são contabilizados</p>
+          <p>⚠️ Clientes indicados pelos seus clientes (nível 2) <strong className="text-yellow-400">não contam</strong> para este desafio — apenas os seus diretos</p>
           <p>⏰ Campanha válida até <strong className="text-orange-500">15/04/2026</strong></p>
         </CardContent>
       </Card>
