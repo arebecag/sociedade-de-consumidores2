@@ -69,10 +69,14 @@ function SidebarContent({ currentPageName, authUser, authPartner, onLinkClick, o
     <div className="flex flex-col h-full bg-[#0d0d0d]">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.05]">
-        <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-sm flex-shrink-0">
-          3
+        <div className="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-orange-500 flex-shrink-0 leading-none">
+          <span className="text-white font-black text-[9px]">SC</span>
+          <span className="text-white font-black text-[9px]">3X3</span>
         </div>
-        <p className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></p>
+        <div className="leading-none">
+          <p className="text-white font-bold text-xs">Sociedade de</p>
+          <p className="text-orange-500 font-bold text-xs">Consumidores</p>
+        </div>
       </div>
 
       {/* User chip */}
@@ -171,8 +175,9 @@ function LayoutContent({ children, currentPageName }) {
         {/* Mobile top bar */}
         <header className="lg:hidden flex-shrink-0 h-14 bg-[#0d0d0d] border-b border-white/[0.05] flex items-center justify-between px-4 z-40">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center font-black text-white text-xs flex-shrink-0">
-              3
+            <div className="flex flex-col items-center justify-center w-9 h-9 rounded-lg bg-orange-500 flex-shrink-0 leading-none">
+              <span className="text-white font-black text-[8px]">SC</span>
+              <span className="text-white font-black text-[8px]">3X3</span>
             </div>
             <span className="text-white font-bold text-sm">Sociedade de <span className="text-orange-500">Consumidores</span></span>
           </div>
