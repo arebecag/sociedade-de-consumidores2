@@ -16,6 +16,7 @@ import { Loader2, Upload, FileText, Download, AlertTriangle, CheckCircle, XCircl
 import { toast } from "sonner";
 
 export default function PayBoletos() {
+  const { partner: authPartner } = useAuthCustom();
   const [partner, setPartner] = useState(null);
   const [boletos, setBoletos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,19 +25,20 @@ export default function PayBoletos() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({ has_barcode: null, is_official: null, product_type: "", product_details: "", payment_type: "", due_date: "", amount: "" });
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { if (authPartner) loadData(); }, [authPartner]);
 
   const loadData = async () => {
     try {
-      const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      if (partners.length > 0) {
-        setPartner(partners[0]);
-        const userBoletos = await base44.entities.Boleto.filter({ partner_id: partners[0].id });
-        setBoletos(userBoletos.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
-      }
-    } catch { }
-    finally { setLoading(false); }
+      const partners = await base44.entities.Partner.filter({ user_id: authPartner.user_id });
+      const currentPartner = partners.length > 0 ? partners[0] : authPartner;
+      setPartner(currentPartner);
+      const userBoletos = await base44.entities.Boleto.filter({ partner_id: currentPartner.id });
+      setBoletos(userBoletos.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+    } catch (e) {
+      console.error("[PayBoletos] Erro:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const validateDueDate = (date) => {
