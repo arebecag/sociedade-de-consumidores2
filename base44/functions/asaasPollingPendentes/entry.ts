@@ -135,24 +135,25 @@ Deno.serve(async (req) => {
         updateData.acessoLiberado = true;
 
         // Só processa uma vez (bonusLiberado = flag de idempotência)
+        // CRÍTICO: só marca bonusLiberado=true DEPOIS de processar tudo com sucesso
         if (!cobranca.bonusLiberado) {
-          updateData.bonusLiberado = true;
 
           const parceiro = await base44.asServiceRole.entities.Partner.get(cobranca.userId);
 
           if (parceiro) {
-            // Ativar parceiro
+            // 1. Ativar parceiro
             const pendingReasons = (parceiro.pending_reasons || []).filter(r => r !== "Falta da primeira compra");
             const partnerUpdate = { first_purchase_done: true, pending_reasons: pendingReasons };
             if (pendingReasons.length === 0) partnerUpdate.status = "ativo";
             await base44.asServiceRole.entities.Partner.update(cobranca.userId, partnerUpdate);
             console.log(`[polling] Parceiro ${parceiro.full_name} ativado`);
 
-            // Buscar compras pendentes e deduplicar por produto
+            // 2. Buscar compras pendentes e deduplicar por produto
             const todasPendentes = await base44.asServiceRole.entities.Purchase.filter({
               partner_id: cobranca.userId,
               status: 'pending'
             });
+            console.log(`[polling] ${todasPendentes.length} compras pendentes para ${parceiro.full_name}`);
 
             // Deduplicar: por product_id manter a mais recente, cancelar as demais
             const porProduto = {};
@@ -161,14 +162,11 @@ Deno.serve(async (req) => {
               if (!porProduto[key]) {
                 porProduto[key] = p;
               } else {
-                // Manter a mais recente
                 const existente = porProduto[key];
                 if (new Date(p.created_date) > new Date(existente.created_date)) {
-                  // Cancelar a antiga
                   await base44.asServiceRole.entities.Purchase.update(existente.id, { status: 'cancelled' });
                   porProduto[key] = p;
                 } else {
-                  // Cancelar a nova
                   await base44.asServiceRole.entities.Purchase.update(p.id, { status: 'cancelled' });
                 }
               }
@@ -178,7 +176,7 @@ Deno.serve(async (req) => {
             let downloadLink = '';
 
             for (const purchase of purchasesUnicas) {
-              // Marcar como paga
+              // 3. Marcar como paga e liberar download
               await base44.asServiceRole.entities.Purchase.update(purchase.id, {
                 status: 'paid',
                 download_available: true
@@ -195,7 +193,7 @@ Deno.serve(async (req) => {
                 }
               }
 
-              // Distribuir comissões inline (sem invoke HTTP separado)
+              // 4. Distribuir comissões
               try {
                 const comissoes = await distribuirComissoesInline(
                   base44, purchase.id, cobranca.userId, purchase.amount
@@ -206,7 +204,7 @@ Deno.serve(async (req) => {
               }
             }
 
-            // Emitir nota fiscal
+            // 5. Emitir nota fiscal
             try {
               await base44.asServiceRole.functions.invoke('blingEmitirNotaAutomatica', {
                 payment_id: cobranca.asaasPaymentId
@@ -216,7 +214,7 @@ Deno.serve(async (req) => {
               console.error(`[polling] Erro nota fiscal: ${e.message}`);
             }
 
-            // Enviar email de ativação
+            // 6. Enviar email de ativação
             try {
               await base44.asServiceRole.integrations.Core.SendEmail({
                 to: parceiro.email,
@@ -256,6 +254,9 @@ Deno.serve(async (req) => {
             } catch (e) {
               console.error(`[polling] Erro email: ${e.message}`);
             }
+
+            // 7. SÓ AGORA marca como processado (após tudo concluído)
+            updateData.bonusLiberado = true;
           }
         }
       } else if (novoStatus === "OVERDUE") {
