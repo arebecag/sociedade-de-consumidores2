@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AnimatedPage, AnimatedItem, PageHeader, LoadingSpinner, EmptyState } from "@/components/PageWrapper";
 import { ExternalLink, FileText, CheckCircle2, Clock, AlertTriangle, RefreshCw, TrendingUp, DollarSign, Calendar, Gift, ArrowDownCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuthCustom } from "@/components/AuthContextCustom";
 
 const fmtR = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("pt-BR") : "—";
