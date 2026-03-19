@@ -88,7 +88,7 @@ export default function LoginForm({ onLoginSuccess }) {
           to={createPageUrl("ForgotPassword")}
           className="text-sm text-orange-500 hover:text-orange-400"
         >
-          Esqueci minha senha
+          Esqueci a minha senha
         </Link>
       </div>
 
