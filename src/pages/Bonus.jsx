@@ -10,22 +10,21 @@ import { TrendingUp, ArrowUpRight, ArrowDownRight, Award, Users, Wallet, Shoppin
 const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
 export default function Bonus() {
+  const { partner: authPartner } = useAuthCustom();
   const [partner, setPartner] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { if (authPartner) loadData(); }, [authPartner]);
 
   const loadData = async () => {
     try {
-      const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ email: user.email });
-      if (partners.length > 0) {
-        setPartner(partners[0]);
-        const bonusTransactions = await base44.entities.BonusTransaction.filter({ partner_id: partners[0].id });
-        setTransactions(bonusTransactions.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
-      }
-    } catch (error) { console.error("Error:", error); }
+      const partners = await base44.entities.Partner.filter({ user_id: authPartner.user_id });
+      const currentPartner = partners.length > 0 ? partners[0] : authPartner;
+      setPartner(currentPartner);
+      const bonusTransactions = await base44.entities.BonusTransaction.filter({ partner_id: currentPartner.id });
+      setTransactions(bonusTransactions.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+    } catch (error) { console.error("[Bonus] Erro:", error); }
     finally { setLoading(false); }
   };
 

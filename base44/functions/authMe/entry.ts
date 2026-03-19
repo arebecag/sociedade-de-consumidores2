@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 import * as jose from 'npm:jose@5.10.0';
 
 const JWT_SECRET = new TextEncoder().encode(Deno.env.get('INTERNAL_SECRET') || 'sc3x3-secret-key-2024');
@@ -12,7 +12,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Token não fornecido' }, { status: 401 });
     }
 
-    // Verificar JWT (sem acesso ao banco)
     let payload;
     try {
       const result = await jose.jwtVerify(token, JWT_SECRET);
@@ -26,24 +25,27 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Token inválido' }, { status: 401 });
     }
 
-    // Buscar usuário pelo ID
-    const users = await base44.asServiceRole.entities.LoginUser.filter({ id: userId });
-    if (users.length === 0) {
+    // Buscar usuário pelo ID usando get() em vez de filter({ id })
+    let loginUser;
+    try {
+      loginUser = await base44.asServiceRole.entities.LoginUser.get(userId);
+    } catch (e) {
       return Response.json({ error: 'Usuário não encontrado' }, { status: 401 });
     }
 
-    const loginUser = users[0];
+    if (!loginUser) {
+      return Response.json({ error: 'Usuário não encontrado' }, { status: 401 });
+    }
 
     if (loginUser.status === 'blocked') {
       return Response.json({ error: 'Conta bloqueada' }, { status: 403 });
     }
 
-    // Buscar Partner
+    // Buscar Partner usando get() para partner_id ou filter por email
     let partner = null;
     try {
       if (loginUser.partner_id) {
-        const partners = await base44.asServiceRole.entities.Partner.filter({ id: loginUser.partner_id });
-        if (partners.length > 0) partner = partners[0];
+        partner = await base44.asServiceRole.entities.Partner.get(loginUser.partner_id);
       }
       if (!partner) {
         const partnersByEmail = await base44.asServiceRole.entities.Partner.filter({ email: loginUser.email });

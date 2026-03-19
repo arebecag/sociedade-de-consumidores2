@@ -16,6 +16,7 @@ import { toast } from "sonner";
 const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
 export default function Network() {
+  const { partner: authPartner } = useAuthCustom();
   const [partner, setPartner] = useState(null);
   const [directClients, setDirectClients] = useState([]);
   const [indirectClients, setIndirectClients] = useState([]);
@@ -26,12 +27,11 @@ export default function Network() {
   const [spilloverEmail, setSpilloverEmail] = useState("");
   const [processing, setProcessing] = useState(false);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { if (authPartner) loadData(); }, [authPartner]);
 
   const loadData = async () => {
     try {
-      const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ email: user.email });
+      const partners = await base44.entities.Partner.filter({ user_id: authPartner.user_id });
       if (partners.length > 0) {
         const p = partners[0];
         setPartner(p);

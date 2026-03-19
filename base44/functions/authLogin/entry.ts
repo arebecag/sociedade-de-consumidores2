@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 import * as jose from 'npm:jose@5.10.0';
 
 async function hashPassword(password) {
@@ -38,19 +38,16 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Conta bloqueada. Entre em contato com o suporte.' }, { status: 403 });
     }
 
-    // Gerar JWT (expira em 30 dias)
     const token = await new jose.SignJWT({ uid: user.id, email: user.email })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('30d')
       .setIssuedAt()
       .sign(JWT_SECRET);
 
-    // Atualizar último login em background (não bloqueia resposta)
     base44.asServiceRole.entities.LoginUser.update(user.id, {
       last_login_at: new Date().toISOString()
     }).catch(() => {});
 
-    // Enviar código de verificação se email não verificado
     if (!user.is_email_verified) {
       (async () => {
         try {
@@ -75,12 +72,11 @@ Deno.serve(async (req) => {
       })();
     }
 
-    // Buscar Partner
+    // Buscar Partner usando get() para partner_id
     let partner = null;
     try {
       if (user.partner_id) {
-        const partners = await base44.asServiceRole.entities.Partner.filter({ id: user.partner_id });
-        if (partners.length > 0) partner = partners[0];
+        partner = await base44.asServiceRole.entities.Partner.get(user.partner_id);
       }
       if (!partner) {
         const partnersByEmail = await base44.asServiceRole.entities.Partner.filter({ email: emailNormalized });
