@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 const PROXY_URL = "https://arebecag-asaas-proxy.vercel.app";
 
@@ -6,9 +6,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const cobranças = await base44.asServiceRole.entities.Financeiro.filter({
-      status: "PENDING"
-    });
+    const cobranças = await base44.asServiceRole.entities.Financeiro.filter({ status: "PENDING" });
 
     if (cobranças.length === 0) {
       return Response.json({ ok: true, verificadas: 0, confirmadas: 0 });
@@ -41,9 +39,8 @@ Deno.serve(async (req) => {
         if (!cobranca.bonusLiberado) {
           updateData.bonusLiberado = true;
 
-          // Buscar parceiro
-          const parceiros = await base44.asServiceRole.entities.Partner.filter({ id: cobranca.userId });
-          const parceiro = parceiros.length > 0 ? parceiros[0] : null;
+          // Buscar parceiro via get() direto (evita scan completo)
+          const parceiro = await base44.asServiceRole.entities.Partner.get(cobranca.userId);
 
           if (parceiro) {
             // Ativar parceiro
@@ -52,60 +49,55 @@ Deno.serve(async (req) => {
             if (pendingReasons.length === 0) updatePartner.status = "ativo";
             await base44.asServiceRole.entities.Partner.update(cobranca.userId, updatePartner);
             console.log(`[polling] Parceiro ${parceiro.full_name} ativado`);
-          }
 
-          // Processar compra: libera download, distribui comissões (única chamada)
-          try {
-            const internalSecret = Deno.env.get("INTERNAL_SECRET");
-            await fetch(`https://appfunctions.base44.com/api/apps/${Deno.env.get("BASE44_APP_ID")}/functions/processPurchasePayment`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-internal-secret': internalSecret || ''
-              },
-              body: JSON.stringify({
-                financeiroId: cobranca.id,
-                partnerId: cobranca.userId
-              })
+            // Processar compras pendentes: marcar como pagas e liberar download
+            const purchases = await base44.asServiceRole.entities.Purchase.filter({
+              partner_id: cobranca.userId,
+              status: 'pending'
             });
-            console.log(`[polling] processPurchasePayment acionado para ${cobranca.userId}`);
-          } catch (e) {
-            console.error(`[polling] Erro processPurchasePayment: ${e.message}`);
-          }
 
-          // Emitir nota fiscal automaticamente
-          try {
-            const internalSecret = Deno.env.get("INTERNAL_SECRET");
-            await fetch(`https://appfunctions.base44.com/api/apps/${Deno.env.get("BASE44_APP_ID")}/functions/blingEmitirNotaAutomatica`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-internal-secret': internalSecret || ''
-              },
-              body: JSON.stringify({ payment_id: cobranca.asaasPaymentId })
-            });
-            console.log(`[polling] Nota fiscal solicitada para ${cobranca.asaasPaymentId}`);
-          } catch (e) {
-            console.error(`[polling] Erro nota fiscal: ${e.message}`);
-          }
+            let downloadLink = '';
 
-          // Enviar email de boas-vindas / ativação com link do produto
-          if (parceiro) {
-            try {
-              // Buscar link de download do produto
-              let downloadLink = '';
-              const purchases = await base44.asServiceRole.entities.Purchase.filter({
-                partner_id: cobranca.userId,
-                status: 'paid'
+            for (const purchase of purchases) {
+              await base44.asServiceRole.entities.Purchase.update(purchase.id, {
+                status: 'paid',
+                download_available: true
               });
-              if (purchases.length > 0) {
-                const lastPurchase = purchases.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
-                const products = await base44.asServiceRole.entities.Product.filter({ id: lastPurchase.product_id });
-                if (products.length > 0 && products[0].download_url) {
-                  downloadLink = products[0].download_url;
+              console.log(`[polling] Purchase ${purchase.id} liberada`);
+
+              // Pegar link de download da mais recente
+              if (!downloadLink && purchase.product_id) {
+                const product = await base44.asServiceRole.entities.Product.get(purchase.product_id);
+                if (product && product.download_url) {
+                  downloadLink = product.download_url;
                 }
               }
 
+              // Distribuir comissões
+              try {
+                await base44.asServiceRole.functions.invoke('distribuirComissoes', {
+                  purchaseId: purchase.id,
+                  amount: purchase.amount,
+                  buyerPartnerId: cobranca.userId
+                });
+                console.log(`[polling] Comissões distribuídas para purchase ${purchase.id}`);
+              } catch (e) {
+                console.error(`[polling] Erro distribuirComissoes: ${e.message}`);
+              }
+            }
+
+            // Emitir nota fiscal
+            try {
+              await base44.asServiceRole.functions.invoke('blingEmitirNotaAutomatica', {
+                payment_id: cobranca.asaasPaymentId
+              });
+              console.log(`[polling] Nota fiscal solicitada para ${cobranca.asaasPaymentId}`);
+            } catch (e) {
+              console.error(`[polling] Erro nota fiscal: ${e.message}`);
+            }
+
+            // Enviar email de ativação com link de download
+            try {
               await base44.asServiceRole.integrations.Core.SendEmail({
                 to: parceiro.email,
                 subject: '🎉 Parabéns! Você está ATIVO na Sociedade de Consumidores!',
@@ -138,7 +130,7 @@ Deno.serve(async (req) => {
                       <p style="color: #6b7280; font-size: 14px; margin: 0;">💰 <strong>Comissões:</strong> Seus indicadores já foram notificados dos bônus!</p>
                     </div>
                     <p style="color: #6b7280; font-size: 12px; text-align: center; margin-top: 24px;">
-                      Dúvidas? Contate-nos pelo WhatsApp (11) 95145-3200 ou suporte@sociedadedeconsumidores.com.br
+                      Dúvidas? Contate-nos pelo WhatsApp (11) 95145-3200
                     </p>
                   </div>
                 `
