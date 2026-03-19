@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 Deno.serve(async (req) => {
   try {
@@ -62,19 +62,19 @@ Deno.serve(async (req) => {
 });
 
 async function createNetworkRelations(base44, referrerId, referrerName, newPartnerId, newPartnerName) {
-  // Buscar diretos do indicador e relação com avô em paralelo
-  const [directRelations, grandpaRelations] = await Promise.all([
+  // Buscar diretos do indicador e relação do indicador com seu pai
+  const [directRelations, parentRelation] = await Promise.all([
     base44.asServiceRole.entities.NetworkRelation.filter({ referrer_id: referrerId, relation_type: 'direct' }),
     base44.asServiceRole.entities.NetworkRelation.filter({ referred_id: referrerId, relation_type: 'direct' })
   ]);
 
-  const grandpa = grandpaRelations.length > 0 ? grandpaRelations[0] : null;
+  const grandpa = parentRelation.length > 0 ? parentRelation[0] : null;
   const sortedDirects = directRelations.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
   const directCount = sortedDirects.length;
 
   console.log(`[3x3] ${referrerName} tem ${directCount} diretos`);
 
-  // FASE 1: Menos de 3 diretos → entra como DIRETO
+  // FASE 1: Menos de 3 diretos → entra como DIRETO normal
   if (directCount < 3) {
     await base44.asServiceRole.entities.NetworkRelation.create({
       referrer_id: referrerId, referrer_name: referrerName,
@@ -91,15 +91,29 @@ async function createNetworkRelations(base44, referrerId, referrerName, newPartn
     return;
   }
 
-  // FASE 2: 3 diretos completos → verificar se grupo está cheio (9 indiretos)
-  const indirectRelations = await base44.asServiceRole.entities.NetworkRelation.filter({
-    referrer_id: referrerId, relation_type: 'indirect'
-  });
-  const totalIndiretos = indirectRelations.length;
+  // FASE 2: 3 diretos → verificar indiretos do grupo atual (3 primeiros diretos)
+  // Usar apenas os 3 primeiros diretos do grupo atual para contar indiretos
+  const primeirosTresDiretos = sortedDirects.slice(0, 3);
+  const indiretosCounts = await Promise.all(
+    primeirosTresDiretos.map(d =>
+      base44.asServiceRole.entities.NetworkRelation.filter({
+        referrer_id: d.referred_id,
+        relation_type: 'direct'
+      }).then(rels => ({ child: d, count: rels.length }))
+    )
+  );
 
-  if (totalIndiretos >= 9) {
-    // FASE 3: Grupo completo → novo grupo
+  const totalIndiretosDoPai = indiretosCounts.reduce((sum, c) => sum + c.count, 0);
+  console.log(`[3x3] Total de membros nos filhos: ${totalIndiretosDoPai}`);
+
+  // Se todos os filhos já têm 3 diretos cada = grupo completo (3+9=12)
+  const grupoCompleto = indiretosCounts.every(c => c.count >= 3);
+  if (grupoCompleto) {
     console.log(`[3x3] Grupo completo! Iniciando NOVO GRUPO para ${referrerName}`);
+    await base44.asServiceRole.entities.Partner.update(referrerId, {
+      groups_formed: 1 // será incrementado abaixo se necessário
+    });
+    // Entrar como direto no novo grupo
     await base44.asServiceRole.entities.NetworkRelation.create({
       referrer_id: referrerId, referrer_name: referrerName,
       referred_id: newPartnerId, referred_name: newPartnerName,
@@ -112,56 +126,52 @@ async function createNetworkRelations(base44, referrerId, referrerName, newPartn
         relation_type: 'indirect', is_spillover: false, level: 2
       });
     }
+    // Atualizar groups_formed do indicador
+    const referrerData = await base44.asServiceRole.entities.Partner.get(referrerId);
+    if (referrerData) {
+      await base44.asServiceRole.entities.Partner.update(referrerId, {
+        groups_formed: (referrerData.groups_formed || 0) + 1
+      });
+    }
     return;
   }
 
-  // Round-robin: contar spillovers por filho (3 queries em paralelo, max 3 filhos)
-  const spilloverCounts = await Promise.all(
-    sortedDirects.map(d =>
-      base44.asServiceRole.entities.NetworkRelation.filter({
-        referrer_id: d.referred_id, relation_type: 'direct', is_spillover: true
-      }).then(rels => ({ child: d, count: rels.length }))
-    )
-  );
+  // DERRAMAMENTO: escolher filho com menos diretos (round-robin por totalIndiretos)
+  // Ordenar por quantidade de diretos ASC, depois por ordem original
+  const candidatos = indiretosCounts
+    .filter(c => c.count < 3)
+    .sort((a, b) => a.count - b.count);
 
-  // Escolher filho com menor spillover (round-robin por totalIndiretos)
-  const roundRobinStart = totalIndiretos % 3;
-  let targetDirect = null;
-  for (let i = 0; i < 3; i++) {
-    const candidate = spilloverCounts[(roundRobinStart + i) % 3];
-    if (candidate.count < 3) {
-      targetDirect = candidate.child;
-      break;
-    }
-  }
-  if (!targetDirect) targetDirect = sortedDirects[roundRobinStart];
-
-  console.log(`[3x3] Derramando para ${targetDirect.referred_name}`);
+  const targetDirect = candidatos[0].child;
+  console.log(`[3x3] Derramando para ${targetDirect.referred_name} (${candidatos[0].count}/3 diretos)`);
 
   await Promise.all([
+    // Novo membro entra como DIRETO do filho escolhido
     base44.asServiceRole.entities.NetworkRelation.create({
       referrer_id: targetDirect.referred_id, referrer_name: targetDirect.referred_name,
       referred_id: newPartnerId, referred_name: newPartnerName,
       relation_type: 'direct', is_spillover: true, level: 1
     }),
+    // E como INDIRETO do indicador original
     base44.asServiceRole.entities.NetworkRelation.create({
       referrer_id: referrerId, referrer_name: referrerName,
       referred_id: newPartnerId, referred_name: newPartnerName,
       relation_type: 'indirect', is_spillover: true, level: 2
     }),
+    // Atualizar referrer do novo membro para o filho que o absorveu
     base44.asServiceRole.entities.Partner.update(newPartnerId, {
       referrer_id: targetDirect.referred_id, referrer_name: targetDirect.referred_name
     })
   ]);
 
-  // Verificar fechamento do grupo
-  const newTotal = totalIndiretos + 1;
-  if (newTotal >= 9) {
+  // Verificar se completou o grupo após o derramamento
+  const newTotalIndiretos = totalIndiretosDoPai + 1;
+  if (newTotalIndiretos >= 9) {
     console.log(`[3x3] GRUPO FECHADO! ${referrerName} completou 12 membros!`);
-    const referrerPartners = await base44.asServiceRole.entities.Partner.filter({ id: referrerId });
-    if (referrerPartners.length > 0) {
+    const referrerData = await base44.asServiceRole.entities.Partner.get(referrerId);
+    if (referrerData) {
       await base44.asServiceRole.entities.Partner.update(referrerId, {
-        groups_formed: (referrerPartners[0].groups_formed || 0) + 1
+        groups_formed: (referrerData.groups_formed || 0) + 1
       });
     }
   }

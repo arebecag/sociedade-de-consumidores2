@@ -2,12 +2,105 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 const PROXY_URL = "https://arebecag-asaas-proxy.vercel.app";
 
+// ── Distribuição inline de comissões ──────────────────────────────────────────
+async function distribuirComissoesInline(base44, purchaseId, buyerPartnerId, amount) {
+  const results = [];
+
+  // 1. PAI DIRETO → 15%
+  const directRels = await base44.asServiceRole.entities.NetworkRelation.filter({
+    referred_id: buyerPartnerId,
+    relation_type: 'direct'
+  });
+
+  if (directRels.length > 0) {
+    const rel = directRels[0];
+    const pai = await base44.asServiceRole.entities.Partner.get(rel.referrer_id);
+    if (pai) {
+      const existing = await base44.asServiceRole.entities.BonusTransaction.filter({
+        purchase_id: purchaseId,
+        partner_id: pai.id
+      });
+      if (existing.length === 0) {
+        const forWithdrawal = amount * 0.15;
+        const forPurchases = forWithdrawal * 0.50;
+        const status = pai.status === 'ativo' ? 'credited' : 'blocked';
+        await base44.asServiceRole.entities.BonusTransaction.create({
+          partner_id: pai.id,
+          partner_name: pai.full_name,
+          source_partner_id: buyerPartnerId,
+          source_partner_name: rel.referred_name,
+          purchase_id: purchaseId,
+          type: 'direct',
+          percentage: 15,
+          total_amount: forWithdrawal,
+          amount_for_withdrawal: forWithdrawal,
+          amount_for_purchases: forPurchases,
+          status
+        });
+        if (status === 'credited') {
+          await base44.asServiceRole.entities.Partner.update(pai.id, {
+            total_bonus_generated: (pai.total_bonus_generated || 0) + forWithdrawal,
+            bonus_for_withdrawal: (pai.bonus_for_withdrawal || 0) + forWithdrawal,
+            bonus_for_purchases: (pai.bonus_for_purchases || 0) + forPurchases
+          });
+        }
+        results.push({ type: 'direct', partner: pai.full_name, forWithdrawal, status });
+      }
+    }
+  }
+
+  // 2. AVÔ INDIRETO → 30%
+  const indirectRels = await base44.asServiceRole.entities.NetworkRelation.filter({
+    referred_id: buyerPartnerId,
+    relation_type: 'indirect'
+  });
+
+  if (indirectRels.length > 0) {
+    const rel = indirectRels[0];
+    const avo = await base44.asServiceRole.entities.Partner.get(rel.referrer_id);
+    if (avo) {
+      const existing = await base44.asServiceRole.entities.BonusTransaction.filter({
+        purchase_id: purchaseId,
+        partner_id: avo.id
+      });
+      if (existing.length === 0) {
+        const forWithdrawal = amount * 0.30;
+        const forPurchases = forWithdrawal * 0.50;
+        const status = avo.status === 'ativo' ? 'credited' : 'blocked';
+        await base44.asServiceRole.entities.BonusTransaction.create({
+          partner_id: avo.id,
+          partner_name: avo.full_name,
+          source_partner_id: buyerPartnerId,
+          source_partner_name: rel.referred_name,
+          purchase_id: purchaseId,
+          type: 'indirect',
+          percentage: 30,
+          total_amount: forWithdrawal,
+          amount_for_withdrawal: forWithdrawal,
+          amount_for_purchases: forPurchases,
+          status
+        });
+        if (status === 'credited') {
+          await base44.asServiceRole.entities.Partner.update(avo.id, {
+            total_bonus_generated: (avo.total_bonus_generated || 0) + forWithdrawal,
+            bonus_for_withdrawal: (avo.bonus_for_withdrawal || 0) + forWithdrawal,
+            bonus_for_purchases: (avo.bonus_for_purchases || 0) + forPurchases
+          });
+        }
+        results.push({ type: 'indirect', partner: avo.full_name, forWithdrawal, status });
+      }
+    }
+  }
+
+  return results;
+}
+
+// ── Handler principal ─────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
     const cobranças = await base44.asServiceRole.entities.Financeiro.filter({ status: "PENDING" });
-
     if (cobranças.length === 0) {
       return Response.json({ ok: true, verificadas: 0, confirmadas: 0 });
     }
@@ -17,12 +110,17 @@ Deno.serve(async (req) => {
     for (const cobranca of cobranças) {
       if (!cobranca.asaasPaymentId) continue;
 
-      const resp = await fetch(`${PROXY_URL}/api/consultar-cobranca?id=${cobranca.asaasPaymentId}`);
-      if (!resp.ok) continue;
+      let data;
+      try {
+        const resp = await fetch(`${PROXY_URL}/api/consultar-cobranca?id=${cobranca.asaasPaymentId}`);
+        if (!resp.ok) continue;
+        data = await resp.json();
+      } catch (e) {
+        console.error(`[polling] Erro ao consultar Asaas: ${e.message}`);
+        continue;
+      }
 
-      const data = await resp.json();
       const novoStatus = data.status;
-
       if (novoStatus === cobranca.status) continue;
 
       const updateData = {
@@ -36,53 +134,75 @@ Deno.serve(async (req) => {
         updateData.dataPagamento = new Date().toISOString();
         updateData.acessoLiberado = true;
 
+        // Só processa uma vez (bonusLiberado = flag de idempotência)
         if (!cobranca.bonusLiberado) {
           updateData.bonusLiberado = true;
 
-          // Buscar parceiro via get() direto (evita scan completo)
           const parceiro = await base44.asServiceRole.entities.Partner.get(cobranca.userId);
 
           if (parceiro) {
             // Ativar parceiro
             const pendingReasons = (parceiro.pending_reasons || []).filter(r => r !== "Falta da primeira compra");
-            const updatePartner = { first_purchase_done: true, pending_reasons: pendingReasons };
-            if (pendingReasons.length === 0) updatePartner.status = "ativo";
-            await base44.asServiceRole.entities.Partner.update(cobranca.userId, updatePartner);
+            const partnerUpdate = { first_purchase_done: true, pending_reasons: pendingReasons };
+            if (pendingReasons.length === 0) partnerUpdate.status = "ativo";
+            await base44.asServiceRole.entities.Partner.update(cobranca.userId, partnerUpdate);
             console.log(`[polling] Parceiro ${parceiro.full_name} ativado`);
 
-            // Processar compras pendentes: marcar como pagas e liberar download
-            const purchases = await base44.asServiceRole.entities.Purchase.filter({
+            // Buscar compras pendentes e deduplicar por produto
+            const todasPendentes = await base44.asServiceRole.entities.Purchase.filter({
               partner_id: cobranca.userId,
               status: 'pending'
             });
 
+            // Deduplicar: por product_id manter a mais recente, cancelar as demais
+            const porProduto = {};
+            for (const p of todasPendentes) {
+              const key = p.product_id || p.id;
+              if (!porProduto[key]) {
+                porProduto[key] = p;
+              } else {
+                // Manter a mais recente
+                const existente = porProduto[key];
+                if (new Date(p.created_date) > new Date(existente.created_date)) {
+                  // Cancelar a antiga
+                  await base44.asServiceRole.entities.Purchase.update(existente.id, { status: 'cancelled' });
+                  porProduto[key] = p;
+                } else {
+                  // Cancelar a nova
+                  await base44.asServiceRole.entities.Purchase.update(p.id, { status: 'cancelled' });
+                }
+              }
+            }
+
+            const purchasesUnicas = Object.values(porProduto);
             let downloadLink = '';
 
-            for (const purchase of purchases) {
+            for (const purchase of purchasesUnicas) {
+              // Marcar como paga
               await base44.asServiceRole.entities.Purchase.update(purchase.id, {
                 status: 'paid',
                 download_available: true
               });
               console.log(`[polling] Purchase ${purchase.id} liberada`);
 
-              // Pegar link de download da mais recente
+              // Link de download
               if (!downloadLink && purchase.product_id) {
-                const product = await base44.asServiceRole.entities.Product.get(purchase.product_id);
-                if (product && product.download_url) {
-                  downloadLink = product.download_url;
+                try {
+                  const product = await base44.asServiceRole.entities.Product.get(purchase.product_id);
+                  if (product && product.download_url) downloadLink = product.download_url;
+                } catch (e) {
+                  console.error(`[polling] Erro ao buscar produto: ${e.message}`);
                 }
               }
 
-              // Distribuir comissões
+              // Distribuir comissões inline (sem invoke HTTP separado)
               try {
-                await base44.asServiceRole.functions.invoke('distribuirComissoes', {
-                  purchaseId: purchase.id,
-                  amount: purchase.amount,
-                  buyerPartnerId: cobranca.userId
-                });
-                console.log(`[polling] Comissões distribuídas para purchase ${purchase.id}`);
+                const comissoes = await distribuirComissoesInline(
+                  base44, purchase.id, cobranca.userId, purchase.amount
+                );
+                console.log(`[polling] Comissões distribuídas para ${purchase.id}:`, JSON.stringify(comissoes));
               } catch (e) {
-                console.error(`[polling] Erro distribuirComissoes: ${e.message}`);
+                console.error(`[polling] ERRO comissões purchase ${purchase.id}: ${e.message}`);
               }
             }
 
@@ -96,7 +216,7 @@ Deno.serve(async (req) => {
               console.error(`[polling] Erro nota fiscal: ${e.message}`);
             }
 
-            // Enviar email de ativação com link de download
+            // Enviar email de ativação
             try {
               await base44.asServiceRole.integrations.Core.SendEmail({
                 to: parceiro.email,
@@ -109,9 +229,6 @@ Deno.serve(async (req) => {
                     <h2 style="color: #22c55e; text-align: center;">🎉 Parabéns, ${parceiro.full_name}!</h2>
                     <p style="color: #d1d5db; font-size: 16px; line-height: 1.6;">
                       Seu pagamento foi confirmado e você já está <strong style="color: #22c55e;">ATIVO</strong> na <strong style="color: #f97316;">Sociedade de Consumidores</strong>!
-                    </p>
-                    <p style="color: #d1d5db; font-size: 16px; line-height: 1.6;">
-                      Agora você pode aproveitar todos os benefícios da plataforma: receber bônus das compras de seus clientes, pagar seus boletos com bônus e muito mais.
                     </p>
                     ${downloadLink ? `
                     <div style="background: #1c1917; border: 1px solid #f97316; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
@@ -135,9 +252,9 @@ Deno.serve(async (req) => {
                   </div>
                 `
               });
-              console.log(`[polling] Email de ativação enviado para: ${parceiro.email}`);
-            } catch (emailErr) {
-              console.error(`[polling] Erro ao enviar email: ${emailErr.message}`);
+              console.log(`[polling] Email enviado para: ${parceiro.email}`);
+            } catch (e) {
+              console.error(`[polling] Erro email: ${e.message}`);
             }
           }
         }
