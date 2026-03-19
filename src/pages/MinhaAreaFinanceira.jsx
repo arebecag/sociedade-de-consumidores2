@@ -27,6 +27,7 @@ const STATUS_SAQUE = {
 };
 
 export default function MinhaAreaFinanceira() {
+  const { partner: authPartner } = useAuthCustom();
   const [cobranças, setCobranças] = useState([]);
   const [saques, setSaques] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,23 +38,27 @@ export default function MinhaAreaFinanceira() {
   const [pixKeySaque, setPixKeySaque] = useState("");
   const [aba, setAba] = useState("plano");
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { if (authPartner) loadData(); }, [authPartner]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const user = await base44.auth.me();
-      const partners = await base44.entities.Partner.filter({ created_by: user.email });
-      if (partners.length > 0) {
-        setPartner(partners[0]); setPixKeySaque(partners[0].pix_key || "");
-        const [fins, sqs] = await Promise.all([
-          base44.entities.Financeiro.filter({ userId: partners[0].id }, "-created_date", 50),
-          base44.entities.Saques.filter({ userId: partners[0].id }, "-created_date", 20)
-        ]);
-        setCobranças(fins); setSaques(sqs);
-      }
-    } catch { }
-    finally { setLoading(false); }
+      // Buscar partner atualizado pelo ID para ter saldo correto
+      const partners = await base44.entities.Partner.filter({ user_id: authPartner.user_id });
+      const currentPartner = partners.length > 0 ? partners[0] : authPartner;
+      setPartner(currentPartner);
+      setPixKeySaque(currentPartner.pix_key || "");
+      const [fins, sqs] = await Promise.all([
+        base44.entities.Financeiro.filter({ userId: currentPartner.id }, "-created_date", 50),
+        base44.entities.Saques.filter({ userId: currentPartner.id }, "-created_date", 20)
+      ]);
+      setCobranças(fins);
+      setSaques(sqs);
+    } catch (e) {
+      console.error("[MinhaAreaFinanceira] Erro:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const gerarBoleto = async () => {
