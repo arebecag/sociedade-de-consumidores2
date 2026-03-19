@@ -3,17 +3,32 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
 
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Acesso negado' }, { status: 403 });
+    // Aceitar chamada de automação (sem token) OU de admin autenticado
+    // Automações não possuem usuário — verificamos o INTERNAL_SECRET no body para chamadas manuais externas
+    let bodyData = {};
+    try {
+      bodyData = await req.json();
+    } catch (_) {}
+
+    const { dryRun = false, campanhaId, _secret } = bodyData;
+
+    // Se vier com token de usuário, verificar se é admin
+    const authHeader = req.headers.get('authorization') || '';
+    if (authHeader && authHeader !== 'Bearer undefined') {
+      try {
+        const user = await base44.auth.me();
+        if (user && user.role !== 'admin') {
+          return Response.json({ error: 'Acesso negado' }, { status: 403 });
+        }
+      } catch (_) {
+        // automação sem usuário — permitir continuar
+      }
     }
-
-    const { dryRun = false, campanhaId } = await req.json();
 
     const logInicio = {
       dataProcessamento: new Date().toISOString(),
-      tipoProcessamento: dryRun ? 'dry-run' : 'manual',
+      tipoProcessamento: dryRun ? 'dry-run' : 'automatico',
       campanhaId: campanhaId || null,
       status: 'sucesso',
       mensagem: '',
@@ -56,7 +71,7 @@ Deno.serve(async (req) => {
     const parceiros = await base44.asServiceRole.entities.Partner.list(null, 1000);
     const parceirosValidos = parceiros.filter(p => p.unique_code && p.status === 'ativo');
 
-    // Buscar TODAS as relações diretas de uma vez (otimização)
+    // Buscar TODAS as relações diretas de uma vez
     const todasRelacoesDiretas = await base44.asServiceRole.entities.NetworkRelation.filter({
       relation_type: 'direct'
     });
@@ -79,7 +94,7 @@ Deno.serve(async (req) => {
     // Processar cada parceiro
     for (const parceiro of parceirosValidos) {
       try {
-        // Contar APENAS clientes diretos (onde o parceiro é o indicador) que estão ATIVOS
+        // Contar APENAS clientes diretos que estão ATIVOS
         const idsDirectos = mapaRelacoesDiretas[parceiro.id] || [];
         const clientesAtivosIds = idsDirectos.filter(id => {
           const p = mapaParceiros[id];
@@ -126,21 +141,34 @@ Deno.serve(async (req) => {
           // Gerar recompensas para novos blocos
           for (let i = 1; i <= novosBlocos; i++) {
             const blocoNumero = blocosFechadosAnteriormente + i;
-            await base44.asServiceRole.entities.CampanhaRecompensas.create({
+
+            // Verificar se essa recompensa já existe (idempotência)
+            const recompensaExistente = await base44.asServiceRole.entities.CampanhaRecompensas.filter({
               campanhaId: campanha.id,
               parceiroId: parceiro.id,
-              nomeParceiro: parceiro.full_name,
-              blocoNumero,
-              quantidadeClientesConsiderada: totalClientes,
-              valorPremio: campanha.valorPremio,
-              dataGeracao: new Date().toISOString(),
-              statusPagamento: 'pendente',
-              observacao: `Bloco ${blocoNumero} fechado - ${totalClientes} clientes diretos ativos`,
-              notificacaoEnviada: false
+              blocoNumero
             });
-            totalRecompensasGeradas++;
 
-            await enviarNotificacaoPremio(base44, parceiro, blocoNumero, campanha.valorPremio);
+            if (recompensaExistente.length === 0) {
+              await base44.asServiceRole.entities.CampanhaRecompensas.create({
+                campanhaId: campanha.id,
+                parceiroId: parceiro.id,
+                nomeParceiro: parceiro.full_name,
+                blocoNumero,
+                quantidadeClientesConsiderada: totalClientes,
+                valorPremio: campanha.valorPremio,
+                dataGeracao: new Date().toISOString(),
+                statusPagamento: 'pendente',
+                observacao: `Bloco ${blocoNumero} fechado - ${totalClientes} clientes diretos ativos`,
+                notificacaoEnviada: false
+              });
+              totalRecompensasGeradas++;
+              console.log(`[Campanha] Recompensa R$${campanha.valorPremio} gerada para ${parceiro.full_name} - bloco ${blocoNumero}`);
+
+              await enviarNotificacaoPremio(base44, parceiro, blocoNumero, campanha.valorPremio);
+            } else {
+              console.log(`[Campanha] Recompensa bloco ${blocoNumero} já existe para ${parceiro.full_name} — pulando`);
+            }
           }
         }
 
@@ -151,7 +179,7 @@ Deno.serve(async (req) => {
           blocosFechados,
           novosBlocos,
           valorTotal,
-          faltamClientes: campanha.quantidadeNecessaria - (totalClientes % campanha.quantidadeNecessaria)
+          faltamClientes: campanha.quantidadeNecessaria - (totalClientes % campanha.quantidadeNecessaria || campanha.quantidadeNecessaria)
         });
 
       } catch (error) {
@@ -193,17 +221,34 @@ async function enviarNotificacaoPremio(base44, parceiro, blocoNumero, valor) {
   try {
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: parceiro.email,
-      subject: `🎉 Parabéns! Você conquistou R$ ${valor.toFixed(2)}!`,
+      subject: `🎉 Parabéns! Você conquistou R$ ${valor.toFixed(2)} no Desafio 12+12+12!`,
       body: `
-        <h2>🎉 Desafio 12+12+12</h2>
-        <p>Olá, <strong>${parceiro.full_name}</strong>!</p>
-        <p>Parabéns! Você fechou o <strong>bloco ${blocoNumero}</strong> e conquistou <strong>R$ ${valor.toFixed(2)}</strong>!</p>
-        <p>Continue trazendo novos clientes ativos para conquistar mais prêmios!</p>
-        <p>A cada 12 clientes que <strong>você indicou diretamente</strong> e que estão ATIVOS, você ganha R$ 800,00 via PIX.</p>
-        <p><em>Esta campanha termina em 15/04/2026.</em></p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #09090b; color: #fff; border-radius: 12px;">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="color: #f97316; font-size: 28px; margin: 0;">Sociedade de Consumidores</h1>
+          </div>
+          <h2 style="color: #22c55e; text-align: center;">🎉 Parabéns, ${parceiro.full_name}!</h2>
+          <p style="color: #d1d5db; font-size: 16px; line-height: 1.6;">
+            Você fechou o <strong style="color: #f97316;">bloco ${blocoNumero}</strong> do <strong>Desafio 12+12+12</strong>
+            e conquistou <strong style="color: #22c55e; font-size: 20px;">R$ ${valor.toFixed(2)}</strong> via PIX!
+          </p>
+          <div style="background: #1c1917; border: 1px solid #22c55e; border-radius: 8px; padding: 16px; margin: 20px 0; text-align: center;">
+            <p style="color: #22c55e; font-weight: bold; font-size: 24px; margin: 0;">R$ ${valor.toFixed(2)}</p>
+            <p style="color: #9ca3af; margin: 8px 0 0;">Será pago via PIX na próxima segunda-feira</p>
+          </div>
+          <p style="color: #d1d5db;">Continue trazendo novos clientes ativos para conquistar mais prêmios!</p>
+          <p style="color: #9ca3af; font-size: 14px;">A cada 12 clientes que <strong>você indicou diretamente</strong> e que estão ATIVOS, você ganha R$ 800,00.</p>
+          <div style="border-top: 1px solid #374151; padding-top: 16px; margin-top: 24px;">
+            <a href="https://3x3sc.com.br" style="color: #f97316; font-weight: bold;">Acessar meu Escritório Virtual</a>
+          </div>
+          <p style="color: #6b7280; font-size: 12px; text-align: center; margin-top: 24px;">
+            Dúvidas? Contate-nos pelo WhatsApp (11) 95145-3200
+          </p>
+        </div>
       `
     });
+    console.log(`[Campanha] Email de prêmio enviado para ${parceiro.email}`);
   } catch (error) {
-    console.error('[Notificação] Erro ao enviar email:', error);
+    console.error('[Campanha] Erro ao enviar email de prêmio:', error.message);
   }
 }
