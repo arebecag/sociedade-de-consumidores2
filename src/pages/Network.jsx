@@ -42,10 +42,10 @@ export default function Network() {
         const indirectIds = indirectRelations.map(r => r.referred_id);
         const all = await base44.entities.Partner.list(null, 500);
         setAllPartners(all);
-        setDirectClients(all.filter(partner => directIds.includes(partner.id)));
-        setIndirectClients(all.filter(partner => indirectIds.includes(partner.id)));
+        setDirectClients(all.filter(pt => directIds.includes(pt.id)));
+        setIndirectClients(all.filter(pt => indirectIds.includes(pt.id)));
       }
-    } catch (error) { console.error("Error:", error); }
+    } catch (error) { console.error("[Network] Erro:", error); }
     finally { setLoading(false); }
   };
 
