@@ -1,67 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { usePartner } from '@/components/usePartner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Trophy, Users, DollarSign, Calendar, Gift, 
-  TrendingUp, Loader2, Award, Clock, CheckCircle 
-} from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
+import { usePartner } from "@/components/usePartner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import {
+  Trophy,
+  Users,
+  DollarSign,
+  Calendar,
+  Gift,
+  TrendingUp,
+  Loader2,
+  Award,
+  CheckCircle,
+} from "lucide-react";
 
 export default function CampanhaDesafio() {
+  const dataFinalCampanha = "30/04/2026";
   const { partner, loading: partnerLoading } = usePartner();
   const [timeLeft, setTimeLeft] = useState(null);
 
   const { data: campanha, isLoading: campanhaLoading } = useQuery({
-    queryKey: ['campanha-desafio'],
+    queryKey: ["campanha-desafio"],
     queryFn: async () => {
       const campanhas = await base44.entities.CampanhasIncentivo.filter({
-        nomeCampanha: 'Desafio 12+12+12',
-        ativa: true
+        nomeCampanha: "Desafio 12+12+12",
+        ativa: true,
       });
       return campanhas[0] || null;
-    }
+    },
   });
 
   const { data: participante } = useQuery({
-    queryKey: ['participante-campanha', partner?.id, campanha?.id],
+    queryKey: ["participante-campanha", partner?.id, campanha?.id],
     queryFn: async () => {
       if (!partner?.id || !campanha?.id) return null;
       // Conta apenas clientes DIRETOS (onde o parceiro é o indicador) com status ativo
       const relacoesDiretas = await base44.entities.NetworkRelation.filter({
         referrer_id: partner.id,
-        relation_type: 'direct'
+        relation_type: "direct",
       });
-      const idsDirectos = relacoesDiretas.map(r => r.referred_id);
+      const idsDirectos = relacoesDiretas.map((r) => r.referred_id);
       let clientesDiretosAtivos = 0;
       if (idsDirectos.length > 0) {
         const allPartners = await base44.entities.Partner.list(null, 500);
-        clientesDiretosAtivos = allPartners.filter(p => idsDirectos.includes(p.id) && p.status === 'ativo').length;
+        clientesDiretosAtivos = allPartners.filter(
+          (p) => idsDirectos.includes(p.id) && p.status === "ativo",
+        ).length;
       }
       const participantes = await base44.entities.CampanhaParticipantes.filter({
         campanhaId: campanha.id,
-        parceiroId: partner.id
+        parceiroId: partner.id,
       });
       const p = participantes[0];
       // Usar contagem ao vivo de diretos ativos
-      return p ? { ...p, totalClientesAtivos: clientesDiretosAtivos } : { totalClientesAtivos: clientesDiretosAtivos, totalBlocosFechados: 0, valorTotalPremiado: 0 };
+      return p
+        ? { ...p, totalClientesAtivos: clientesDiretosAtivos }
+        : {
+            totalClientesAtivos: clientesDiretosAtivos,
+            totalBlocosFechados: 0,
+            valorTotalPremiado: 0,
+          };
     },
-    enabled: !!partner?.id && !!campanha?.id
+    enabled: !!partner?.id && !!campanha?.id,
   });
 
   const { data: recompensas = [] } = useQuery({
-    queryKey: ['recompensas-campanha', partner?.id, campanha?.id],
+    queryKey: ["recompensas-campanha", partner?.id, campanha?.id],
     queryFn: async () => {
       if (!partner?.id || !campanha?.id) return [];
       return await base44.entities.CampanhaRecompensas.filter({
         campanhaId: campanha.id,
-        parceiroId: partner.id
+        parceiroId: partner.id,
       });
     },
-    enabled: !!partner?.id && !!campanha?.id
+    enabled: !!partner?.id && !!campanha?.id,
   });
 
   useEffect(() => {
@@ -80,7 +94,7 @@ export default function CampanhaDesafio() {
           days: Math.floor(diff / (1000 * 60 * 60 * 24)),
           hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
           minutes: Math.floor((diff / (1000 * 60)) % 60),
-          seconds: Math.floor((diff / 1000) % 60)
+          seconds: Math.floor((diff / 1000) % 60),
         });
       }
     }, 1000);
@@ -100,7 +114,9 @@ export default function CampanhaDesafio() {
     return (
       <div className="text-center py-16">
         <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-white mb-2">Nenhuma campanha ativa</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">
+          Nenhuma campanha ativa
+        </h2>
         <p className="text-gray-400">Aguarde novas campanhas de incentivo!</p>
       </div>
     );
@@ -109,8 +125,13 @@ export default function CampanhaDesafio() {
   const clientesAtivos = participante?.totalClientesAtivos || 0;
   const blocosFechados = participante?.totalBlocosFechados || 0;
   const valorTotal = participante?.valorTotalPremiado || 0;
-  const faltamClientes = campanha.quantidadeNecessaria - (clientesAtivos % campanha.quantidadeNecessaria);
-  const progressoAtual = (clientesAtivos % campanha.quantidadeNecessaria) / campanha.quantidadeNecessaria * 100;
+  const faltamClientes =
+    campanha.quantidadeNecessaria -
+    (clientesAtivos % campanha.quantidadeNecessaria);
+  const progressoAtual =
+    ((clientesAtivos % campanha.quantidadeNecessaria) /
+      campanha.quantidadeNecessaria) *
+    100;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -120,43 +141,52 @@ export default function CampanhaDesafio() {
           {/* Imagem da campanha */}
           {campanha.imagemUrl && (
             <div className="flex-shrink-0">
-              <img 
-                src={campanha.imagemUrl} 
-                alt="Desafio 12+12+12" 
+              <img
+                src={campanha.imagemUrl}
+                alt="Desafio 12+12+12"
                 className="w-auto h-auto max-w-md rounded-xl shadow-2xl border-4 border-white/30"
               />
             </div>
           )}
-          
+
           {/* Conteúdo */}
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-4">
               <Trophy className="w-12 h-12 text-yellow-400" />
               <div>
                 <h1 className="text-4xl font-bold">Desafio 12+12+12</h1>
-                <p className="text-xl">A cada 12 clientes ativos, ganha na hora PIX de R$ 800,00</p>
+                <p className="text-xl">
+                  A cada 12 clientes ativos, ganha na hora PIX de R$ 800,00
+                </p>
               </div>
             </div>
 
-          {timeLeft && (
-            <div className="grid grid-cols-4 gap-4 mt-6">
-              {[
-                { label: 'Dias', value: timeLeft.days },
-                { label: 'Horas', value: timeLeft.hours },
-                { label: 'Minutos', value: timeLeft.minutes },
-                { label: 'Segundos', value: timeLeft.seconds }
-              ].map((item, idx) => (
-                <div key={idx} className="bg-black/60 rounded-lg p-3 text-center">
-                  <div className="text-3xl font-bold text-yellow-400">{String(item.value).padStart(2, '0')}</div>
-                  <div className="text-sm text-gray-300">{item.label}</div>
-                </div>
-              ))}
-            </div>
-          )}
+            {timeLeft && (
+              <div className="grid grid-cols-4 gap-4 mt-6">
+                {[
+                  { label: "Dias", value: timeLeft.days },
+                  { label: "Horas", value: timeLeft.hours },
+                  { label: "Minutos", value: timeLeft.minutes },
+                  { label: "Segundos", value: timeLeft.seconds },
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-black/60 rounded-lg p-3 text-center"
+                  >
+                    <div className="text-3xl font-bold text-yellow-400">
+                      {String(item.value).padStart(2, "0")}
+                    </div>
+                    <div className="text-sm text-gray-300">{item.label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="mt-4 flex items-center gap-2 text-yellow-200">
               <Calendar className="w-5 h-5" />
-              <span className="font-semibold">Esta campanha termina no dia 30/04/2026</span>
+              <span className="font-semibold">
+                Esta campanha termina no dia 30/04/2026
+              </span>
             </div>
           </div>
         </div>
@@ -168,9 +198,12 @@ export default function CampanhaDesafio() {
           <Trophy className="w-5 h-5 text-orange-400" />
         </div>
         <div>
-          <p className="text-orange-300 font-bold text-base">🎉 Você já está participando deste desafio!</p>
+          <p className="text-orange-300 font-bold text-base">
+            🎉 Você já está participando deste desafio!
+          </p>
           <p className="text-orange-200/80 text-sm mt-1">
-            Faça sua primeira compra. Fique <strong>ATIVO</strong> para receber seus prêmios, bônus e comissões.
+            Faça sua primeira compra. Fique <strong>ATIVO</strong> para receber
+            seus prêmios, bônus e comissões.
           </p>
         </div>
       </div>
@@ -185,7 +218,9 @@ export default function CampanhaDesafio() {
               </div>
               <div>
                 <p className="text-gray-300 text-sm">Clientes Diretos Ativos</p>
-                <p className="text-3xl font-bold text-white">{clientesAtivos}</p>
+                <p className="text-3xl font-bold text-white">
+                  {clientesAtivos}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -199,7 +234,9 @@ export default function CampanhaDesafio() {
               </div>
               <div>
                 <p className="text-gray-300 text-sm">Blocos Fechados</p>
-                <p className="text-3xl font-bold text-white">{blocosFechados}</p>
+                <p className="text-3xl font-bold text-white">
+                  {blocosFechados}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -213,7 +250,9 @@ export default function CampanhaDesafio() {
               </div>
               <div>
                 <p className="text-gray-300 text-sm">Valor Conquistado</p>
-                <p className="text-2xl font-bold text-white">R$ {valorTotal.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-white">
+                  R$ {valorTotal.toFixed(2)}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -227,7 +266,9 @@ export default function CampanhaDesafio() {
               </div>
               <div>
                 <p className="text-gray-300 text-sm">Faltam</p>
-                <p className="text-3xl font-bold text-white">{faltamClientes}</p>
+                <p className="text-3xl font-bold text-white">
+                  {faltamClientes}
+                </p>
                 <p className="text-xs text-gray-400">para R$ 800,00</p>
               </div>
             </div>
@@ -247,15 +288,22 @@ export default function CampanhaDesafio() {
           <div>
             <div className="flex justify-between text-sm mb-2">
               <span className="text-gray-400">
-                {clientesAtivos % campanha.quantidadeNecessaria} de {campanha.quantidadeNecessaria} clientes diretos ativos
+                {clientesAtivos % campanha.quantidadeNecessaria} de{" "}
+                {campanha.quantidadeNecessaria} clientes diretos ativos
               </span>
-              <span className="text-orange-500 font-bold">{progressoAtual.toFixed(0)}%</span>
+              <span className="text-orange-500 font-bold">
+                {progressoAtual.toFixed(0)}%
+              </span>
             </div>
             <Progress value={progressoAtual} className="h-4" />
           </div>
           <p className="text-center text-gray-300">
-            Faltam <span className="text-orange-500 font-bold text-2xl">{faltamClientes}</span> clientes 
-            para ganhar <span className="text-green-500 font-bold text-2xl">R$ 800,00</span>
+            Faltam{" "}
+            <span className="text-orange-500 font-bold text-2xl">
+              {faltamClientes}
+            </span>{" "}
+            clientes para ganhar{" "}
+            <span className="text-green-500 font-bold text-2xl">R$ 800,00</span>
           </p>
         </CardContent>
       </Card>
@@ -269,8 +317,12 @@ export default function CampanhaDesafio() {
           {recompensas.length === 0 ? (
             <div className="text-center py-8">
               <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-500">Nenhuma recompensa conquistada ainda</p>
-              <p className="text-gray-600 text-sm mt-1">Continue trazendo clientes ativos!</p>
+              <p className="text-gray-500">
+                Nenhuma recompensa conquistada ainda
+              </p>
+              <p className="text-gray-600 text-sm mt-1">
+                Continue trazendo clientes ativos!
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -284,9 +336,11 @@ export default function CampanhaDesafio() {
                       <CheckCircle className="w-5 h-5 text-green-400" />
                     </div>
                     <div>
-                      <p className="text-white font-semibold">Bloco {rec.blocoNumero}</p>
+                      <p className="text-white font-semibold">
+                        Bloco {rec.blocoNumero}
+                      </p>
                       <p className="text-gray-400 text-sm">
-                        {new Date(rec.dataGeracao).toLocaleDateString('pt-BR')}
+                        {new Date(rec.dataGeracao).toLocaleDateString("pt-BR")}
                       </p>
                     </div>
                   </div>
@@ -294,11 +348,15 @@ export default function CampanhaDesafio() {
                     <p className="text-green-500 font-bold text-xl">
                       R$ {rec.valorPremio.toFixed(2)}
                     </p>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      rec.statusPagamento === 'pago' ? 'bg-green-500/20 text-green-400' :
-                      rec.statusPagamento === 'processado' ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-yellow-500/20 text-yellow-400'
-                    }`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        rec.statusPagamento === "pago"
+                          ? "bg-green-500/20 text-green-400"
+                          : rec.statusPagamento === "processado"
+                            ? "bg-blue-500/20 text-blue-400"
+                            : "bg-yellow-500/20 text-yellow-400"
+                      }`}
+                    >
                       {rec.statusPagamento}
                     </span>
                   </div>
@@ -312,15 +370,43 @@ export default function CampanhaDesafio() {
       {/* Regras da Campanha */}
       <Card className="bg-zinc-900 border-zinc-800">
         <CardHeader>
-          <CardTitle className="text-white text-sm">📋 Regras da Campanha</CardTitle>
+          <CardTitle className="text-white text-sm">
+            📋 Regras da Campanha
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-gray-400">
-          <p>✅ A cada <strong className="text-white">12 clientes ativos diretos</strong> (que você cadastrou diretamente) com status <strong className="text-green-400">ATIVO</strong> na <strong className="text-white">Sociedade de Consumidores</strong>, você ganha R$ 800,00 via PIX</p>
-          <p>✅ Somente contam os clientes que <strong className="text-white">você cadastrou diretamente</strong> — clientes indiretos (da rede dos seus clientes) <strong className="text-red-400">não contam</strong></p>
-          <p>✅ Você pode acumular múltiplos prêmios: 24 clientes = R$ 1.600 · 36 clientes = R$ 2.400...</p>
-          <p>✅ Apenas clientes com status <strong className="text-green-400">ATIVO</strong> na <strong className="text-white">Sociedade de Consumidores</strong> são contabilizados — pendentes não contam</p>
-          <p>✅ Fique ATIVO! Sem sua primeira compra, você não recebe prêmios, bônus nem comissões</p>
-          <p>⏰ Campanha válida até <strong className="text-orange-500">30/04/2026</strong></p>
+          <p>
+            ✅ <strong className="text-white">Item 1:</strong> a cada{" "}
+            <strong className="text-white">12 clientes ativos diretos</strong>{" "}
+            que você cadastrou diretamente, com status{" "}
+            <strong className="text-green-400">ATIVO</strong> na{" "}
+            <strong className="text-white">Sociedade de Consumidores</strong>,
+            você ganha <strong className="text-white">R$ 800,00 via PIX</strong>
+          </p>
+          <p>
+            ✅ Somente contam os clientes que{" "}
+            <strong className="text-white">você cadastrou diretamente</strong> —
+            clientes indiretos (dos clientes dos seus clientes){" "}
+            <strong className="text-red-400">não contam</strong>
+          </p>
+          <p>
+            ✅ Você pode acumular múltiplos prêmios: 24 clientes = R$ 1.600 · 36
+            clientes = R$ 2.400...
+          </p>
+          <p>
+            ✅ Apenas clientes com status{" "}
+            <strong className="text-green-400">ATIVO</strong> na{" "}
+            <strong className="text-white">Sociedade de Consumidores</strong>{" "}
+            são contabilizados — pendentes não contam
+          </p>
+          <p>
+            ✅ Fique ATIVO! Sem sua primeira compra, você não recebe prêmios,
+            bônus nem comissões
+          </p>
+          <p>
+            ⏰ Campanha válida até{" "}
+            <strong className="text-orange-500">{dataFinalCampanha}</strong>
+          </p>
         </CardContent>
       </Card>
     </div>
