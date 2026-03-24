@@ -1,12 +1,16 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.20";
 
-const BLING_BASE_URL = 'https://www.bling.com.br/Api/v3';
+const BLING_API_BASE_URL = "https://api.bling.com.br/Api/v3";
 
 async function obterTokenValido(base44) {
-  const integracoes = await base44.asServiceRole.entities.IntegracaoBling.list();
-  
-  if (integracoes.length === 0 || integracoes[0].status_integracao !== 'conectado') {
-    throw new Error('Integração Bling não está conectada');
+  const integracoes =
+    await base44.asServiceRole.entities.IntegracaoBling.list();
+
+  if (
+    integracoes.length === 0 ||
+    integracoes[0].status_integracao !== "conectado"
+  ) {
+    throw new Error("Integração Bling não está conectada");
   }
 
   const integracao = integracoes[0];
@@ -16,35 +20,39 @@ async function obterTokenValido(base44) {
 
   // Se token vai expirar em menos de 5 minutos, renovar
   if (diferencaMinutos < 5) {
-    const clientId = Deno.env.get('BLING_CLIENT_ID');
-    const clientSecret = Deno.env.get('BLING_CLIENT_SECRET');
+    const clientId = Deno.env.get("BLING_CLIENT_ID");
+    const clientSecret = Deno.env.get("BLING_CLIENT_SECRET");
     const basicAuth = btoa(`${clientId}:${clientSecret}`);
 
-    const tokenResponse = await fetch(`${BLING_BASE_URL}/oauth/token`, {
-      method: 'POST',
+    const tokenResponse = await fetch(`${BLING_API_BASE_URL}/oauth/token`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${basicAuth}`,
-        'Accept': 'application/json'
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${basicAuth}`,
+        Accept: "application/json",
+        "enable-jwt": "1",
       },
       body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: integracao.refresh_token
-      })
+        grant_type: "refresh_token",
+        refresh_token: integracao.refresh_token,
+      }),
     });
 
     if (!tokenResponse.ok) {
-      throw new Error('Falha ao renovar token do Bling');
+      const tokenError = await tokenResponse.json().catch(() => null);
+      throw new Error(
+        `${tokenError?.error_description || tokenError?.error || "Falha ao renovar token do Bling"}. Reautentique o app no Bling.`,
+      );
     }
 
     const tokenData = await tokenResponse.json();
-    const novaExpiracao = new Date(Date.now() + (tokenData.expires_in * 1000));
+    const novaExpiracao = new Date(Date.now() + tokenData.expires_in * 1000);
 
     await base44.asServiceRole.entities.IntegracaoBling.update(integracao.id, {
       access_token: tokenData.access_token,
       refresh_token: tokenData.refresh_token,
       expires_in: tokenData.expires_in,
-      expira_em: novaExpiracao.toISOString()
+      expira_em: novaExpiracao.toISOString(),
     });
 
     return tokenData.access_token;
@@ -59,27 +67,36 @@ Deno.serve(async (req) => {
     const { payment_id } = await req.json();
 
     if (!payment_id) {
-      return Response.json({ error: 'payment_id é obrigatório' }, { status: 400 });
+      return Response.json(
+        { error: "payment_id é obrigatório" },
+        { status: 400 },
+      );
     }
 
     // Buscar dados do pagamento
     const pagamentos = await base44.asServiceRole.entities.Financeiro.filter({
-      asaasPaymentId: payment_id
+      asaasPaymentId: payment_id,
     });
 
     if (pagamentos.length === 0) {
-      return Response.json({ error: 'Pagamento não encontrado' }, { status: 404 });
+      return Response.json(
+        { error: "Pagamento não encontrado" },
+        { status: 404 },
+      );
     }
 
     const pagamento = pagamentos[0];
 
     // Buscar dados do parceiro
     const parceiros = await base44.asServiceRole.entities.Partner.filter({
-      id: pagamento.userId
+      id: pagamento.userId,
     });
 
     if (parceiros.length === 0) {
-      return Response.json({ error: 'Parceiro não encontrado' }, { status: 404 });
+      return Response.json(
+        { error: "Parceiro não encontrado" },
+        { status: 404 },
+      );
     }
 
     const parceiro = parceiros[0];
@@ -90,9 +107,9 @@ Deno.serve(async (req) => {
     // Montar dados da nota fiscal
     const notaFiscalData = {
       numero: null, // Bling gera automaticamente
-      dataEmissao: new Date().toISOString().split('T')[0],
+      dataEmissao: new Date().toISOString().split("T")[0],
       naturezaOperacao: {
-        id: 1 // Venda de produção do estabelecimento (ajustar conforme necessário)
+        id: 1, // Venda de produção do estabelecimento (ajustar conforme necessário)
       },
       cliente: {
         nome: parceiro.full_name,
@@ -100,61 +117,67 @@ Deno.serve(async (req) => {
         email: parceiro.email,
         telefone: parceiro.phone,
         endereco: {
-          logradouro: parceiro.address?.street || '',
-          numero: parceiro.address?.number || 'S/N',
-          complemento: parceiro.address?.complement || '',
-          bairro: parceiro.address?.neighborhood || '',
-          cep: parceiro.address?.cep?.replace(/\D/g, '') || '',
-          municipio: parceiro.address?.city || '',
-          uf: parceiro.address?.state || ''
-        }
+          logradouro: parceiro.address?.street || "",
+          numero: parceiro.address?.number || "S/N",
+          complemento: parceiro.address?.complement || "",
+          bairro: parceiro.address?.neighborhood || "",
+          cep: parceiro.address?.cep?.replace(/\D/g, "") || "",
+          municipio: parceiro.address?.city || "",
+          uf: parceiro.address?.state || "",
+        },
       },
-      itens: [{
-        codigo: 'SERV001',
-        descricao: pagamento.descricao || 'Serviço de plataforma',
-        quantidade: 1,
-        valor: pagamento.valor,
-        unidade: 'UN',
-        tipo: 'S' // S = Serviço, P = Produto
-      }],
-      valorTotal: pagamento.valor
+      itens: [
+        {
+          codigo: "SERV001",
+          descricao: pagamento.descricao || "Serviço de plataforma",
+          quantidade: 1,
+          valor: pagamento.valor,
+          unidade: "UN",
+          tipo: "S", // S = Serviço, P = Produto
+        },
+      ],
+      valorTotal: pagamento.valor,
     };
 
     // Emitir nota fiscal no Bling
-    const notaResponse = await fetch(`${BLING_BASE_URL}/nfe`, {
-      method: 'POST',
+    const notaResponse = await fetch(`${BLING_API_BASE_URL}/nfe`, {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "enable-jwt": "1",
       },
-      body: JSON.stringify(notaFiscalData)
+      body: JSON.stringify(notaFiscalData),
     });
 
     const notaResult = await notaResponse.json();
 
     // Log da operação
     await base44.asServiceRole.entities.LogIntegracaoBling.create({
-      tipo: 'api_call',
-      status: notaResponse.ok ? 'sucesso' : 'erro',
-      mensagem: notaResponse.ok 
-        ? `Nota fiscal emitida para ${parceiro.full_name}` 
-        : 'Erro ao emitir nota fiscal',
+      tipo: "api_call",
+      status: notaResponse.ok ? "sucesso" : "erro",
+      mensagem: notaResponse.ok
+        ? `Nota fiscal emitida para ${parceiro.full_name}`
+        : "Erro ao emitir nota fiscal",
       codigo_http: notaResponse.status,
       detalhes: {
         payment_id,
         parceiro_id: parceiro.id,
         valor: pagamento.valor,
-        response: notaResult
-      }
+        response: notaResult,
+      },
     });
 
     if (!notaResponse.ok) {
-      return Response.json({ 
-        success: false,
-        error: 'Erro ao emitir nota fiscal no Bling',
-        detalhes: notaResult
-      }, { status: notaResponse.status });
+      return Response.json(
+        {
+          success: false,
+          error: "Erro ao emitir nota fiscal no Bling",
+          detalhes: notaResult,
+        },
+        { status: notaResponse.status },
+      );
     }
 
     // Atualizar pagamento com dados da nota
@@ -162,28 +185,30 @@ Deno.serve(async (req) => {
       notaFiscalEmitida: true,
       notaFiscalNumero: notaResult.data?.numero,
       notaFiscalChave: notaResult.data?.chaveAcesso,
-      notaFiscalUrl: notaResult.data?.linkDownload
+      notaFiscalUrl: notaResult.data?.linkDownload,
     });
 
-    return Response.json({ 
+    return Response.json({
       success: true,
-      mensagem: 'Nota fiscal emitida com sucesso',
-      nota: notaResult.data
+      mensagem: "Nota fiscal emitida com sucesso",
+      nota: notaResult.data,
     });
-
   } catch (error) {
-    console.error('[blingEmitirNotaAutomatica] Erro:', error);
-    
+    console.error("[blingEmitirNotaAutomatica] Erro:", error);
+
     const base44 = createClientFromRequest(req);
     await base44.asServiceRole.entities.LogIntegracaoBling.create({
-      tipo: 'erro',
-      status: 'erro',
-      mensagem: 'Erro ao emitir nota automática',
-      erro: error.message
+      tipo: "erro",
+      status: "erro",
+      mensagem: "Erro ao emitir nota automática",
+      erro: error.message,
     });
 
-    return Response.json({ 
-      error: error.message 
-    }, { status: 500 });
+    return Response.json(
+      {
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 });
