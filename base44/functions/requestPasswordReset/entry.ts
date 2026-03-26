@@ -1,22 +1,26 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.20";
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { email } = await req.json();
+    const emailNormalized = email?.toLowerCase().trim();
 
-    if (!email) {
-      return Response.json({ error: 'E-mail é obrigatório' }, { status: 400 });
+    if (!emailNormalized) {
+      return Response.json({ error: "E-mail é obrigatório" }, { status: 400 });
     }
 
     // Buscar usuário
-    const users = await base44.asServiceRole.entities.LoginUser.filter({ 
-      email: email.toLowerCase() 
+    const users = await base44.asServiceRole.entities.LoginUser.filter({
+      email: emailNormalized,
     });
 
     if (users.length === 0) {
       // Por segurança, retornar sucesso mesmo se o usuário não existir
-      return Response.json({ success: true, message: 'Se o e-mail estiver cadastrado, você receberá as instruções' });
+      return Response.json({
+        success: true,
+        message: "Se o e-mail estiver cadastrado, você receberá as instruções",
+      });
     }
 
     const user = users[0];
@@ -28,17 +32,17 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.PasswordResetToken.create({
       user_id: user.id,
-      email: email.toLowerCase(),
+      email: emailNormalized,
       token,
       expires_at: expiresAt.toISOString(),
-      used: false
+      used: false,
     });
 
-    // Enviar email (não aguarda para evitar timeout)
-    const resetCode = token.split('-')[0]; // Usar apenas primeira parte do UUID como código
-    base44.asServiceRole.integrations.Core.SendEmail({
-      to: email,
-      subject: 'Redefinição de Senha - Sociedade de Consumidores',
+    // Enviar email de forma síncrona para detectar falhas de entrega logo na solicitação
+    const resetCode = token.split("-")[0]; // Usar apenas primeira parte do UUID como código
+    await base44.asServiceRole.integrations.Core.SendEmail({
+      to: emailNormalized,
+      subject: "Redefinição de Senha - Sociedade de Consumidores",
       body: `
         <h2>Redefinição de Senha</h2>
         <p>Você solicitou a redefinição de senha.</p>
@@ -46,13 +50,15 @@ Deno.serve(async (req) => {
         <h1 style="color: #f97316; font-size: 24px; letter-spacing: 2px;">${resetCode}</h1>
         <p>Este código expira em 2 horas.</p>
         <p>Se você não solicitou esta redefinição, ignore este e-mail.</p>
-      `
-    }).catch(err => console.error('[requestPasswordReset] Erro ao enviar email (não crítico):', err));
+      `,
+    });
 
-    return Response.json({ success: true, message: 'Instruções enviadas para o e-mail' });
-
+    return Response.json({
+      success: true,
+      message: "Código enviado para o e-mail",
+    });
   } catch (error) {
-    console.error('[requestPasswordReset] Erro:', error);
+    console.error("[requestPasswordReset] Erro:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
