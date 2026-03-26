@@ -44,6 +44,7 @@ Variáveis principais:
 - `Email__SmtpPassword`
 - `Asaas__BaseUrl`
 - `Asaas__ApiKey`
+- `Asaas__WebhookSecret`
 - `Bling__BaseUrl`
 - `Bling__ClientId`
 - `Bling__ClientSecret`
@@ -77,3 +78,23 @@ O frontend React/Vite usa a camada de compatibilidade em `src/api/base44Client.j
 - banco: PostgreSQL gerenciado ou instalado na VPS
 - frontend: build Vite servido por Nginx/Apache ou CDN
 - HTTPS: Cloudflare ou Nginx + Let's Encrypt
+
+
+## Onde configurar PostgreSQL
+
+A conexão do banco PostgreSQL fica em:
+
+- `src/SociedadeConsumidores.WebApi/appsettings.json`
+- chave: `ConnectionStrings:DefaultConnection`
+
+Exemplo:
+
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Host=localhost;Port=5432;Database=sociedade_db;Username=postgres;Password=rebeca"
+}
+```
+
+Em produção, prefira variável de ambiente:
+
+- `ConnectionStrings__DefaultConnection`
