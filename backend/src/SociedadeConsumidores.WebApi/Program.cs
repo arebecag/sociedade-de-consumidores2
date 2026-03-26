@@ -80,6 +80,12 @@ builder.Services.AddCors(options => options.AddPolicy("frontend", policy => poli
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+}
+
 app.UseSerilogRequestLogging();
 app.UseSwagger();
 app.UseSwaggerUI();
