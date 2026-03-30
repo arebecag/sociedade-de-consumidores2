@@ -66,6 +66,7 @@ public interface IBlingService
 {
     Task<object> GerarAuthUrlAsync(CancellationToken cancellationToken = default);
     Task<object> CallbackAsync(string code, CancellationToken cancellationToken = default);
+    Task<object> DesconectarAsync(CancellationToken cancellationToken = default);
     Task<object> TestarConexaoAsync(CancellationToken cancellationToken = default);
     Task<object> RenovarTokenAsync(CancellationToken cancellationToken = default);
     Task<object> EmitirNotaAsync(Guid partnerId, Guid? purchaseId, string? productName, decimal amount, CancellationToken cancellationToken = default);
@@ -690,6 +691,21 @@ public class BlingService(ApplicationDbContext db, IHttpClientFactory httpClient
     {
         var token = await RefreshAsync(cancellationToken);
         return new { success = true, access_token = token };
+    }
+
+    public async Task<object> DesconectarAsync(CancellationToken cancellationToken = default)
+    {
+        var integration = await db.IntegracoesBling.FirstAsync(cancellationToken);
+        integration.status_integracao = "desconectado";
+        integration.access_token = null;
+        integration.refresh_token = null;
+        integration.scope = null;
+        integration.expires_in = null;
+        integration.expira_em = null;
+        integration.data_autenticacao = null;
+        integration.ultimo_erro = null;
+        await db.SaveChangesAsync(cancellationToken);
+        return new { success = true };
     }
 
     public async Task<object> EmitirNotaAsync(Guid partnerId, Guid? purchaseId, string? productName, decimal amount, CancellationToken cancellationToken = default)

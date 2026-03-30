@@ -79,7 +79,38 @@ public class WebhooksController(IAsaasService asaasService, IBlingService blingS
 public class BlingController(IBlingService blingService) : ControllerBase
 {
     [HttpPost("auth-url")] public Task<object> AuthUrl(CancellationToken cancellationToken) => blingService.GerarAuthUrlAsync(cancellationToken);
-    [HttpGet("callback")] public Task<object> Callback([FromQuery] string code, CancellationToken cancellationToken) => blingService.CallbackAsync(code, cancellationToken);
+    [AllowAnonymous]
+    [HttpGet("callback")]
+    public async Task<IActionResult> Callback([FromQuery] string code, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await blingService.CallbackAsync(code, cancellationToken);
+            return Content("""
+<!doctype html>
+<html><body><script>
+if (window.opener) {
+  window.opener.postMessage({ type: "bling-oauth", success: true }, "*");
+  window.close();
+}
+document.body.innerText = "Integração Bling concluída com sucesso. Você pode fechar esta janela.";
+</script></body></html>
+""", "text/html");
+        }
+        catch (Exception ex)
+        {
+            return Content($"""
+<!doctype html>
+<html><body><script>
+if (window.opener) {{
+  window.opener.postMessage({{ type: "bling-oauth", success: false, error: {System.Text.Json.JsonSerializer.Serialize(ex.Message)} }}, "*");
+}}
+document.body.innerText = "Erro ao integrar com Bling: {ex.Message}";
+</script></body></html>
+""", "text/html");
+        }
+    }
+    [HttpPost("desconectar")] public Task<object> Desconectar(CancellationToken cancellationToken) => blingService.DesconectarAsync(cancellationToken);
     [HttpPost("testar")] public Task<object> Testar(CancellationToken cancellationToken) => blingService.TestarConexaoAsync(cancellationToken);
     [HttpPost("renovar")] public Task<object> Renovar(CancellationToken cancellationToken) => blingService.RenovarTokenAsync(cancellationToken);
     [HttpPost("emitir-nota")]
@@ -126,6 +157,7 @@ public class CompatController(IAuthService authService, IPartnerService partnerS
             "verifyEmailCode" => await authService.VerifyEmailCodeAsync(new VerifyEmailCodeRequest(payload["email"]!.ToString(), payload["code"]!.ToString()), cancellationToken),
             "asaasGerarCobranca" => await asaasService.GerarCobrancaAsync(new AsaasChargeRequest(Guid.Parse(payload["partnerId"]!.ToString()), payload["cpf"]?.ToString(), payload["valor"]?.GetValue<decimal>(), payload["descricao"]?.ToString(), payload["diasVencimento"]?.GetValue<int>() ?? 3), payload["email"]?.ToString() ?? string.Empty, cancellationToken),
             "blingGerarAuthUrl" => await blingService.GerarAuthUrlAsync(cancellationToken),
+            "blingDesconectar" => await blingService.DesconectarAsync(cancellationToken),
             "blingRenovarToken" => await blingService.RenovarTokenAsync(cancellationToken),
             "blingTestarConexao" => await blingService.TestarConexaoAsync(cancellationToken),
             "blingEmitirNota" => await blingService.EmitirNotaAsync(Guid.Parse(payload["partnerId"]!.ToString()), payload["purchaseId"] is null ? null : Guid.Parse(payload["purchaseId"]!.ToString()), payload["productName"]?.ToString(), payload["amount"]?.GetValue<decimal>() ?? 0, cancellationToken),

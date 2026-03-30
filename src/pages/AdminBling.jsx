@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +37,23 @@ export default function AdminBling() {
     queryKey: ["logs-bling"],
     queryFn: () => base44.entities.LogIntegracaoBling.list("-created_date", 50),
   });
+
+  useEffect(() => {
+    const onMessage = (event) => {
+      if (event?.data?.type !== "bling-oauth") return;
+
+      if (event.data.success) {
+        toast.success("Integração com Bling concluída com sucesso.");
+        queryClient.invalidateQueries(["integracao-bling"]);
+        queryClient.invalidateQueries(["logs-bling"]);
+      } else {
+        toast.error(event.data.error || "Erro ao concluir autorização do Bling.");
+      }
+    };
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [queryClient]);
 
   const handleConectar = async () => {
     setConectando(true);
@@ -321,7 +338,7 @@ export default function AdminBling() {
               <p>Client ID: (preencher no ambiente)</p>
               <p>Client Secret: (preencher no ambiente)</p>
               <p>
-                Redirect URI: https://[seu-dominio]/integracoes/bling/callback
+                Redirect URI: https://[seu-dominio]/api/bling/callback
               </p>
             </div>
           </div>
@@ -330,9 +347,9 @@ export default function AdminBling() {
               2. Configure as variáveis de ambiente:
             </p>
             <ul className="list-disc list-inside text-gray-500 space-y-1">
-              <li>BLING_CLIENT_ID</li>
-              <li>BLING_CLIENT_SECRET</li>
-              <li>BLING_REDIRECT_URI</li>
+              <li>Bling__ClientId</li>
+              <li>Bling__ClientSecret</li>
+              <li>Bling__RedirectUri</li>
             </ul>
           </div>
           <div>
