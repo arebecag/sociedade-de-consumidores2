@@ -5,8 +5,22 @@ import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Mail, ArrowLeft, CheckCircle, Lock, Eye, EyeOff } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Loader2,
+  Mail,
+  ArrowLeft,
+  CheckCircle,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function ForgotPassword() {
@@ -21,7 +35,7 @@ export default function ForgotPassword() {
 
   const handleRequestReset = async (e) => {
     e.preventDefault();
-    
+
     if (!email) {
       toast.error("Digite seu e-mail");
       return;
@@ -29,8 +43,10 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      await requestPasswordReset(email.toLowerCase());
-      toast.success("Código enviado para seu e-mail!");
+      await requestPasswordReset(email.toLowerCase().trim());
+      toast.success(
+        "Se o e-mail estiver cadastrado, o código será enviado em instantes.",
+      );
       setStep("token");
     } catch (error) {
       toast.error(error.message || "Erro ao enviar código");
@@ -41,7 +57,7 @@ export default function ForgotPassword() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    
+
     if (!token || !newPassword || !confirmPassword) {
       toast.error("Preencha todos os campos");
       return;
@@ -59,7 +75,11 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      await resetPassword(email.toLowerCase(), token, newPassword);
+      await resetPassword(
+        email.toLowerCase().trim(),
+        token.trim().toLowerCase(),
+        newPassword,
+      );
       toast.success("Senha redefinida com sucesso!");
       setStep("success");
     } catch (error) {
@@ -83,8 +103,10 @@ export default function ForgotPassword() {
             {step === "success" && "Sucesso!"}
           </CardTitle>
           <CardDescription className="text-gray-400">
-            {step === "email" && "Digite seu e-mail para receber o código"}
-            {step === "token" && "Digite o código recebido e sua nova senha"}
+            {step === "email" &&
+              "Digite seu e-mail para receber o código de acesso"}
+            {step === "token" &&
+              "Digite o código recebido por e-mail e defina sua nova senha"}
             {step === "success" && "Sua senha foi redefinida"}
           </CardDescription>
         </CardHeader>
@@ -92,7 +114,9 @@ export default function ForgotPassword() {
           {step === "email" && (
             <form onSubmit={handleRequestReset} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">E-mail cadastrado</Label>
+                <Label htmlFor="email" className="text-white">
+                  E-mail cadastrado
+                </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
                   <Input
@@ -100,7 +124,7 @@ export default function ForgotPassword() {
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value.trim())}
                     className="bg-zinc-900 border-zinc-700 text-white pl-10"
                     disabled={loading}
                   />
@@ -118,30 +142,44 @@ export default function ForgotPassword() {
                     Enviando...
                   </>
                 ) : (
-                  "Enviar Código"
+                  "Enviar código"
                 )}
               </Button>
 
               <Link
-                to={createPageUrl("Register")}
+                to={createPageUrl("LoginCustom")}
                 className="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-orange-500 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Voltar para login
+                Ir para o login
               </Link>
             </form>
           )}
 
           {step === "token" && (
             <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3 text-sm text-orange-100">
+                Caso o e-mail demore, verifique também a caixa de spam e
+                promoções.
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="token" className="text-white">Código de verificação</Label>
+                <Label htmlFor="token" className="text-white">
+                  Código de verificação
+                </Label>
                 <Input
                   id="token"
                   type="text"
                   placeholder="Digite o código"
                   value={token}
-                  onChange={(e) => setToken(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toLowerCase())}
+                  onChange={(e) =>
+                    setToken(
+                      e.target.value
+                        .replace(/[^a-zA-Z0-9]/g, "")
+                        .slice(0, 8)
+                        .toLowerCase(),
+                    )
+                  }
                   className="bg-zinc-900 border-zinc-700 text-white text-center text-xl tracking-widest font-mono uppercase"
                   maxLength={8}
                   disabled={loading}
@@ -149,7 +187,9 @@ export default function ForgotPassword() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="newPassword" className="text-white">Nova senha</Label>
+                <Label htmlFor="newPassword" className="text-white">
+                  Nova senha
+                </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
                   <Input
@@ -166,13 +206,19 @@ export default function ForgotPassword() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-gray-500 hover:text-gray-400"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-white">Confirmar nova senha</Label>
+                <Label htmlFor="confirmPassword" className="text-white">
+                  Confirmar nova senha
+                </Label>
                 <Input
                   id="confirmPassword"
                   type={showPassword ? "text" : "password"}
@@ -201,7 +247,12 @@ export default function ForgotPassword() {
 
               <button
                 type="button"
-                onClick={() => setStep("email")}
+                onClick={() => {
+                  setToken("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                  setStep("email");
+                }}
                 className="flex items-center justify-center gap-2 w-full text-sm text-gray-400 hover:text-orange-500 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -217,14 +268,15 @@ export default function ForgotPassword() {
                   <CheckCircle className="w-8 h-8 text-green-500" />
                 </div>
               </div>
-              
+
               <p className="text-center text-gray-400">
-                Sua senha foi redefinida com sucesso. Você já pode fazer login com a nova senha.
+                Sua senha foi redefinida com sucesso. Você já pode fazer login
+                com a nova senha.
               </p>
 
-              <Link to={createPageUrl("Register")}>
+              <Link to={createPageUrl("LoginCustom")}>
                 <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold">
-                  Ir para Login
+                  Ir para o login
                 </Button>
               </Link>
             </div>
