@@ -63,6 +63,8 @@ cd backend
  dotnet run --project src/SociedadeConsumidores.WebApi
 ```
 
+> Observação: ao subir a API, o backend também tenta aplicar automaticamente os scripts `.sql` da pasta `database/` (em ordem alfabética), criando tabelas ausentes com `IF NOT EXISTS`.
+
 ## Swagger
 
 - `https://localhost:5001/swagger`

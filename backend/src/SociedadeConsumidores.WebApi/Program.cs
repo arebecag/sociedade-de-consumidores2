@@ -84,6 +84,24 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.EnsureCreated();
+
+    var databaseScriptsPath = Path.GetFullPath(Path.Combine(
+        app.Environment.ContentRootPath,
+        "..",
+        "..",
+        "database"));
+
+    if (Directory.Exists(databaseScriptsPath))
+    {
+        var sqlScripts = Directory.GetFiles(databaseScriptsPath, "*.sql")
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var scriptPath in sqlScripts)
+        {
+            var scriptSql = File.ReadAllText(scriptPath);
+            db.Database.ExecuteSqlRaw(scriptSql);
+        }
+    }
 }
 
 app.UseSerilogRequestLogging();
