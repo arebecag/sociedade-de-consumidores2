@@ -1,47 +1,64 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from "npm:@base44/sdk@0.8.20";
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { email, code } = await req.json();
+    const emailNormalized = email?.toLowerCase().trim();
+    const codeNormalized = String(code || "").trim();
 
-    if (!email || !code) {
-      return Response.json({ error: 'E-mail e código são obrigatórios' }, { status: 400 });
+    if (!emailNormalized || !codeNormalized) {
+      return Response.json(
+        { error: "E-mail e código são obrigatórios" },
+        { status: 400 },
+      );
     }
 
     // Buscar código válido
-    const codes = await base44.asServiceRole.entities.EmailVerificationCode.filter({
-      email: email.toLowerCase(),
-      code,
-      used: false
-    });
+    const codes =
+      await base44.asServiceRole.entities.EmailVerificationCode.filter({
+        email: emailNormalized,
+        code: codeNormalized,
+        used: false,
+      });
 
     if (codes.length === 0) {
-      return Response.json({ error: 'Código inválido ou já utilizado' }, { status: 400 });
+      return Response.json(
+        { error: "Código inválido ou já utilizado" },
+        { status: 400 },
+      );
     }
 
     const verificationCode = codes[0];
 
     // Verificar expiração
     if (new Date(verificationCode.expires_at) < new Date()) {
-      return Response.json({ error: 'Código expirado' }, { status: 400 });
+      return Response.json({ error: "Código expirado" }, { status: 400 });
     }
 
     // Marcar código como usado
-    await base44.asServiceRole.entities.EmailVerificationCode.update(verificationCode.id, {
-      used: true
-    });
+    await base44.asServiceRole.entities.EmailVerificationCode.update(
+      verificationCode.id,
+      {
+        used: true,
+      },
+    );
 
     // Atualizar LoginUser
-    await base44.asServiceRole.entities.LoginUser.update(verificationCode.user_id, {
-      is_email_verified: true,
-      status: 'active'
+    await base44.asServiceRole.entities.LoginUser.update(
+      verificationCode.user_id,
+      {
+        is_email_verified: true,
+        status: "active",
+      },
+    );
+
+    return Response.json({
+      success: true,
+      message: "E-mail verificado com sucesso!",
     });
-
-    return Response.json({ success: true, message: 'E-mail verificado com sucesso!' });
-
   } catch (error) {
-    console.error('[verifyEmailCode] Erro:', error);
+    console.error("[verifyEmailCode] Erro:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
