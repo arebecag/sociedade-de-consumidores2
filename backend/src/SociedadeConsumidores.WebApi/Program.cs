@@ -82,25 +82,33 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.EnsureCreated();
-
-    var databaseScriptsPath = Path.GetFullPath(Path.Combine(
-        app.Environment.ContentRootPath,
-        "..",
-        "..",
-        "database"));
-
-    if (Directory.Exists(databaseScriptsPath))
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+    try
     {
-        var sqlScripts = Directory.GetFiles(databaseScriptsPath, "*.sql")
-            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase);
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.EnsureCreated();
 
-        foreach (var scriptPath in sqlScripts)
+        var databaseScriptsPath = Path.GetFullPath(Path.Combine(
+            app.Environment.ContentRootPath,
+            "..",
+            "..",
+            "database"));
+
+        if (Directory.Exists(databaseScriptsPath))
         {
-            var scriptSql = File.ReadAllText(scriptPath);
-            db.Database.ExecuteSqlRaw(scriptSql);
+            var sqlScripts = Directory.GetFiles(databaseScriptsPath, "*.sql")
+                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var scriptPath in sqlScripts)
+            {
+                var scriptSql = File.ReadAllText(scriptPath);
+                db.Database.ExecuteSqlRaw(scriptSql);
+            }
         }
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Falha ao inicializar o banco na subida da API. A aplicação continuará rodando, mas endpoints dependentes de banco podem falhar.");
     }
 }
 

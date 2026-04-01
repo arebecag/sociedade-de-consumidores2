@@ -64,6 +64,7 @@ cd backend
 ```
 
 > Observação: ao subir a API, o backend também tenta aplicar automaticamente os scripts `.sql` da pasta `database/` (em ordem alfabética), criando tabelas ausentes com `IF NOT EXISTS`.
+> Se o PostgreSQL não estiver acessível, a API ainda sobe, mas endpoints/rotinas que dependem de banco irão falhar até a conexão ser corrigida.
 
 ## Swagger
 
