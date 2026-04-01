@@ -99,15 +99,17 @@ document.body.innerText = "Integração Bling concluída com sucesso. Você pode
         }
         catch (Exception ex)
         {
-            return Content($"""
+            var errorJson = System.Text.Json.JsonSerializer.Serialize(ex.Message);
+            var html = """
 <!doctype html>
 <html><body><script>
-if (window.opener) {{
-  window.opener.postMessage({{ type: "bling-oauth", success: false, error: {System.Text.Json.JsonSerializer.Serialize(ex.Message)} }}, "*");
-}}
-document.body.innerText = "Erro ao integrar com Bling: {ex.Message}";
+if (window.opener) {
+  window.opener.postMessage({ type: "bling-oauth", success: false, error: __ERROR__ }, "*");
+}
+document.body.innerText = "Erro ao integrar com Bling.";
 </script></body></html>
-""", "text/html");
+""".Replace("__ERROR__", errorJson);
+            return Content(html, "text/html");
         }
     }
     [HttpPost("desconectar")] public Task<object> Desconectar(CancellationToken cancellationToken) => blingService.DesconectarAsync(cancellationToken);
