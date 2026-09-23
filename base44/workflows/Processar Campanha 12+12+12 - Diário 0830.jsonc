@@ -1,0 +1,46 @@
+{
+  "name": "Processar Campanha 12+12+12 - Di\u00e1rio 08:30",
+  "description": "Processamento autom\u00e1tico di\u00e1rio da campanha Desafio 12+12+12 \u00e0s 08:30",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "30 11 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "processar_campanha_12_12_12_di_rio_08_30",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "processarCampanha12x12",
+            "args": {
+              "dryRun": false
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "processarCampanha12x12"
+  }
+}
